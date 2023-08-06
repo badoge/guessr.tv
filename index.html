@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: https://ogp.me/ns#" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>Guessr.tv</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Guess the view count. You will be presented with a random Twitch stream and you have to guess how many viewers they have." />
+    <meta name="keywords" content="guessr.tv, Twitch" />
+    <meta property="og:title" content="guessr.tv" />
+    <meta property="og:site_name" content="Guessr.tv" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://guessr.tv" />
+    <meta property="og:image" content="https://guessr.tv/pics/guessr.png" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:description" content="Guess the view count. You will be presented with a random Twitch stream and you have to guess how many viewers they have." />
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/pics/icon/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/pics/icon/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/pics/icon/favicon-16x16.png" />
+    <link rel="manifest" href="/pics/icon/site.webmanifest" />
+    <link rel="mask-icon" href="/pics/icon/safari-pinned-tab.svg" color="#ff8280" />
+    <link rel="shortcut icon" href="/pics/icon/favicon.ico" />
+    <meta name="msapplication-TileColor" content="#9f00a7" />
+    <meta name="msapplication-config" content="/pics/icon/browserconfig.xml" />
+    <meta name="theme-color" content="#212529" />
+
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/icons.css" />
+    <link rel="stylesheet" href="/css/guess.min.css" />
+  </head>
+
+  <body>
+    <noscript><div class="alert alert-danger" role="alert">WARNING! JavaScript is disabled. This site will not work properly without it.</div></noscript>
+
+    <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="infoModalLabel">Info</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <b>How the site works:</b><br />
+            Every 30 minutes a bot fetches live channels from the Twitch API to make the channel list<br />
+            Channels are picked from different view count categories instead of picking completely randomly to increase variety<br />
+            Channels have a minimum of 30 minute uptime and a maximum of 9 hours uptime<br />
+            The site updates the view count right before starting each game using the Twitch API, which is not as accurate as the view count on the embedded stream. Some channels might also
+            have gone offline during the time it takes the API to update<br />
+            <br />You can play using your keyboard only by using the arrow keys to change your guess and enter to submit <br />
+
+            <br />
+            Embeds can't have hidden info so I have to blur part of the stream<br /><br />
+            You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of them you can subscribe to Twitch Turbo or get a better Adblock :)<br />
+            If you have Turbo and still see the screen, make sure you are logged in to Twitch on the same browser, and if you use Firefox you will need to allow cross-site tracking cookies
+            <hr />
+            If you want to optout from being picked for the guess list you can use the <kbd>=optout</kbd> command in
+            <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
+            <hr />
+            <span id="infoTime">Channel list updated on [updates when game starts]</span><br />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="resetLabel">Reset stats</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="container text-center">
+              <div class="row">
+                <div class="col-6 mt-3">
+                  <button type="button" id="resetHighScore" class="btn btn-warning">Reset High Scores</button>
+                  <br />
+                  <small>Resets your viewers mode (<span id="viewersHS">0</span>) and followers mode (<span id="followersHS">0</span>) high scores </small>
+                </div>
+                <div class="col-6 mt-3">
+                  <button type="button" id="resetMaxStreaks" class="btn btn-warning">Reset max streaks</button>
+                  <br />
+                  <small>
+                    Resets your viewers mode (<span id="viewersStreak">0</span>) and followers mode (<span id="followersStreak">0</span>) and game name mode (<span id="gameStreak">0</span>)
+                    and emote mode (<span id="emoteStreak">0</span>) max streaks
+                  </small>
+                </div>
+                <div class="col-6 mt-3">
+                  <button type="button" id="resetSeenChannels" class="btn btn-warning">Reset Seen Channels</button>
+                  <br />
+                  <small>
+                    Resets your channel history. The channel history keeps track of which channels you've seen to not show them again. You have seen
+                    <span id="seenChannels">0</span> different channels.
+                  </small>
+                </div>
+                <div class="col-6 mt-3">
+                  <button type="button" id="resetSeenClips" class="btn btn-warning">Reset Seen Clips</button>
+                  <br />
+                  <small>
+                    Resets your clip history. The clip history keeps track of the clips that you've seen to not show them again. You have seen <span id="seenClips">0</span> different clips.
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="aboutModalLabel">About</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="card border mb-3">
+              <div class="card-body">
+                Site by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/badoge">badoge</a> :) <br />
+                Idea by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/nymn">nymn</a><br />
+                Inspired by <a target="_blank" rel="noopener noreferrer" href="https://geoguessr.com">GeoGuessr</a><br /><br />
+                <h5>Other stuff by me :)</h5>
+                <p>
+                  <a target="_blank" rel="noopener noreferrer" href="https://chat.vote/">chat.vote</a><br />
+                  <small>Polls that you vote on by typing in Twitch chat.</small><br />
+                  <a target="_blank" rel="noopener noreferrer" href="https://chat.vote/poll">chat.vote/poll</a><br />
+                  <small>Like normal chat.vote but you vote by visiting the site instead of typing in chat.</small><br />
+                  <a target="_blank" rel="noopener noreferrer" href="https://chat.vote/games">chat.vote/games</a><br />
+                  <small>Mini games with chat interaction.</small><br />
+                  <a target="_blank" rel="noopener noreferrer" href="https://chat.vote/vts">chat.vote/vts</a><br />
+                  <small>A site that lets viewers control your VTube Studio model using chat commands/channel points/bits/subs</small><br />
+                  <a target="_blank" rel="noopener noreferrer" href="https://okayeg.com">OkayegBOT</a><br />
+                  <small>Fun/utility Twitch chat bot.</small><br />
+                  <a target="_blank" rel="noopener noreferrer" href="https://zero.chat.vote">0weebs</a><br />
+                  <small>Twitch moderation bot that bans weebs.</small><br />
+                </p>
+              </div>
+            </div>
+            <div class="card border">
+              <div class="card-body">
+                <h5>Contact info:</h5>
+                <p>
+                  If you find any issues or if you have suggestions or questions, you can contact me: <br /><a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://www.twitch.tv/popout/badoge/chat?popout="
+                    >in this chat</a
+                  >
+                  <br />or on <a target="_blank" rel="noopener noreferrer" href="https://discord.gg/eF54kvd">discord</a> <br />or by
+                  <a href="mailto:help@guessr.tv">email</a>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="gameSettingsModal" tabindex="-1" aria-labelledby="gameSettingsModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="gameSettingsModalLabel">Game settings</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <div id="videoTypeDiv">
+              <h4>Video type</h4>
+              <div class="btn-group" role="group" aria-label="Video type">
+                <input type="radio" class="btn-check" name="videoTypeSelect" value="streams" id="streamsVideoType" autocomplete="off" checked />
+                <label class="btn btn-outline-danger" for="streamsVideoType">Live Streams</label>
+
+                <input type="radio" class="btn-check" name="videoTypeSelect" value="clips" id="clipsVideoType" autocomplete="off" />
+                <label class="btn btn-outline-warning" for="clipsVideoType">Clips</label>
+              </div>
+              <br />
+              <small id="videoTypeDesc">A random live stream will be picked for you each round. Some streams might have preroll ads</small>
+            </div>
+
+            <div id="clipCollectionDiv" class="mt-3" style="display: none">
+              <h5>Clip collection</h5>
+              <select class="form-select" id="clipCollection" aria-label="Default select example">
+                <option value="random" selected>Random</option>
+                <option value="short">Short clips (<10s)</option>
+                <option value="long">Long clips (>40s)</option>
+                <option value="popular">Popular clips (>10,000 views)</option>
+                <option value="hottub">Pools, Hot Tubs, and Beaches section :)</option>
+                <option value="forsen">forsen</option>
+              </select>
+            </div>
+
+            <div id="difficultyDiv" class="mt-3">
+              <h5>Mode</h5>
+              <div class="btn-group" role="group" aria-label="Difficulty">
+                <input type="radio" class="btn-check" name="difficultySelect" value="normal" id="normalDifficulty" autocomplete="off" checked />
+                <label class="btn btn-outline-primary" for="normalDifficulty">Normal</label>
+                <input type="radio" class="btn-check" name="difficultySelect" value="hard" id="hardDifficulty" autocomplete="off" />
+                <label class="btn btn-outline-info" for="hardDifficulty">Multiple Choice</label>
+                <input type="radio" class="btn-check" name="difficultySelect" value="higherlower" id="higherLowerDifficulty" autocomplete="off" />
+                <label class="btn btn-outline-success" for="higherLowerDifficulty" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Coming soon :)">Higher Lower</label>
+              </div>
+              <br />
+              <small id="difficultyDesc"> You will have to guess the exact view count - 5 rounds - 5,000 points per round based on how close you are to the correct number </small>
+            </div>
+
+            <div id="timerSettingsDiv" class="mt-3">
+              <h5>Timer</h5>
+              <div class="input-group">
+                <div class="input-group-text">Round timer</div>
+                <input type="number" id="timerValue" value="0" min="0" max="60" class="form-control" aria-label="timer value" />
+                <div class="input-group-text">minutes</div>
+              </div>
+              <small>Your guess will be automatically submitted when the timer runs out. Set to 0 to disable</small>
+            </div>
+
+            <div id="chatSettingsDiv" class="mt-3">
+              <h4>Play with chat</h4>
+              <div class="input-group">
+                <span class="input-group-text" id="channelNameLabel">twitch.tv/</span>
+                <input type="text" id="channelName" class="form-control" placeholder="username" aria-label="channel name" aria-describedby="channelNameLabel" />
+              </div>
+              <small class="mb-3">Your viewers will be able to play along by guessing in chat</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" id="getSettingsButton" onclick="getSettings()">Start</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="scoreDiv" class="bg-body-tertiary" style="display: none">
+      <span id="round">Round <br />1/5</span>
+      <span id="score">Score <br />0</span>
+    </div>
+
+    <div id="timerDiv" class="bg-body-tertiary" style="display: none">
+      <span>Round ends in</span>
+      <span id="timer">0</span>
+    </div>
+
+    <ul class="nav flex-column position-fixed">
+      <li class="nav-item">
+        <a class="nav-link active" aria-current="page" id="reset"> <img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="modal" data-bs-target="#infoModal"><i class="material-icons notranslate">info</i> Info</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="modal" data-bs-target="#resetModal"><i class="material-icons notranslate">restart_alt</i> Reset stats</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="modal" data-bs-target="#aboutModal"><i class="material-icons notranslate">help_outline</i> About</a>
+      </li>
+    </ul>
+
+    <div class="container-fluid text-center mt-3">
+      <div class="row">
+        <div class="col-2">
+          <div aria-live="polite" aria-atomic="true" class="position-relative">
+            <div id="toastContainer" class="toast-container"></div>
+          </div>
+        </div>
+        <div class="col-8 position-relative pe-1">
+          <div id="twitchEmbed">
+            <div class="card mt-5" id="welcomeCard">
+              <div class="card-header"><img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv</div>
+              <div class="card-body">
+                <div class="container-fluid">
+                  <div class="row mb-3">
+                    <div class="card mode-card cursor-pointer" onclick="showSettings('viewers')">
+                      <div class="card-body">
+                        <h2>
+                          Viewers
+                          <svg class="viewers-svg" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
+                            <g>
+                              <path
+                                fill-rule="evenodd"
+                                d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
+                                clip-rule="evenodd"
+                              ></path>
+                            </g>
+                          </svg>
+                        </h2>
+                        <div class="hidden">
+                          A random Twitch streamer will be shown and you will have to guess how many viewers they have. The closer you are to the target view count the more points you'll
+                          earn.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <div class="card mode-card cursor-pointer" onclick="showSettings('followers')">
+                      <div class="card-body">
+                        <h2>
+                          Followers
+                          <svg type="color-fill-current" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px" class="follow-svg">
+                            <g>
+                              <path
+                                fill-rule="evenodd"
+                                d="M9.171 4.171A4 4 0 006.343 3H6a4 4 0 00-4 4v.343a4 4 0 001.172 2.829L10 17l6.828-6.828A4 4 0 0018 7.343V7a4 4 0 00-4-4h-.343a4 4 0 00-2.829 1.172L10 5l-.829-.829zm.829 10l5.414-5.414A2 2 0 0016 7.343V7a2 2 0 00-2-2h-.343a2 2 0 00-1.414.586L10 7.828 7.757 5.586A2 2 0 006.343 5H6a2 2 0 00-2 2v.343a2 2 0 00.586 1.414L10 14.172z"
+                                clip-rule="evenodd"
+                              ></path>
+                            </g>
+                          </svg>
+                        </h2>
+                        <div class="hidden">Same as the above but you'll be guessing how many followers the random streamers have.</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <div class="card mode-card cursor-pointer" onclick="showSettings('game')">
+                      <div class="card-body">
+                        <h2>
+                          Game
+                          <i class="material-icons notranslate mp-icon">sports_esports</i>
+                        </h2>
+                        <div class="hidden">You will be shown a random Twitch stream and you will have to guess what game they are playing.</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="card mode-card cursor-pointer" onclick="showSettings('emote')">
+                      <div class="card-body">
+                        <h2>
+                          Emote
+                          <i class="material-icons notranslate mp-icon">emoji_emotions</i>
+                        </h2>
+                        <div class="hidden">You will be shown a random Twitch stream and you will have to guess which emote belongs to them.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="streamCover" style="display: none"></div>
+          <div id="clipCover" style="display: none"></div>
+        </div>
+
+        <div class="col-2 ps-1">
+          <div class="card" id="leaderboard" style="display: none">
+            <div class="card-header"><h4>Type a number in chat to guess</h4></div>
+            <div class="card-body" id="leaderboardCard">
+              <ul class="list-group" id="leaderboardList"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mb-3 mt-2" id="bottomRow">
+        <div class="col-2"></div>
+        <div class="col-10">
+          <div class="card" id="mainCard" style="display: none">
+            <div class="card-body container-fluid">
+              <div class="row align-items-center">
+                <div class="col-6">
+                  <div id="slider">
+                    <label for="guessRange" id="guessRangeLabel" class="form-label">How many viewers does this stream have?</label>
+                    <input type="range" min="0" max="100" step="1" value="0" class="form-range" id="guessRange" />
+                  </div>
+                  <div id="multiChoiceDiv">
+                    <label id="multiChoiceLabel" class="form-label">How many viewers does this stream have?</label>
+                    <br />
+                    <input type="radio" class="btn-check" name="multiChoice" id="multiChoice1" autocomplete="off" />
+                    <label class="btn btn-outline-success multiChoice-btn me-5" for="multiChoice1" id="multiChoice1Label">????????</label>
+                    <input type="radio" class="btn-check" name="multiChoice" id="multiChoice2" autocomplete="off" />
+                    <label class="btn btn-outline-success multiChoice-btn me-5" for="multiChoice2" id="multiChoice2Label">????????</label>
+                    <input type="radio" class="btn-check" name="multiChoice" id="multiChoice3" autocomplete="off" />
+                    <label class="btn btn-outline-success multiChoice-btn me-5" for="multiChoice3" id="multiChoice3Label">????????</label>
+                    <input type="radio" class="btn-check" name="multiChoice" id="multiChoice4" autocomplete="off" />
+                    <label class="btn btn-outline-success multiChoice-btn me-5" for="multiChoice4" id="multiChoice4Label">????????</label>
+                    <input type="radio" class="btn-check" name="multiChoice" id="multiChoice5" autocomplete="off" />
+                    <label class="btn btn-outline-success multiChoice-btn" for="multiChoice5" id="multiChoice5Label">????????</label>
+                  </div>
+
+                  <div id="gameDiv">
+                    <label class="form-label">What is this game?</label>
+                    <input type="text" class="form-control" placeholder="Start typing for suggestions" list="gameList" id="gameInput" />
+                    <datalist id="gameList"></datalist>
+                  </div>
+                  <div id="scoreProgressBar"></div>
+                </div>
+
+                <div class="col-3">
+                  <div class="input-group justify-content-center" id="guessInputDiv">
+                    <span class="input-group-text" id="guessLabel">View count</span>
+                    <input
+                      type="number"
+                      id="guessNumber"
+                      min="0"
+                      max="5000"
+                      step="1"
+                      value=""
+                      placeholder="Guess"
+                      class="form-control"
+                      aria-label="View count"
+                      aria-describedby="guessLabel"
+                    />
+                  </div>
+                  <div id="correction"></div>
+                </div>
+
+                <div class="col-3">
+                  <button type="button" id="guess" class="btn btn-lg btn-success">Guess</button>
+                  <button type="button" id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
+                  <button type="button" id="playAgain" class="btn btn-lg btn-warning" style="display: none">Play Again</button>
+                  <div id="gameEndText"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="https://embed.twitch.tv/embed/v1.js"></script>
+    <script src="/js/easytimer.min.js"></script>
+    <script src="/js/tmi.min.js"></script>
+    <script src="/js/guess.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RMN1GV8B4J"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-RMN1GV8B4J");
+    </script>
+  </body>
+</html>
