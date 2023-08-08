@@ -66,6 +66,7 @@ const elements = {
   timerValue: document.getElementById("timerValue"),
   chatSettingsDiv: document.getElementById("chatSettingsDiv"),
   channelName: document.getElementById("channelName"),
+  disclaimer: document.getElementById("disclaimer"),
   getSettingsButton: document.getElementById("getSettingsButton"),
   leaderboard: document.getElementById("leaderboard"),
   leaderboardList: document.getElementById("leaderboardList"),
@@ -1122,6 +1123,21 @@ async function showSettings(mode) {
     elements.difficultyDesc.innerHTML = `Coming soon :) You will have to guess if the current stream has a higher or lower ${
       mode == "followers" ? "follow" : "view"
     } count than the previous one  - Keep playing till you get a wrong answer`;
+  }
+
+  elements.disclaimer.style.display = "";
+  switch (mode) {
+    case "viewers":
+      elements.disclaimer.innerHTML = "The answer will not always be the same as the view count seen on the stream because the API does not update as fast";
+      break;
+    case "game":
+      elements.disclaimer.innerHTML = "Some streamers could forget to update their category or set it incorrectly, expect to be Jebaited :)";
+      break;
+    case "emote":
+      elements.disclaimer.innerHTML = `Some channels might not have any emotes, in that case <img src="https://static-cdn.jtvnw.net/emoticons/v2/120232/default/dark/3.0" alt="TriHard" title="TriHard" width=28> will be added as a placeholder `;
+      break;
+    default:
+      elements.disclaimer.style.display = "none";
   }
 
   gameSettingsModal.show();
