@@ -32,39 +32,6 @@
   <body>
     <noscript><div class="alert alert-danger" role="alert">WARNING! JavaScript is disabled. This site will not work properly without it.</div></noscript>
 
-    <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="infoModalLabel">Info</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <b>How the site works:</b><br />
-            Every 30 minutes a bot fetches live channels from the Twitch API to make the channel list<br />
-            Channels are picked from different view count categories instead of picking completely randomly to increase variety<br />
-            Channels have a minimum of 30 minute uptime and a maximum of 9 hours uptime<br />
-            The site updates the view count right before starting each game using the Twitch API, which is not as accurate as the view count on the embedded stream. Some channels might also
-            have gone offline during the time it takes the API to update<br />
-            <br />You can play using your keyboard only by using the arrow keys to change your guess and enter to submit <br />
-
-            <br />
-            Embeds can't have hidden info so I have to blur part of the stream<br /><br />
-            You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of them you can subscribe to Twitch Turbo or get a better Adblock :)<br />
-            If you have Turbo and still see the screen, make sure you are logged in to Twitch on the same browser, and if you use Firefox you will need to allow cross-site tracking cookies
-            <hr />
-            If you want to optout from being picked for the guess list you can use the <kbd>=optout</kbd> command in
-            <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
-            <hr />
-            <span id="infoTime">Channel list updated on [updates when game starts]</span><br />
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -122,30 +89,31 @@
           </div>
           <div class="modal-body">
             <div class="card border mb-3">
+              <div class="card-header">About the site</div>
+              <div class="card-body">
+                More info <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#readme">here</a><br /><br />
+
+                Every 30 minutes a bot fetches live channels from the Twitch API to make the channel list. The answer is updated using the API just before starting the game but it can still
+                be off because the API is not as accurate view count on the embedded stream. Some channels might also have gone offline during the time it takes the API to update.<br />
+
+                <br />
+                You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of them you can subscribe to Twitch Turbo or change the video type to clips or
+                get a better Adblocker :)<br />
+                If you have Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. If you use Firefox you will need to
+                <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#readme">allow cross-site tracking cookies</a>
+                <hr />
+                If you want to optout from being picked for the guess list you can use the <kbd>=optout</kbd> command in
+                <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
+                <hr />
+                <span id="infoTime">Channel list updated on [updates when game starts]</span><br />
+              </div>
+            </div>
+            <div class="card border">
+              <div class="card-header">Contact info</div>
               <div class="card-body">
                 Site by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/badoge">badoge</a> :) <br />
                 Idea by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/nymn">nymn</a><br />
                 Inspired by <a target="_blank" rel="noopener noreferrer" href="https://geoguessr.com">GeoGuessr</a><br /><br />
-                <h5>Other stuff by me :)</h5>
-                <p>
-                  <a target="_blank" rel="noopener noreferrer" href="https://chat.vote/">chat.vote</a><br />
-                  <small>Polls that you vote on by typing in Twitch chat.</small><br />
-                  <a target="_blank" rel="noopener noreferrer" href="https://chat.vote/poll">chat.vote/poll</a><br />
-                  <small>Like normal chat.vote but you vote by visiting the site instead of typing in chat.</small><br />
-                  <a target="_blank" rel="noopener noreferrer" href="https://chat.vote/games">chat.vote/games</a><br />
-                  <small>Mini games with chat interaction.</small><br />
-                  <a target="_blank" rel="noopener noreferrer" href="https://chat.vote/vts">chat.vote/vts</a><br />
-                  <small>A site that lets viewers control your VTube Studio model using chat commands/channel points/bits/subs</small><br />
-                  <a target="_blank" rel="noopener noreferrer" href="https://okayeg.com">OkayegBOT</a><br />
-                  <small>Fun/utility Twitch chat bot.</small><br />
-                  <a target="_blank" rel="noopener noreferrer" href="https://zero.chat.vote">0weebs</a><br />
-                  <small>Twitch moderation bot that bans weebs.</small><br />
-                </p>
-              </div>
-            </div>
-            <div class="card border">
-              <div class="card-body">
-                <h5>Contact info:</h5>
                 <p>
                   If you find any issues or if you have suggestions or questions, you can contact me: <br /><a
                     target="_blank"
@@ -254,9 +222,6 @@
     <ul class="nav flex-column position-fixed">
       <li class="nav-item">
         <a class="nav-link active" aria-current="page" id="reset"> <img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="modal" data-bs-target="#infoModal"><i class="material-icons notranslate">info</i> Info</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" data-bs-toggle="modal" data-bs-target="#resetModal"><i class="material-icons notranslate">restart_alt</i> Reset stats</a>
