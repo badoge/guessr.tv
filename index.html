@@ -52,7 +52,10 @@
                   <br />
                   <small>
                     Resets your viewers mode (<span id="viewersStreak">0</span>) and followers mode (<span id="followersStreak">0</span>) and game name mode (<span id="gameStreak">0</span>)
-                    and emote mode (<span id="emoteStreak">0</span>) max streaks
+                    and emote mode (<span id="emoteStreak">0</span>) and viewers mode (higher/lower) (<span id="viewersHigherlowerStreak">0</span>) and followers mode (higher/lower) (<span
+                      id="followersHigherlowerStreak"
+                      >0</span
+                    >) max streaks
                   </small>
                 </div>
                 <div class="col-6 mt-3">
@@ -167,18 +170,18 @@
               </select>
             </div>
 
-            <div id="difficultyDiv" class="mt-3">
+            <div id="controlsTypeDiv" class="mt-3">
               <h5>Mode</h5>
-              <div class="btn-group" role="group" aria-label="Difficulty">
-                <input type="radio" class="btn-check" name="difficultySelect" value="normal" id="normalDifficulty" autocomplete="off" checked />
-                <label class="btn btn-outline-primary" for="normalDifficulty">Normal</label>
-                <input type="radio" class="btn-check" name="difficultySelect" value="hard" id="hardDifficulty" autocomplete="off" />
-                <label class="btn btn-outline-info" for="hardDifficulty">Multiple Choice</label>
-                <input type="radio" class="btn-check" name="difficultySelect" value="higherlower" id="higherLowerDifficulty" autocomplete="off" />
-                <label class="btn btn-outline-success" for="higherLowerDifficulty" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Coming soon :)">Higher Lower</label>
+              <div class="btn-group" role="group" aria-label="Mode">
+                <input type="radio" class="btn-check" name="controlsSelect" value="slider" id="sliderControls" autocomplete="off" checked />
+                <label class="btn btn-outline-primary" for="sliderControls">Normal</label>
+                <input type="radio" class="btn-check" name="controlsSelect" value="choices" id="choicesControls" autocomplete="off" />
+                <label class="btn btn-outline-info" for="choicesControls">Multiple Choice</label>
+                <input type="radio" class="btn-check" name="controlsSelect" value="higherlower" id="higherlowerControls" autocomplete="off" />
+                <label class="btn btn-outline-success" for="higherlowerControls">Higher Lower</label>
               </div>
               <br />
-              <small id="difficultyDesc"> You will have to guess the exact view count - 5 rounds - 5,000 points per round based on how close you are to the correct number </small>
+              <small id="controlsDesc"> You will have to guess the exact view count - 5 rounds - 5,000 points per round based on how close you are to the correct number </small>
             </div>
 
             <div id="timerSettingsDiv" class="mt-3">
@@ -245,7 +248,7 @@
               <div class="card-body">
                 <div class="container-fluid">
                   <div class="row mb-3">
-                    <div class="card mode-card cursor-pointer" onclick="showSettings('viewers')">
+                    <div class="card game-card cursor-pointer" onclick="showSettings('viewers')">
                       <div class="card-body">
                         <h2>
                           Viewers
@@ -267,7 +270,7 @@
                     </div>
                   </div>
                   <div class="row mb-3">
-                    <div class="card mode-card cursor-pointer" onclick="showSettings('followers')">
+                    <div class="card game-card cursor-pointer" onclick="showSettings('followers')">
                       <div class="card-body">
                         <h2>
                           Followers
@@ -286,7 +289,7 @@
                     </div>
                   </div>
                   <div class="row mb-3">
-                    <div class="card mode-card cursor-pointer" onclick="showSettings('game')">
+                    <div class="card game-card cursor-pointer" onclick="showSettings('gamename')">
                       <div class="card-body">
                         <h2>
                           Game
@@ -297,7 +300,7 @@
                     </div>
                   </div>
                   <div class="row">
-                    <div class="card mode-card cursor-pointer" onclick="showSettings('emote')">
+                    <div class="card game-card cursor-pointer" onclick="showSettings('emote')">
                       <div class="card-body">
                         <h2>
                           Emote
@@ -330,35 +333,11 @@
         <div class="col-10">
           <div class="card" id="mainCard" style="display: none">
             <div class="card-body container-fluid">
-              <div class="row align-items-center">
+              <div id="sliderDiv" class="row align-items-center" style="display: none">
                 <div class="col-6">
-                  <div id="slider">
-                    <label for="guessRange" id="guessRangeLabel" class="form-label">How many viewers does this stream have?</label>
-                    <input type="range" min="0" max="100" step="1" value="0" class="form-range" id="guessRange" />
-                  </div>
-                  <div id="multiChoiceDiv">
-                    <label id="multiChoiceLabel" class="form-label">How many viewers does this stream have?</label>
-                    <br />
-                    <input type="radio" class="btn-check" name="multiChoice" id="multiChoice1" autocomplete="off" />
-                    <label class="btn btn-outline-success multiChoice-btn me-5" for="multiChoice1" id="multiChoice1Label">????????</label>
-                    <input type="radio" class="btn-check" name="multiChoice" id="multiChoice2" autocomplete="off" />
-                    <label class="btn btn-outline-success multiChoice-btn me-5" for="multiChoice2" id="multiChoice2Label">????????</label>
-                    <input type="radio" class="btn-check" name="multiChoice" id="multiChoice3" autocomplete="off" />
-                    <label class="btn btn-outline-success multiChoice-btn me-5" for="multiChoice3" id="multiChoice3Label">????????</label>
-                    <input type="radio" class="btn-check" name="multiChoice" id="multiChoice4" autocomplete="off" />
-                    <label class="btn btn-outline-success multiChoice-btn me-5" for="multiChoice4" id="multiChoice4Label">????????</label>
-                    <input type="radio" class="btn-check" name="multiChoice" id="multiChoice5" autocomplete="off" />
-                    <label class="btn btn-outline-success multiChoice-btn" for="multiChoice5" id="multiChoice5Label">????????</label>
-                  </div>
-
-                  <div id="gameDiv">
-                    <label class="form-label">What is this game?</label>
-                    <input type="text" class="form-control" placeholder="Start typing for suggestions" list="gameList" id="gameInput" />
-                    <datalist id="gameList"></datalist>
-                  </div>
-                  <div id="scoreProgressBar"></div>
+                  <label for="guessRange" id="guessRangeLabel" class="form-label">How many viewers does this stream have?</label>
+                  <input type="range" min="0" max="100" step="1" value="0" class="form-range" id="guessRange" />
                 </div>
-
                 <div class="col-3">
                   <div class="input-group justify-content-center" id="guessInputDiv">
                     <span class="input-group-text" id="guessLabel">View count</span>
@@ -375,14 +354,61 @@
                       aria-describedby="guessLabel"
                     />
                   </div>
-                  <div id="correction"></div>
                 </div>
-
                 <div class="col-3">
-                  <button type="button" id="guess" class="btn btn-lg btn-success">Guess</button>
+                  <button type="button" onclick="guess('slider',false)" class="btn btn-lg btn-success guess">Guess</button>
+                </div>
+              </div>
+
+              <div id="multiChoiceDiv" class="row align-items-center" style="display: none">
+                <div class="col-xl-4"><label id="multiChoiceLabel" class="form-label">How many viewers does this stream have?</label></div>
+                <div class="col-xl-8">
+                  <button type="button" onclick="guess(1,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice1">????????</button>
+                  <button type="button" onclick="guess(2,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice2">????????</button>
+                  <button type="button" onclick="guess(3,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice3">????????</button>
+                  <button type="button" onclick="guess(4,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice4">????????</button>
+                  <button type="button" onclick="guess(5,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice5">????????</button>
+                </div>
+              </div>
+
+              <div id="gameNameDiv" class="row" style="display: none">
+                <div class="col-9">
+                  <label class="form-label">What is this game?</label>
+                  <input type="text" class="form-control" placeholder="Start typing for suggestions" list="gameList" id="gameInput" />
+                  <datalist id="gameList"></datalist>
+                </div>
+                <div class="col-3">
+                  <button type="button" onclick="guess('game',false)" class="btn btn-lg btn-success guess">Guess</button>
+                </div>
+              </div>
+
+              <div id="higherlowerDiv" class="row align-items-center" style="display: none">
+                <div class="col-6"><label id="higherlowerLabel" class="form-label">Does this stream have a higher or lower view count than</label><br /></div>
+                <div class="col-6">
+                  <button type="button" onclick="guess('higher',false)" class="btn btn-outline-success multiChoice-btn me-5" id="higher">Higher</button>
+                  <button type="button" onclick="guess('lower',false)" class="btn btn-outline-danger multiChoice-btn" id="lower">Lower</button>
+                </div>
+              </div>
+
+              <div id="resultsDiv" class="row align-items-center" style="display: none">
+                <div class="col-3">
                   <button type="button" id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
                   <button type="button" id="playAgain" class="btn btn-lg btn-warning" style="display: none">Play Again</button>
-                  <div id="gameEndText"></div>
+                  <div id="gameEndText" style="display: none">
+                    Final Score: 0<br />
+                    High Score: 0
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div id="scoreProgressBar">
+                    <span id="scoreProgressBarLabel">0 points</span><br />
+                    <div class="progress" id="progress" role="progressbar" aria-label="score" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                      <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-3">
+                  <div id="correction"></div>
                 </div>
               </div>
             </div>
@@ -394,6 +420,7 @@
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script src="https://embed.twitch.tv/embed/v1.js"></script>
     <script src="/js/easytimer.min.js"></script>
+    <!-- <script src="/js/anime.min.js"></script> -->
     <script src="/js/tmi.min.js"></script>
     <script src="/js/guess.js"></script>
     <!-- Google tag (gtag.js) -->

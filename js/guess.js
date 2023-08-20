@@ -3,9 +3,13 @@ const elements = {
   reset: document.getElementById("reset"),
   twitchEmbed: document.getElementById("twitchEmbed"),
   mainCard: document.getElementById("mainCard"),
-  slider: document.getElementById("slider"),
+
+  sliderDiv: document.getElementById("sliderDiv"),
   guessRangeLabel: document.getElementById("guessRangeLabel"),
   guessRange: document.getElementById("guessRange"),
+  guessLabel: document.getElementById("guessLabel"),
+  guessNumber: document.getElementById("guessNumber"),
+
   multiChoiceDiv: document.getElementById("multiChoiceDiv"),
   multiChoiceLabel: document.getElementById("multiChoiceLabel"),
   multiChoice1: document.getElementById("multiChoice1"),
@@ -13,23 +17,26 @@ const elements = {
   multiChoice3: document.getElementById("multiChoice3"),
   multiChoice4: document.getElementById("multiChoice4"),
   multiChoice5: document.getElementById("multiChoice5"),
-  multiChoice1Label: document.getElementById("multiChoice1Label"),
-  multiChoice2Label: document.getElementById("multiChoice2Label"),
-  multiChoice3Label: document.getElementById("multiChoice3Label"),
-  multiChoice4Label: document.getElementById("multiChoice4Label"),
-  multiChoice5Label: document.getElementById("multiChoice5Label"),
-  gameDiv: document.getElementById("gameDiv"),
+
+  gameNameDiv: document.getElementById("gameNameDiv"),
   gameInput: document.getElementById("gameInput"),
   gameList: document.getElementById("gameList"),
-  scoreProgressBar: document.getElementById("scoreProgressBar"),
-  guessInputDiv: document.getElementById("guessInputDiv"),
-  guessLabel: document.getElementById("guessLabel"),
-  guessNumber: document.getElementById("guessNumber"),
-  correction: document.getElementById("correction"),
-  guess: document.getElementById("guess"),
+
+  higherlowerDiv: document.getElementById("higherlowerDiv"),
+  higherlowerLabel: document.getElementById("higherlowerLabel"),
+  higher: document.getElementById("higher"),
+  lower: document.getElementById("lower"),
+
+  resultsDiv: document.getElementById("resultsDiv"),
   nextRound: document.getElementById("nextRound"),
   playAgain: document.getElementById("playAgain"),
   gameEndText: document.getElementById("gameEndText"),
+  scoreProgressBarLabel: document.getElementById("scoreProgressBarLabel"),
+  progress: document.getElementById("progress"),
+  progressBar: document.getElementById("progressBar"),
+
+  correction: document.getElementById("correction"),
+
   scoreDiv: document.getElementById("scoreDiv"),
   round: document.getElementById("round"),
   score: document.getElementById("score"),
@@ -47,6 +54,9 @@ const elements = {
   followersStreak: document.getElementById("followersStreak"),
   gameStreak: document.getElementById("gameStreak"),
   emoteStreak: document.getElementById("emoteStreak"),
+  viewersHigherlowerStreak: document.getElementById("viewersHigherlowerStreak"),
+  followersHigherlowerStreak: document.getElementById("followersHigherlowerStreak"),
+
   resetSeenChannels: document.getElementById("resetSeenChannels"),
   seenChannels: document.getElementById("seenChannels"),
   resetSeenClips: document.getElementById("resetSeenClips"),
@@ -58,11 +68,11 @@ const elements = {
   clipCollectionDiv: document.getElementById("clipCollectionDiv"),
   clipCollection: document.getElementById("clipCollection"),
   videoTypeDesc: document.getElementById("videoTypeDesc"),
-  difficultyDiv: document.getElementById("difficultyDiv"),
-  normalDifficulty: document.getElementById("normalDifficulty"),
-  hardDifficulty: document.getElementById("hardDifficulty"),
-  higherLowerDifficulty: document.getElementById("higherLowerDifficulty"),
-  difficultyDesc: document.getElementById("difficultyDesc"),
+  controlsTypeDiv: document.getElementById("controlsTypeDiv"),
+  sliderControls: document.getElementById("sliderControls"),
+  choicesControls: document.getElementById("choicesControls"),
+  higherlowerControls: document.getElementById("higherlowerControls"),
+  controlsDesc: document.getElementById("controlsDesc"),
   timerValue: document.getElementById("timerValue"),
   chatSettingsDiv: document.getElementById("chatSettingsDiv"),
   channelName: document.getElementById("channelName"),
@@ -115,12 +125,13 @@ let round = 0;
 let score = 0;
 let player = null;
 let max = 0;
+let previousNumber = 0;
 let timer;
 let gameSettings = {
-  mode: "viewers", // viewers - followers - game - emote
+  game: "viewers", // viewers - followers - gamename - emote
   video: "streams", // streams - clips
-  collection: "random", // "short", "long", "forsen", "popular", "hottub", "random"
-  difficulty: "normal", // normal - hard - higherlower
+  collection: "random", // "random", "short", "long", "popular", "hottub", "forsen"
+  controls: "slider", // slider - choices - text - higherlower
   chat: false, // true - false
 };
 let viewersHS = 0;
@@ -129,6 +140,8 @@ let viewersStreak = 0;
 let followersStreak = 0;
 let gameStreak = 0;
 let emoteStreak = 0;
+let viewersHigherlowerStreak = 0;
+let followersHigherlowerStreak = 0;
 let gameSettingsModal;
 let client;
 let roundActive = false;
@@ -185,6 +198,45 @@ async function loadEmoteList() {
   }
 } //loadEmoteList
 
+function toggleControls(hide = false) {
+  if (hide) {
+    elements.sliderDiv.style.display = "none";
+    elements.multiChoiceDiv.style.display = "none";
+    elements.gameNameDiv.style.display = "none";
+    elements.higherlowerDiv.style.display = "none";
+    return;
+  }
+
+  switch (gameSettings.controls) {
+    case "slider":
+      elements.sliderDiv.style.display = "";
+      elements.multiChoiceDiv.style.display = "none";
+      elements.gameNameDiv.style.display = "none";
+      elements.higherlowerDiv.style.display = "none";
+      break;
+    case "choices":
+      elements.sliderDiv.style.display = "none";
+      elements.multiChoiceDiv.style.display = "";
+      elements.gameNameDiv.style.display = "none";
+      elements.higherlowerDiv.style.display = "none";
+      break;
+    case "text":
+      elements.sliderDiv.style.display = "none";
+      elements.multiChoiceDiv.style.display = "none";
+      elements.gameNameDiv.style.display = "";
+      elements.higherlowerDiv.style.display = "none";
+      break;
+    case "higherlower":
+      elements.sliderDiv.style.display = "none";
+      elements.multiChoiceDiv.style.display = "none";
+      elements.gameNameDiv.style.display = "none";
+      elements.higherlowerDiv.style.display = "";
+      break;
+    default:
+      break;
+  }
+} //toggleControls
+
 async function startGame(keepScores = false) {
   guessList = [];
   if (!keepScores) {
@@ -201,7 +253,7 @@ async function startGame(keepScores = false) {
     try {
       let response = await fetch(`https://helper.pepega.workers.dev/twitch/clips?id=${ids.join(",")}`, requestOptions);
       if (response.status != 200) {
-        showToast("Something went wrong :(", "danger", 3000);
+        showToast("Something went wrong while updating clip view counts :(", "danger", 3000);
         return;
       }
       let clips = await response.json();
@@ -212,12 +264,12 @@ async function startGame(keepScores = false) {
       guessList = mainList.filter((n) => clips.data.some((n2) => n.id == n2.id));
       guessList = mainList.filter((n) => !seenClips.includes(n.id));
       if (guessList.length < 5) {
-        showToast("Set contains deleted/already seen clips, getting new set...", "info", 2000);
+        showToast("Clips set contains deleted/already seen clips, getting new set...", "info", 2000);
         await startGame();
         return;
       }
     } catch (error) {
-      showToast("Something went wrong :(", "danger", 3000);
+      showToast("Something went wrong while updating clip view counts :(", "danger", 3000);
       console.log(error);
     }
   } //clips
@@ -254,29 +306,29 @@ async function startGame(keepScores = false) {
         return;
       }
     } catch (error) {
-      showToast("Something went wrong :(", "danger", 3000);
+      showToast("Something went wrong while updating the view counts :(", "danger", 3000);
       console.log(error);
     }
   } //streams
 
-  if (gameSettings.mode == "followers") {
+  if (gameSettings.game == "followers") {
     let fetched = 0;
     for (let index = 0; index < 5; index++) {
       try {
         let response = await fetch(`https://helper.pepega.workers.dev/twitch/channels/followers?broadcaster_id=${guessList[index].userid}`, requestOptions);
         if (response.status != 200) {
-          showToast("Something went wrong :(", "danger", 3000);
+          showToast("Something went wrong while updating the follow counts :(", "danger", 3000);
           return;
         }
         let followers = await response.json();
         guessList[index].followers = followers.total;
         fetched++;
       } catch (error) {
-        showToast("Something went wrong :(", "danger", 3000);
+        showToast("Something went wrong while updating the follow counts :(", "danger", 3000);
         console.log(error);
       }
     }
-    if (fetched < 5 && gameSettings.mode == "followers") {
+    if (fetched < 5) {
       guessList = [];
       showToast("Not enough live channels, getting new list...", "info", 2000);
       await startGame();
@@ -284,13 +336,13 @@ async function startGame(keepScores = false) {
     max = Math.max(...guessList.map((o) => o.followers || 0));
   } //followers
 
-  if (gameSettings.mode == "game") {
-    gameSettings.difficulty = "hard";
+  if (gameSettings.game == "gamename") {
+    gameSettings.controls = "text";
     await loadGameList();
   } //game
 
-  if (gameSettings.mode == "emote") {
-    gameSettings.difficulty = "hard";
+  if (gameSettings.game == "emote") {
+    gameSettings.controls = "choices";
     await loadEmoteList();
   } //game
 
@@ -299,8 +351,8 @@ async function startGame(keepScores = false) {
     elements.twitchEmbed.innerHTML = "";
   }
 
-  //change score label - normal points or streaks
-  if (gameSettings.difficulty == "normal") {
+  //change score label for streaks
+  if (gameSettings.controls == "slider") {
     elements.round.innerHTML = `Round <br />1/5`;
     elements.score.innerHTML = `Score <br />0`;
     elements.scoreDiv.style.display = "";
@@ -310,40 +362,13 @@ async function startGame(keepScores = false) {
     elements.scoreDiv.style.display = "";
   }
 
-  //show chat if channel name is provided
+  //show chat leaderboard if channel name is provided
   if (gameSettings.chat) {
     elements.leaderboard.style.display = "";
   }
 
-  if (gameSettings.difficulty == "hard") {
-    elements.slider.style.display = "none";
-    elements.guessInputDiv.style.display = "none";
-    if (gameSettings.mode == "game") {
-      elements.multiChoiceDiv.style.display = "none";
-      elements.gameDiv.style.display = "";
-    } else {
-      elements.multiChoiceDiv.style.display = "";
-      elements.gameDiv.style.display = "none";
-    }
-  }
-
-  if (gameSettings.difficulty == "normal") {
-    elements.slider.style.display = "";
-    elements.guessInputDiv.style.display = "";
-    elements.multiChoiceDiv.style.display = "none";
-    elements.gameDiv.style.display = "none";
-  }
-
-  elements.scoreProgressBar.innerHTML = "";
   elements.correction.innerHTML = "";
   elements.gameEndText.innerHTML = "";
-
-  //change blur size
-  if (gameSettings.video == "streams") {
-    elements.streamCover.style.display = "";
-  } else {
-    elements.clipCover.style.display = "";
-  }
   elements.mainCard.style.display = "";
   round = 0;
 } //startGame
@@ -352,8 +377,8 @@ async function nextRound() {
   elements.nextRound.disabled = true;
   elements.nextRound.innerHTML = spinner;
 
-  //get new list if difficulty is hard
-  if (round == 5 && gameSettings.difficulty == "hard") {
+  //get new list if game uses streaks
+  if (round == 5 && (gameSettings.controls == "choices" || gameSettings.controls == "text" || gameSettings.controls == "higherlower")) {
     await startGame(true); //true to keep scores
     nextRound();
     return;
@@ -366,8 +391,9 @@ async function nextRound() {
   elements.guessNumber.value = "";
   elements.gameInput.value = "";
 
-  if (gameSettings.mode == "viewers") {
-    elements.guessRange.style.display = "";
+  toggleControls();
+
+  if (gameSettings.game == "viewers") {
     elements.guessRangeLabel.innerHTML = "How many viewers does this stream have?";
     elements.multiChoiceLabel.innerHTML = "How many viewers does this stream have?";
     if (gameSettings.video == "clips") {
@@ -376,19 +402,15 @@ async function nextRound() {
     }
   }
 
-  if (gameSettings.mode == "followers") {
-    elements.guessRange.style.display = "none";
+  if (gameSettings.game == "followers") {
     elements.guessRangeLabel.innerHTML = "How many followers does this stream have?";
     elements.multiChoiceLabel.innerHTML = "How many followers does this stream have?";
     elements.guessLabel.innerHTML = "Followers";
-    elements.guessNumber.max = 99999999999;
+    elements.guessNumber.max = 99999999;
     elements.guessNumber.value = "";
   }
-  if (gameSettings.mode == "game") {
-    elements.slider.style.display = "none";
-    elements.guessInputDiv.style.display = "none";
-    elements.multiChoiceDiv.style.display = "none";
-    elements.gameDiv.style.display = "";
+
+  if (gameSettings.game == "gamename") {
     if (!gameList.some((e) => e.name === guessList[round - 1].game_name)) {
       elements.gameList.innerHTML = "";
       gameList.push({ name: guessList[round - 1].game_name });
@@ -399,55 +421,46 @@ async function nextRound() {
     }
   }
 
-  if (gameSettings.mode == "emote") {
-    elements.slider.style.display = "none";
-    elements.guessInputDiv.style.display = "none";
-    elements.multiChoiceDiv.style.display = "none"; //hide now and show after generateEmoteChoices is done
-    elements.gameDiv.style.display = "none";
-    elements.guessRangeLabel.innerHTML = "Which emote belongs to this channel?";
+  if (gameSettings.game == "emote") {
+    elements.multiChoiceDiv.style.display = "none"; //hide now and show in generateEmoteChoices when it is done so that all emotes load at once
     elements.multiChoiceLabel.innerHTML = "Which emote belongs to this channel?";
     Array.from(document.querySelectorAll('input[name="multiChoice"]:checked'), (input) => (input.checked = false));
     await generateEmoteChoices(guessList[round - 1].userid);
   }
 
-  if (gameSettings.difficulty == "hard" && gameSettings.mode != "emote") {
-    elements.slider.style.display = "none";
-    elements.guessInputDiv.style.display = "none";
-    if (gameSettings.mode == "game") {
-      elements.multiChoiceDiv.style.display = "none";
-      elements.gameDiv.style.display = "";
+  if (gameSettings.controls == "choices" && gameSettings.game != "emote") {
+    Array.from(document.querySelectorAll('input[name="multiChoice"]:checked'), (input) => (input.checked = false));
+    generateChoices(guessList[round - 1][gameSettings.game]);
+  }
+
+  //set random number for previousNumber in first round
+  if (gameSettings.controls == "higherlower") {
+    if (round == 1) {
+      previousNumber = Math.floor(Math.random() * (gameSettings.game == "viewers" ? 1000 : 50000));
+      elements.higherlowerLabel.innerHTML = `Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower ${
+        gameSettings.game == "viewers" ? "view count" : "follow count"
+      } than ${previousNumber.toLocaleString()}?`;
     } else {
-      elements.multiChoiceDiv.style.display = "";
-      elements.gameDiv.style.display = "none";
-      Array.from(document.querySelectorAll('input[name="multiChoice"]:checked'), (input) => (input.checked = false));
-      generateChoices(guessList[round - 1][gameSettings.mode]);
+      elements.higherlowerLabel.innerHTML = `Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower ${
+        gameSettings.game == "viewers" ? "view count" : "follow count"
+      } than the previous ${gameSettings.video == "streams" ? "stream" : "clip"} (${previousNumber.toLocaleString()})?`;
     }
   }
 
-  if (gameSettings.difficulty == "normal" && (gameSettings.mode == "viewers" || gameSettings.mode == "followers")) {
-    elements.slider.style.display = "";
-    elements.guessInputDiv.style.display = "";
-    elements.multiChoiceDiv.style.display = "none";
-    elements.gameDiv.style.display = "none";
-  }
-
-  elements.guess.style.display = "";
+  //blur stream based on video type
   if (gameSettings.video == "streams") {
     elements.streamCover.style.display = "";
   } else {
     elements.clipCover.style.display = "";
   }
-  elements.nextRound.style.display = "none";
-  if (gameSettings.difficulty == "normal") {
+
+  if (gameSettings.controls == "slider") {
     elements.round.innerHTML = `Round <br />${round}/5`;
     elements.score.innerHTML = `Score <br />${score.toLocaleString()}`;
   } else {
     elements.round.innerHTML = `Streak <br />${score.toLocaleString()}`;
     elements.score.innerHTML = "";
   }
-
-  elements.scoreProgressBar.innerHTML = "";
-  elements.correction.innerHTML = "";
 
   if (gameSettings.video == "streams") {
     let options = {
@@ -478,12 +491,14 @@ async function nextRound() {
     seenClips.push(guessList[round - 1].id);
   }
 
+  elements.correction.innerHTML = "";
   elements.nextRound.disabled = false;
   elements.nextRound.innerHTML = "Next round";
+  elements.nextRound.style.display = "none";
   elements.playAgain.disabled = false;
   elements.playAgain.innerHTML = "Play again";
-  elements.nextRound.style.display = "none";
   elements.playAgain.style.display = "none";
+  elements.resultsDiv.style.display = "none";
 
   startTimer();
 } //nextRound
@@ -522,8 +537,8 @@ function generateChoices(answer) {
     return 0.5 - Math.random();
   });
   for (let index = 0; index < options.length; index++) {
-    elements[`multiChoice${index + 1}`].value = options[index];
-    elements[`multiChoice${index + 1}Label`].innerHTML = options[index].toLocaleString();
+    elements[`multiChoice${index + 1}`].dataset.answer = options[index];
+    elements[`multiChoice${index + 1}`].innerHTML = options[index].toLocaleString();
   }
 } //generateChoices
 
@@ -560,9 +575,9 @@ async function generateEmoteChoices(userid) {
     }
     shuffleArray(random);
     for (let index = 0; index < random.length; index++) {
-      elements[`multiChoice${index + 1}`].value = random[index].id;
+      elements[`multiChoice${index + 1}`].dataset.answer = random[index].id;
       elements[`multiChoice${index + 1}`].dataset.emote = random[index].emote;
-      elements[`multiChoice${index + 1}Label`].innerHTML = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${random[index].emote}/default/dark/3.0" alt="emote #${index + 1}">`;
+      elements[`multiChoice${index + 1}`].innerHTML = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${random[index].emote}/default/dark/3.0" alt="emote #${index + 1}">`;
     }
   } catch (error) {
     console.log("generateEmoteChoices error", error);
@@ -584,137 +599,122 @@ async function checkEmote(id) {
   }
 } //checkEmote
 
-async function guess(timeUp = false) {
+async function guess(choice, timeUp) {
   roundActive = false;
-  let answer = parseInt(elements.guessNumber.value, 10);
+  let answer;
 
-  //user did not answer and time is up so set answer to -1 so they get 0 points
-  if (isNaN(answer) && timeUp) {
-    answer = -1;
-  }
+  switch (choice) {
+    case "slider":
+      answer = parseInt(elements.guessNumber.value, 10);
+      break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      answer = parseInt(elements[`multiChoice${choice}`].dataset.answer, 10);
+      break;
+    case "higher":
+    case "lower":
+      answer = choice;
+      break;
 
-  //get value of selected multiChoice
-  if (gameSettings.difficulty == "hard") {
-    try {
-      answer = parseInt(document.querySelector('input[name="multiChoice"]:checked').value, 10);
-    } catch (error) {
-      //if timer ran out and user has not selected an answer then set answer to -1 to give them 0 points
-      if (timeUp) {
-        answer = -1;
-      } else {
-        answer = null;
+    case "game":
+      answer = elements.gameInput.value.replace(/\s+/g, "").toLowerCase();
+      //show warning if no answer is provided but only if timer is not over
+      if (!answer && !timeUp) {
+        showToast("Invalid answer", "warning", 2000);
+        elements.gameInput.value = "";
+        return;
       }
-    }
+      //show warning if answer does not exist in the game list
+      if (!gameList.some((x) => x.name.replace(/\s+/g, "").toLowerCase() === answer) && !timeUp) {
+        showToast("Answer must be from the suggestions list", "warning", 2000);
+        elements.gameInput.value = "";
+        return;
+      }
+      break;
+
+    default:
+      //user did not answer and time is up so set answer to -1 so they get 0 points
+      answer = -1;
   }
 
   //show warning if no answer is selected
-  if ((isNaN(answer) || answer === null) && gameSettings.mode != "game") {
+  if ((isNaN(answer) || answer === null) && gameSettings.game != "gamename" && gameSettings.controls != "higherlower") {
     showToast("Invalid answer", "warning", 2000);
     return;
-  }
-
-  //get game guess mode answer
-  if (gameSettings.mode == "game") {
-    answer = elements.gameInput.value.replace(/\s+/g, "").toLowerCase();
-    //show warning if no answer is provided but only if timer is not over
-    if (!answer && !timeUp) {
-      showToast("Invalid answer", "warning", 2000);
-      elements.gameInput.value = "";
-      return;
-    }
-    //show warning if answer does not exist in the game list
-    if (!gameList.some((x) => x.name.replace(/\s+/g, "").toLowerCase() === answer) && !timeUp) {
-      showToast("Answer must be from the suggestions list", "warning", 2000);
-      elements.gameInput.value = "";
-      return;
-    }
-    //set answer to -1 if no answer is provided and time is up so they get 0 points in calculateScore()
-    if (!answer && timeUp) {
-      answer = -1;
-    }
   }
 
   //stop timer here because checks above can show some warning instead of ending the round
   stopTimer();
 
-  let { points, percent, diff, color } = calculateScore(answer, guessList[round - 1][gameSettings.mode]);
+  let { points, percent, diff, color } = calculateScore(answer, guessList[round - 1][gameSettings.game]);
 
   score += points;
-  elements.guess.style.display = "none";
   elements.streamCover.style.display = "none";
   elements.clipCover.style.display = "none";
+  toggleControls(true);
   elements.nextRound.style.display = "";
-  elements.slider.style.display = "none";
-  elements.guessInputDiv.style.display = "none";
-  elements.multiChoiceDiv.style.display = "none";
-  elements.gameDiv.style.display = "none";
+  elements.resultsDiv.style.display = "";
 
   //update score display top left
-  if (gameSettings.difficulty == "hard") {
-    elements.round.innerHTML = `Streak <br />${score.toLocaleString()}`;
-  } else {
+  if (gameSettings.controls == "slider") {
     elements.score.innerHTML = `Score <br />${score.toLocaleString()}`;
+  } else {
+    elements.round.innerHTML = `Streak <br />${score.toLocaleString()}`;
   }
 
-  //show progress bar and correction for viewers mode - normal difficulty - streams or clips
-  if (gameSettings.mode == "viewers" && gameSettings.difficulty == "normal") {
-    let overUnder = answer - guessList[round - 1].viewers > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
+  //show progress bar and correction for viewers or followers mode - slider controls - streams or clips
+  if ((gameSettings.game == "viewers" || gameSettings.game == "followers") && gameSettings.controls == "slider") {
+    let overUnder =
+      answer - guessList[round - 1][gameSettings.game] > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
 
-    elements.scoreProgressBar.innerHTML = `
-    ${points.toLocaleString()} ${points == 1 ? "Point" : "Points"}${points == 0 ? " 💀" : ""}<br>
-    <div class="progress" role="progressbar" aria-label="score" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
-    <div class="progress-bar" style="width: ${percent}%"></div></div>`;
+    elements.scoreProgressBarLabel.innerHTML = `${points.toLocaleString()} ${points == 1 ? "Point" : "Points"}${points == 0 ? " 💀" : ""}`;
+    elements.progress.ariaValueNow = percent;
+    elements.progressBar.style.width = `${percent}%`;
 
-    elements.correction.innerHTML = `
-    The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${viewersSVG}<b>${guessList[round - 1].viewers.toLocaleString()}</b>
+    if (gameSettings.game == "viewers") {
+      elements.correction.innerHTML = `
+    The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${viewersSVG}
+    <strong>${guessList[round - 1][gameSettings.game].toLocaleString()}</strong>
      ${guessList[round - 1].viewers == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
     ${
       points == 5000
         ? "You nailed the view count perfectly ✌"
         : `${answer == -1 ? "You did not submit an answer" : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`}`
     }`;
+    } else {
+      elements.correction.innerHTML = `
+      The stream has ${followSVG} <strong>${guessList[round - 1][gameSettings.game].toLocaleString()}</strong>
+       ${guessList[round - 1].followers == 1 ? "follower" : "followers"}<br>
+      ${
+        points == 5000
+          ? "You nailed the follower count perfectly ✌"
+          : `${
+              answer == -1
+                ? "You did not submit an answer"
+                : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "follower" : "followers"}`
+            }`
+      }`;
+    }
   }
 
-  //show progress bar and correction for followers mode - normal difficulty - streams or clips
-  if (gameSettings.mode == "followers" && gameSettings.difficulty == "normal") {
-    let overUnder = answer - guessList[round - 1].followers > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
-
-    elements.scoreProgressBar.innerHTML = `
-    ${points.toLocaleString()} ${points == 1 ? "Point" : "Points"}${points == 0 ? " 💀" : ""}<br>
-    <div class="progress" role="progressbar" aria-label="score" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
-    <div class="progress-bar" style="width: ${percent}%"></div></div>`;
-
-    elements.correction.innerHTML = `The stream has ${followSVG}<b>${guessList[round - 1].followers.toLocaleString()}</b> ${
-      guessList[round - 1].followers == 1 ? "follower" : "followers"
-    }<br>
-    ${
-      points == 5000
-        ? "You nailed the follower count perfectly ✌"
-        : `${
-            answer == -1
-              ? "You did not submit an answer"
-              : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "follower" : "followers"}`
-          }`
-    }`;
-  }
-
-  //show progress bar and correction for viewers mode - hard difficulty - streams or clips
-  if (gameSettings.mode == "viewers" && gameSettings.difficulty == "hard") {
+  //show progress bar and correction for viewers - multi choice controls - streams or clips
+  if (gameSettings.game == "viewers" && gameSettings.controls == "choices") {
     let overUnder = answer - guessList[round - 1].viewers > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
     diff = Math.abs(answer - guessList[round - 1].viewers);
-
     percent = (score / viewersStreak) * 100;
-    elements.scoreProgressBar.innerHTML = `
-    ${
+
+    elements.scoreProgressBarLabel.innerHTML =
       score > viewersStreak
-        ? `You beat your high score! Your new highscore is ${score}`
-        : `${viewersStreak - score + 1} more ${viewersStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`
-    }<br>
-    <div class="progress" role="progressbar" aria-label="score" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
-    <div class="progress-bar" style="width: ${percent}%"></div></div>`;
+        ? `You beat your high score! Your new highscore is ${score.toLocaleString()}`
+        : `${viewersStreak - score + 1} more ${viewersStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
+    elements.progress.ariaValueNow = percent;
+    elements.progressBar.style.width = `${percent}%`;
 
     elements.correction.innerHTML = `
-      The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${viewersSVG}<b>${guessList[round - 1].viewers.toLocaleString()}</b>
+      The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${viewersSVG}<strong>${guessList[round - 1].viewers.toLocaleString()}</strong>
        ${guessList[round - 1].viewers == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
       ${
         points == 1
@@ -726,6 +726,8 @@ async function guess(timeUp = false) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.gameEndText.style.display = "";
+
       if (score > viewersStreak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
         viewersStreak = score;
@@ -736,22 +738,20 @@ async function guess(timeUp = false) {
     }
   }
 
-  //show progress bar and correction for followers mode - hard difficulty - streams or clips
-  if (gameSettings.mode == "followers" && gameSettings.difficulty == "hard") {
+  //show progress bar and correction for followers game - multi choice controls - streams or clips
+  if (gameSettings.game == "followers" && gameSettings.controls == "choices") {
     let overUnder = answer - guessList[round - 1].followers > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
     diff = Math.abs(answer - guessList[round - 1].followers);
-
     percent = (score / followersStreak) * 100;
-    elements.scoreProgressBar.innerHTML = `
-    ${
-      score > followersStreak
-        ? `You beat your high score! Your new highscore is ${score}`
-        : `${followersStreak - score + 1} more ${followersStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`
-    }<br>
-    <div class="progress" role="progressbar" aria-label="score" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
-    <div class="progress-bar" style="width: ${percent}%"></div></div>`;
 
-    elements.correction.innerHTML = `The stream has ${followSVG}<b>${guessList[round - 1].followers.toLocaleString()}</b> ${
+    elements.scoreProgressBarLabel.innerHTML =
+      score > followersStreak
+        ? `You beat your high score! Your new highscore is ${score.toLocaleString()}`
+        : `${followersStreak - score + 1} more ${followersStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
+    elements.progress.ariaValueNow = percent;
+    elements.progressBar.style.width = `${percent}%`;
+
+    elements.correction.innerHTML = `The stream has ${followSVG}<strong>${guessList[round - 1].followers.toLocaleString()}</strong> ${
       guessList[round - 1].followers == 1 ? "follower" : "followers"
     }<br>
       ${
@@ -768,6 +768,8 @@ async function guess(timeUp = false) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.gameEndText.style.display = "";
+
       if (score > followersStreak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
         followersStreak = score;
@@ -778,25 +780,26 @@ async function guess(timeUp = false) {
     }
   }
 
-  //show progress bar and correction for game mode - hard difficulty - streams or clips
-  if (gameSettings.mode == "game") {
+  //show progress bar and correction for gamename game - multi choice controls - streams or clips
+  if (gameSettings.game == "gamename") {
     percent = (score / gameStreak) * 100;
-    elements.scoreProgressBar.innerHTML = `
-    ${
+
+    elements.scoreProgressBarLabel.innerHTML =
       score > gameStreak
         ? `You beat your high score! Your new highscore is ${score}`
-        : `${gameStreak - score + 1} more ${gameStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`
-    }<br>
-    <div class="progress" role="progressbar" aria-label="score" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
-    <div class="progress-bar" style="width: ${percent}%"></div></div>`;
+        : `${gameStreak - score + 1} more ${gameStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
+    elements.progress.ariaValueNow = percent;
+    elements.progressBar.style.width = `${percent}%`;
 
-    elements.correction.innerHTML = `The streamer was playing <b>${guessList[round - 1].game_name}</b><br>
+    elements.correction.innerHTML = `The streamer was playing <strong>${guessList[round - 1].game_name}</strong><br>
     ${points == 1 ? "You guessed the game correctly ✌" : `${answer == -1 ? "You did not select an answer" : `Your guess was <span class="${color}">${elements.gameInput.value}</span>`}`}`;
 
     if (points == 0) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.gameEndText.style.display = "";
+
       if (score > gameStreak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
         gameStreak = score;
@@ -807,22 +810,18 @@ async function guess(timeUp = false) {
     }
   }
 
-  //show progress bar and correction for emote mode - hard difficulty - streams or clips
-  if (gameSettings.mode == "emote") {
-    let emote;
-    try {
-      emote = document.querySelector('input[name="multiChoice"]:checked').dataset.emote;
-    } catch (error) {}
+  //show progress bar and correction for emote mode - multi choice controls - streams or clips
+  if (gameSettings.game == "emote") {
+    let emote = elements[`multiChoice${choice}`].dataset.emote;
 
     percent = (score / emoteStreak) * 100;
-    elements.scoreProgressBar.innerHTML = `
-    ${
+
+    elements.scoreProgressBarLabel.innerHTML =
       score > emoteStreak
         ? `You beat your high score! Your new highscore is ${score}`
-        : `${emoteStreak - score + 1} more ${emoteStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`
-    }<br>
-    <div class="progress" role="progressbar" aria-label="score" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
-    <div class="progress-bar" style="width: ${percent}%"></div></div>`;
+        : `${emoteStreak - score + 1} more ${emoteStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
+    elements.progress.ariaValueNow = percent;
+    elements.progressBar.style.width = `${percent}%`;
 
     elements.correction.innerHTML = `The streamer's emote was <img style="height: 56px;" 
     src="https://static-cdn.jtvnw.net/emoticons/v2/${guessList[round - 1].emote}/default/dark/3.0" alt="emote"><br>
@@ -841,12 +840,55 @@ async function guess(timeUp = false) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.gameEndText.style.display = "";
+
       if (score > emoteStreak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
         emoteStreak = score;
         localStorage.setItem("emoteStreak", emoteStreak);
       } else {
         elements.gameEndText.innerHTML += `<br>High Score: ${emoteStreak.toLocaleString()}`;
+      }
+    }
+  }
+
+  //show progress bar and correction for viewers or followers mode - higherlower controls - streams or clips
+  if ((gameSettings.game == "viewers" || gameSettings.game == "followers") && gameSettings.controls == "higherlower") {
+    let streak = gameSettings.game == "viewers" ? viewersHigherlowerStreak : followersHigherlowerStreak;
+    percent = (score / streak) * 100;
+    elements.scoreProgressBarLabel.innerHTML =
+      score > streak ? `You beat your high score! Your new highscore is ${score}` : `${streak - score + 1} more ${streak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
+    elements.progress.ariaValueNow = percent;
+    elements.progressBar.style.width = `${percent}%`;
+
+    elements.correction.innerHTML = `The ${gameSettings.video == "streams" ? "channel" : "clips"} has ${gameSettings.game == "viewers" ? viewersSVG : followSVG}<strong>${guessList[
+      round - 1
+    ][gameSettings.game].toLocaleString()}</strong> ${
+      gameSettings.game == "viewers" ? `${guessList[round - 1][gameSettings.game] == 1 ? "viewer" : "viewers"}` : `${guessList[round - 1][gameSettings.game] == 1 ? "follower" : "followers"}`
+    }${guessList[round - 1][gameSettings.game] == previousNumber ? " (same as previous channel!)" : ""}<br>
+    ${
+      points == 1
+        ? `The ${gameSettings.video == "streams" ? "stream" : "clip"} has a ${choice} ${gameSettings.game == "viewers" ? "view count" : "follow count"}!`
+        : `${
+            answer == -1
+              ? "You did not select an answer"
+              : `The previous ${gameSettings.video == "streams" ? "channel" : "clips"} had ${previousNumber.toLocaleString()} ${gameSettings.game}`
+          }`
+    }`;
+
+    previousNumber = guessList[round - 1][gameSettings.game]; //set now for next round
+
+    if (points == 0) {
+      elements.nextRound.style.display = "none";
+      elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
+      elements.playAgain.style.display = "";
+      elements.gameEndText.style.display = "";
+      if (score > streak) {
+        elements.gameEndText.innerHTML += `<br>New High Score!`;
+        gameSettings.game == "viewers" ? (viewersHigherlowerStreak = score) : (followersHigherlowerStreak = score);
+        localStorage.setItem(gameSettings.game == "viewers" ? "viewersHigherlowerStreak" : "followersHigherlowerStreak", score);
+      } else {
+        elements.gameEndText.innerHTML += `<br>High Score: ${score.toLocaleString()}`;
       }
     }
   }
@@ -869,16 +911,14 @@ async function guess(timeUp = false) {
     updateLeaderboard();
   }
 
-  //hard difficulty is endless so return and dont end game
-  if (round == 5 && gameSettings.difficulty == "hard") {
+  //multi choice and text and higherlower controls are endless so return and dont end game
+  if (round == 5 && (gameSettings.controls == "choices" || gameSettings.controls == "text" || gameSettings.controls == "higherlower")) {
     return;
   }
 
   //end game if game on 5th round and mode is viewers
-  if (round == 5 && gameSettings.mode == "viewers") {
-    elements.nextRound.style.display = "none";
+  if (round == 5 && gameSettings.game == "viewers") {
     elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-    elements.playAgain.style.display = "";
     if (score > viewersHS) {
       elements.gameEndText.innerHTML += `<br>New High Score!`;
       viewersHS = score;
@@ -886,12 +926,13 @@ async function guess(timeUp = false) {
     } else {
       elements.gameEndText.innerHTML += `<br>High Score: ${viewersHS.toLocaleString()}`;
     }
+    elements.nextRound.style.display = "none";
+    elements.playAgain.style.display = "";
+    elements.gameEndText.style.display = "";
   }
   //end game if game on 5th round and mode is followers
-  if (round == 5 && gameSettings.mode == "followers") {
-    elements.nextRound.style.display = "none";
+  if (round == 5 && gameSettings.game == "followers") {
     elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-    elements.playAgain.style.display = "";
     if (score > followersHS) {
       elements.gameEndText.innerHTML += `<br>New High Score!`;
       followersHS = score;
@@ -899,6 +940,9 @@ async function guess(timeUp = false) {
     } else {
       elements.gameEndText.innerHTML += `<br>High Score: ${followersHS.toLocaleString()}`;
     }
+    elements.nextRound.style.display = "none";
+    elements.playAgain.style.display = "";
+    elements.gameEndText.style.display = "";
   }
 } //guess
 
@@ -908,16 +952,16 @@ function calculateScore(answer, correct) {
   let diff = 0;
   let color;
 
-  //check emote mode answer - answer is set in the gameSettings.difficulty == "hard" if statement in guess()
-  if (gameSettings.mode == "emote") {
+  //check emote mode answer
+  if (gameSettings.game == "emote") {
     if (answer == guessList[round - 1].userid) {
       points = 1;
     } else {
       points = 0;
     }
   }
-  //calculate score for viewers mode - streams or clips- normal
-  if (gameSettings.mode == "viewers" && gameSettings.difficulty == "normal") {
+  //calculate score for viewers mode - streams or clips- slider controls
+  if (gameSettings.game == "viewers" && gameSettings.controls == "slider") {
     //get max view count of current game
     let roundMax = Math.max(...guessList.slice(0, 5).map((o) => o.viewers || 0));
     //get scaled decay between 200 and 3000
@@ -927,8 +971,8 @@ function calculateScore(answer, correct) {
     percent = Math.round((points / 5000) * 100);
   }
 
-  //calculate score for followers mode - streams or clips - normal
-  if (gameSettings.mode == "followers" && gameSettings.difficulty == "normal") {
+  //calculate score for followers mode - streams or clips - slider controls
+  if (gameSettings.game == "followers" && gameSettings.controls == "slider") {
     //get max follow count for current game
     let roundMax = Math.max(...guessList.slice(0, 5).map((o) => o.followers || 0));
     //get scaled decay between 10000 and 300000
@@ -938,9 +982,18 @@ function calculateScore(answer, correct) {
     percent = Math.round((points / 5000) * 100);
   }
 
-  //check if answer is corrent for hard difficulty - viewers or followers mode - streams or clips
-  if (gameSettings.difficulty == "hard" && (gameSettings.mode == "viewers" || gameSettings.mode == "followers")) {
-    if (answer == guessList[round - 1][gameSettings.mode]) {
+  //check if answer is corrent for multi choice controls - viewers or followers game - streams or clips
+  if (gameSettings.controls == "choices" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
+    if (answer == guessList[round - 1][gameSettings.game]) {
+      points = 1;
+    } else {
+      points = 0;
+    }
+  }
+
+  //check if answer is corrent for higherlower controls - viewers or followers game - streams or clips
+  if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
+    if ((answer == "higher" && guessList[round - 1][gameSettings.game] >= previousNumber) || (answer == "lower" && guessList[round - 1][gameSettings.game] <= previousNumber)) {
       points = 1;
     } else {
       points = 0;
@@ -948,7 +1001,7 @@ function calculateScore(answer, correct) {
   }
 
   //get points for game guesser mode
-  if (gameSettings.mode == "game") {
+  if (gameSettings.game == "gamename") {
     if (answer == guessList[round - 1].game_name.replace(/\s+/g, "").toLowerCase()) {
       points = 1;
     } else {
@@ -980,19 +1033,17 @@ function reset() {
   elements.round.innerHTML = `Round <br />1/5`;
   elements.score.innerHTML = `Score <br />0`;
   elements.scoreDiv.style.display = "none";
-  elements.slider.style.display = "";
-  elements.guessInputDiv.style.display = "";
+  elements.sliderDiv.style.display = "none";
   elements.multiChoiceDiv.style.display = "none";
-  elements.gameDiv.style.display = "none";
-  elements.scoreProgressBar.innerHTML = "";
-  elements.correction.innerHTML = "";
+  elements.gameNameDiv.style.display = "none";
+  elements.higherlowerDiv.style.display = "none";
+  elements.resultsDiv.style.display = "none";
+  elements.mainCard.style.display = "none";
   elements.streamCover.style.display = "none";
   elements.clipCover.style.display = "none";
-  elements.nextRound.style.display = "none";
-  elements.playAgain.style.display = "none";
-  elements.mainCard.style.display = "none";
   elements.leaderboard.style.display = "none";
   elements.getSettingsButton.innerHTML = "Start";
+  elements.getSettingsButton.disabled = false;
   elements.guessLabel.innerHTML = "View count";
   elements.leaderboardList.innerHTML = "";
   elements.gameEndText.innerHTML = "";
@@ -1013,7 +1064,7 @@ function reset() {
   <div class="card-body">
     <div class="container-fluid">
       <div class="row mb-3">
-        <div class="card mode-card cursor-pointer" onclick="showSettings('viewers')">
+        <div class="card game-card cursor-pointer" onclick="showSettings('viewers')">
           <div class="card-body">
             <h2>
               Viewers
@@ -1035,7 +1086,7 @@ function reset() {
         </div>
       </div>
       <div class="row mb-3">
-        <div class="card mode-card cursor-pointer" onclick="showSettings('followers')">
+        <div class="card game-card cursor-pointer" onclick="showSettings('followers')">
           <div class="card-body">
             <h2>
               Followers
@@ -1054,7 +1105,7 @@ function reset() {
         </div>
       </div>
       <div class="row mb-3">
-        <div class="card mode-card cursor-pointer" onclick="showSettings('game')">
+        <div class="card game-card cursor-pointer" onclick="showSettings('gamename')">
           <div class="card-body">
             <h2>
               Game
@@ -1065,7 +1116,7 @@ function reset() {
         </div>
       </div>
       <div class="row">
-        <div class="card mode-card cursor-pointer" onclick="showSettings('emote')">
+        <div class="card game-card cursor-pointer" onclick="showSettings('emote')">
           <div class="card-body">
             <h2>
               Emote
@@ -1103,34 +1154,43 @@ function showToast(msg, type, timeout) {
   }, timeout);
 } //showToast
 
-async function showSettings(mode) {
-  gameSettings.mode = mode;
+async function showSettings(game) {
+  gameSettings.game = game;
 
-  if (mode == "viewers" || mode == "followers") {
-    elements.difficultyDiv.style.display = "";
+  //hide controls selector if game does not support it
+  if (game == "viewers" || game == "followers") {
+    elements.controlsTypeDiv.style.display = "";
   } else {
-    elements.difficultyDiv.style.display = "none";
+    elements.controlsTypeDiv.style.display = "none";
   }
 
-  if (mode == "game" || mode == "emote") {
+  //hide play with chat setting if game does not support it
+  if (game == "gamename" || game == "emote") {
     elements.chatSettingsDiv.style.display = "none";
     elements.channelName.value = "";
   } else {
     elements.chatSettingsDiv.style.display = "";
   }
 
-  if (gameSettings.difficulty == "higherlower") {
-    elements.difficultyDesc.innerHTML = `Coming soon :) You will have to guess if the current stream has a higher or lower ${
-      mode == "followers" ? "follow" : "view"
+  //update controlsDesc
+  if (gameSettings.controls == "higherlower") {
+    elements.controlsDesc.innerHTML = `You will have to guess if the current stream has a higher or lower ${
+      game == "followers" ? "follow" : "view"
     } count than the previous one  - Keep playing till you get a wrong answer`;
   }
+  if (gameSettings.controls == "slider") {
+    elements.controlsDesc.innerHTML = `You will have to guess the exact ${
+      gameSettings.game == "followers" ? "follow" : "view"
+    } count - 5 rounds - 5,000 points per round based on how close you are to the correct number`;
+  }
 
+  //add disclaimer
   elements.disclaimer.style.display = "";
-  switch (mode) {
+  switch (game) {
     case "viewers":
       elements.disclaimer.innerHTML = "The answer will not always be the same as the view count seen on the stream because the API does not update as fast";
       break;
-    case "game":
+    case "gamename":
       elements.disclaimer.innerHTML = "Some streamers could forget to update their category or set it incorrectly, expect to be Jebaited :)";
       break;
     case "emote":
@@ -1145,34 +1205,23 @@ async function showSettings(mode) {
 
 async function getSettings() {
   elements.getSettingsButton.innerHTML = spinner;
+  elements.getSettingsButton.disabled = true;
 
   gameSettings.video = document.querySelector('input[name="videoTypeSelect"]:checked').value || "streams";
   gameSettings.collection = elements.clipCollection.value || "random";
-  gameSettings.difficulty = document.querySelector('input[name="difficultySelect"]:checked').value || "normal";
+  gameSettings.controls = document.querySelector('input[name="controlsSelect"]:checked').value || "slider";
 
-  if (gameSettings.difficulty == "higherlower") {
-    showToast("Higher lower mode is not ready yet :)", "info", 3000);
-    reset();
-    elements.normalDifficulty.checked = true;
-    elements.difficultyDesc.innerHTML = `You will have to guess the exact ${
-      gameSettings.mode == "followers" ? "follow" : "view"
-    } count - 5 rounds - 5,000 points per round based on how close you are to the correct number`;
-    return;
-  }
-
-  if (gameSettings.mode == "game" && gameSettings.collection == "hottub" && gameSettings.video == "clips") {
+  if (gameSettings.game == "gamename" && gameSettings.collection == "hottub" && gameSettings.video == "clips") {
     showToast("Hmmm today I'll pick game guessr mode then pick a clip collection that has 1 category only 🤙", "info", 5000);
     reset();
     return;
   }
-
-  if (gameSettings.mode == "emote" && gameSettings.collection == "forsen" && gameSettings.video == "clips") {
+  if (gameSettings.game == "emote" && gameSettings.collection == "forsen" && gameSettings.video == "clips") {
     showToast("Hmmm today I'll pick emote guessr mode then pick a clip collection that has 1 channel only 🤙", "info", 5000);
     reset();
     return;
   }
-
-  if (gameSettings.mode == "followers" && gameSettings.collection == "forsen" && gameSettings.video == "clips") {
+  if (gameSettings.game == "followers" && gameSettings.collection == "forsen" && gameSettings.video == "clips") {
     showToast("Hmmm today I'll pick followers mode then pick a clip collection that has 1 channel only 🤙", "info", 5000);
     reset();
     return;
@@ -1220,11 +1269,11 @@ async function connectChat(channelName) {
       return;
     }
 
-    let { points, percent, diff, color } = calculateScore(answer, guessList[round - 1][gameSettings.mode]);
+    let { points, percent, diff, color } = calculateScore(answer, guessList[round - 1][gameSettings.game]);
 
     let pos = chatters.map((e) => e.username).indexOf(context.username);
     //set points to 😵 to eliminate chatter if they get first answer wrong
-    if (gameSettings.difficulty == "hard" && points == 0) {
+    if (gameSettings.controls == "choices" && points == 0) {
       points = "😵";
     }
     if (pos === -1) {
@@ -1243,15 +1292,15 @@ async function connectChat(channelName) {
       );
     } else if (chatters[pos].lastGuess < round && chatters[pos].score != "😵") {
       //chatter is already in the array so check if they already guessed this round and are not eliminated
-      if (gameSettings.difficulty == "hard") {
-        //if the game is in hard mode increment the score
+      if (gameSettings.controls == "choices") {
+        //if the game has multi choice controls increment the score by 1
         chatters[pos].score++;
         if (points == "😵") {
           //if chatter got the answer wrong set score to 😵 to eliminate them
           chatters[pos].score = "😵";
         }
       } else {
-        //if the game is in normal mode add the points to the total score
+        //if the game has slider controls add the points to the total score
         chatters[pos].score += points;
       }
       chatters[pos].lastGuess = round;
@@ -1327,7 +1376,7 @@ function startTimer() {
     document.querySelector("#timer").innerHTML = timer.getTimeValues().toString(["minutes", "seconds", "secondTenths"]);
   });
   timer.addEventListener("targetAchieved", function (e) {
-    guess(true);
+    guess(null, true);
     elements.timerDiv.style.display = "none";
     timer.reset();
     timer.stop();
@@ -1357,8 +1406,8 @@ function updateLeaderboard() {
   chatters.sort((a, b) => (parseInt(b.score, 10) || 0) - (parseInt(a.score, 10) || 0));
   let list = "";
   for (let index = 0; index < chatters.length; index++) {
-    if (chatters[index].lastGuess < round && gameSettings.difficulty == "hard") {
-      //eliminate chatter if they did not answer this round if the difficulty is set to hard
+    if (chatters[index].lastGuess < round && gameSettings.controls == "choices") {
+      //eliminate chatter if they did not answer this round if the game has multi choice controls
       chatters[index].score = "😵";
     }
     list += `<li class="list-group-item ${username == chatters[index].username ? "bg-primary" : ""}">
@@ -1481,7 +1530,7 @@ function shuffleArray(array) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
-}
+} //shuffleArray
 
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels")) || [];
@@ -1494,6 +1543,8 @@ window.onload = async function () {
   followersStreak = parseInt(localStorage.getItem("followersStreak"), 10) || 0;
   gameStreak = parseInt(localStorage.getItem("gameStreak"), 10) || 0;
   emoteStreak = parseInt(localStorage.getItem("emoteStreak"), 10) || 0;
+  viewersHigherlowerStreak = parseInt(localStorage.getItem("viewersHigherlowerStreak"), 10) || 0;
+  followersHigherlowerStreak = parseInt(localStorage.getItem("followersHigherlowerStreak"), 10) || 0;
   channelName = localStorage.getItem("channelName") || "";
   elements.channelName.value = channelName;
 
@@ -1503,6 +1554,8 @@ window.onload = async function () {
   elements.followersStreak.innerHTML = followersStreak.toLocaleString();
   elements.gameStreak.innerHTML = gameStreak.toLocaleString();
   elements.emoteStreak.innerHTML = emoteStreak.toLocaleString();
+  elements.viewersHigherlowerStreak.innerHTML = viewersHigherlowerStreak.toLocaleString();
+  elements.followersHigherlowerStreak.innerHTML = followersHigherlowerStreak.toLocaleString();
 
   gameSettingsModal = new bootstrap.Modal(elements.gameSettingsModal);
 
@@ -1519,22 +1572,25 @@ window.onload = async function () {
     }
   };
 
-  elements.normalDifficulty.onchange = function () {
+  elements.sliderControls.onchange = function () {
     if (this.checked) {
-      elements.difficultyDesc.innerHTML = `You will have to guess the exact ${
-        gameSettings.mode == "followers" ? "follow" : "view"
+      gameSettings.controls = "slider";
+      elements.controlsDesc.innerHTML = `You will have to guess the exact ${
+        gameSettings.game == "followers" ? "follow" : "view"
       } count - 5 rounds - 5,000 points per round based on how close you are to the correct number`;
     }
   };
-  elements.hardDifficulty.onchange = function () {
+  elements.choicesControls.onchange = function () {
     if (this.checked) {
-      elements.difficultyDesc.innerHTML = "You will be given 5 options and you will have to pick 1 of them - Keep playing till you get a wrong answer";
+      gameSettings.controls = "choices";
+      elements.controlsDesc.innerHTML = "You will be given 5 options and you will have to pick 1 of them - Keep playing till you get a wrong answer";
     }
   };
-  elements.higherLowerDifficulty.onchange = function () {
+  elements.higherlowerControls.onchange = function () {
     if (this.checked) {
-      elements.difficultyDesc.innerHTML = `Coming soon :) You will have to guess if the current stream has a higher or lower ${
-        gameSettings.mode == "followers" ? "follow" : "view"
+      gameSettings.controls = "higherlower";
+      elements.controlsDesc.innerHTML = `You will have to guess if the current stream has a higher or lower ${
+        gameSettings.game == "followers" ? "follow" : "view"
       } count than the previous one  - Keep playing till you get a wrong answer`;
     }
   };
@@ -1552,15 +1608,6 @@ window.onload = async function () {
     if (value == 0) {
       elements.guessRange.value = 0;
     }
-  };
-  elements.guess.onclick = function () {
-    elements.nextRound.disabled = true;
-    elements.playAgain.disabled = true;
-    setTimeout(() => {
-      elements.nextRound.disabled = false;
-      elements.playAgain.disabled = false;
-    }, 500);
-    guess();
   };
 
   elements.nextRound.onclick = function () {
@@ -1592,14 +1639,20 @@ window.onload = async function () {
     localStorage.setItem("followersStreak", 0);
     localStorage.setItem("gameStreak", 0);
     localStorage.setItem("emoteStreak", 0);
+    localStorage.setItem("viewersHigherlowerStreak", 0);
+    localStorage.setItem("followersHigherlowerStreak", 0);
     viewersStreak = 0;
     followersStreak = 0;
     gameStreak = 0;
     emoteStreak = 0;
+    viewersHigherlowerStreak = 0;
+    followersHigherlowerStreak = 0;
     elements.viewersStreak.innerHTML = 0;
     elements.followersStreak.innerHTML = 0;
     elements.gameStreak.innerHTML = 0;
     elements.emoteStreak.innerHTML = 0;
+    elements.viewersHigherlowerStreak.innerHTML = 0;
+    elements.followersHigherlowerStreak.innerHTML = 0;
     showToast("High scores reset", "success", 2000);
   };
   elements.resetSeenChannels.onclick = function () {
@@ -1615,44 +1668,45 @@ window.onload = async function () {
     showToast("Seen clips reset", "success", 2000);
   };
 
-  document.addEventListener("keydown", async (e) => {
-    if (gameSettings.mode == "viewers" && elements.guessRange.offsetParent) {
-      if (e.key === "ArrowRight" || e.key === "ArrowUp") {
-        elements.guessRange.value++;
-        let value = parseInt(elements.guessRange.value, 10);
-        elements.guessNumber.value = Math.round(Math.exp((Math.log(max) / 100) * value));
-        if (value == 0) {
-          elements.guessNumber.value = 0;
-        }
-        return;
-      }
-      if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
-        elements.guessRange.value--;
-        let value = parseInt(elements.guessRange.value, 10);
-        elements.guessNumber.value = Math.round(Math.exp((Math.log(max) / 100) * value));
-        if (value == 0) {
-          elements.guessNumber.value = 0;
-        }
-        return;
-      }
-    }
+  // document.addEventListener("keydown", async (e) => {
+  //   if (gameSettings.game == "viewers" && elements.guessRange.offsetParent) {
+  //     if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+  //       elements.guessRange.value++;
+  //       let value = parseInt(elements.guessRange.value, 10);
+  //       elements.guessNumber.value = Math.round(Math.exp((Math.log(max) / 100) * value));
+  //       if (value == 0) {
+  //         elements.guessNumber.value = 0;
+  //       }
+  //       return;
+  //     }
+  //     if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+  //       elements.guessRange.value--;
+  //       let value = parseInt(elements.guessRange.value, 10);
+  //       elements.guessNumber.value = Math.round(Math.exp((Math.log(max) / 100) * value));
+  //       if (value == 0) {
+  //         elements.guessNumber.value = 0;
+  //       }
+  //       return;
+  //     }
+  //   }
 
-    if (elements.guess.offsetParent && e.key === "Enter") {
-      guess();
-      return;
-    }
-    if (elements.nextRound.offsetParent && e.key === "Enter") {
-      localStorage.setItem("seenChannels", JSON.stringify(seenChannels));
-      localStorage.setItem("seenClips", JSON.stringify(seenClips));
-      nextRound();
-      return;
-    }
-    if (elements.playAgain.offsetParent && e.key === "Enter") {
-      await startGame();
-      nextRound();
-      return;
-    }
-  });
+  //   if (elements.guess.offsetParent && e.key === "Enter") {
+  //     guess();
+  //     return;
+  //   }
+
+  //   if (elements.nextRound.offsetParent && e.key === "Enter") {
+  //     localStorage.setItem("seenChannels", JSON.stringify(seenChannels));
+  //     localStorage.setItem("seenClips", JSON.stringify(seenClips));
+  //     nextRound();
+  //     return;
+  //   }
+  //   if (elements.playAgain.offsetParent && e.key === "Enter") {
+  //     await startGame();
+  //     nextRound();
+  //     return;
+  //   }
+  // });
 
   const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
   const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl));
