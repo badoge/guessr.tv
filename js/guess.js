@@ -1228,7 +1228,7 @@ async function getSettings() {
   }
 
   channelName = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
-  if (channelName) {
+  if (channelName && (gameSettings.controls == "slider" || gameSettings.controls == "choices")) {
     localStorage.setItem("channelName", channelName);
     gameSettings.chat = true;
     connectChat(channelName);
