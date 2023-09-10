@@ -80,6 +80,7 @@ const elements = {
   getSettingsButton: document.getElementById("getSettingsButton"),
   leaderboard: document.getElementById("leaderboard"),
   leaderboardList: document.getElementById("leaderboardList"),
+  chatHint: document.getElementById("chatHint"),
 };
 
 const requestOptions = {
@@ -127,6 +128,7 @@ let player = null;
 let max = 0;
 let previousNumber = 0;
 let timer;
+let emoteChoices = { a: 1, b: 2, c: 3, d: 4, e: 5 };
 let gameSettings = {
   game: "viewers", // viewers - followers - gamename - emote
   video: "streams", // streams - clips
@@ -424,12 +426,10 @@ async function nextRound() {
   if (gameSettings.game == "emote") {
     elements.multiChoiceDiv.style.display = "none"; //hide now and show in generateEmoteChoices when it is done so that all emotes load at once
     elements.multiChoiceLabel.innerHTML = "Which emote belongs to this channel?";
-    Array.from(document.querySelectorAll('input[name="multiChoice"]:checked'), (input) => (input.checked = false));
     await generateEmoteChoices(guessList[round - 1].userid);
   }
 
   if (gameSettings.controls == "choices" && gameSettings.game != "emote") {
-    Array.from(document.querySelectorAll('input[name="multiChoice"]:checked'), (input) => (input.checked = false));
     generateChoices(guessList[round - 1][gameSettings.game]);
   }
 
@@ -577,7 +577,9 @@ async function generateEmoteChoices(userid) {
     for (let index = 0; index < random.length; index++) {
       elements[`multiChoice${index + 1}`].dataset.answer = random[index].id;
       elements[`multiChoice${index + 1}`].dataset.emote = random[index].emote;
-      elements[`multiChoice${index + 1}`].innerHTML = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${random[index].emote}/default/dark/3.0" alt="emote #${index + 1}">`;
+      elements[`multiChoice${index + 1}`].innerHTML = `${
+        gameSettings.chat ? Object.keys(emoteChoices).find((e) => emoteChoices[e] === index + 1) : ""
+      } <img src="https://static-cdn.jtvnw.net/emoticons/v2/${random[index].emote}/default/dark/3.0" alt="emote #${index + 1}">`;
     }
   } catch (error) {
     console.log("generateEmoteChoices error", error);
@@ -960,6 +962,7 @@ function calculateScore(answer, correct) {
       points = 0;
     }
   }
+
   //calculate score for viewers mode - streams or clips- slider controls
   if (gameSettings.game == "viewers" && gameSettings.controls == "slider") {
     //get max view count of current game
@@ -1164,14 +1167,6 @@ async function showSettings(game) {
     elements.controlsTypeDiv.style.display = "none";
   }
 
-  //hide play with chat setting if game does not support it
-  if (game == "gamename" || game == "emote") {
-    elements.chatSettingsDiv.style.display = "none";
-    elements.channelName.value = "";
-  } else {
-    elements.chatSettingsDiv.style.display = "";
-  }
-
   //update controlsDesc
   if (gameSettings.controls == "higherlower") {
     elements.controlsDesc.innerHTML = `You will have to guess if the current stream has a higher or lower ${
@@ -1227,8 +1222,24 @@ async function getSettings() {
     return;
   }
 
+  //update chat hint based on mode
+  switch (gameSettings.game) {
+    case "gamename":
+      elements.chatHint.innerHTML = `Type <kbd class="notranslate">!guess [game name]</kbd> in chat to guess`;
+      break;
+    case "emote":
+      elements.chatHint.innerHTML = "Type an emote's letter (a/b/c/d/e) in chat to guess";
+      break;
+    default:
+      elements.chatHint.innerHTML = "Type a number in chat to guess";
+      break;
+  }
+  if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
+    elements.chatHint.innerHTML = `Type <kbd class="notranslate">higher</kbd> or <kbd class="notranslate">lower</kbd> in chat to guess`;
+  }
+
   channelName = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
-  if (channelName && (gameSettings.controls == "slider" || gameSettings.controls == "choices")) {
+  if (channelName) {
     localStorage.setItem("channelName", channelName);
     gameSettings.chat = true;
     connectChat(channelName);
@@ -1263,24 +1274,51 @@ async function connectChat(channelName) {
     if (!gameSettings.chat || !roundActive) {
       return;
     }
+
+    let results = { points: "", percent: "", diff: "", color: "" };
+
     let input = msg.split(" ").filter(Boolean);
-    let answer = parseAnswer(input[0]);
-    if (answer === null || answer === undefined || answer === "" || answer < 0) {
-      return;
+
+    if (gameSettings.controls !== "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
+      let answer = parseAnswer(input[0]);
+      if (answer === null || answer === undefined || answer === "" || answer < 0) {
+        return;
+      }
+      results = calculateScore(answer, guessList[round - 1][gameSettings.game]);
     }
 
-    let { points, percent, diff, color } = calculateScore(answer, guessList[round - 1][gameSettings.game]);
+    if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
+      if (input[0]?.toLowerCase() !== "higher" && input[0]?.toLowerCase() !== "lower") {
+        return;
+      }
+      results = calculateScore(input[0].toLowerCase(), guessList[round - 1][gameSettings.game]);
+    }
+
+    if (gameSettings.game == "gamename") {
+      if (input[0]?.toLowerCase() !== "!guess") {
+        return;
+      }
+      results = calculateScore(input.slice(1).join("").replace(/\s+/g, "").toLowerCase(), guessList[round - 1][gameSettings.game]);
+    }
+
+    if (gameSettings.game == "emote") {
+      if (!emoteChoices.hasOwnProperty(input[0]?.toLowerCase())) {
+        return;
+      }
+      let answer = parseInt(elements[`multiChoice${emoteChoices[input[0].toLowerCase()]}`].dataset.answer, 10);
+      results = calculateScore(answer, guessList[round - 1][gameSettings.game]);
+    }
 
     let pos = chatters.map((e) => e.username).indexOf(context.username);
     //set points to 😵 to eliminate chatter if they get first answer wrong
-    if (gameSettings.controls == "choices" && points == 0) {
-      points = "😵";
+    if ((gameSettings.controls == "choices" || gameSettings.controls == "higherlower" || gameSettings.game == "gamename") && results.points == 0) {
+      results.points = "😵";
     }
     if (pos === -1) {
       //add the chatter to the array if they are not already in
       chatters.push({
         username: context.username,
-        score: points,
+        score: results.points,
         lastGuess: round,
         color: context.color,
         badges: context.badges,
@@ -1292,16 +1330,16 @@ async function connectChat(channelName) {
       );
     } else if (chatters[pos].lastGuess < round && chatters[pos].score != "😵") {
       //chatter is already in the array so check if they already guessed this round and are not eliminated
-      if (gameSettings.controls == "choices") {
+      if (gameSettings.controls == "choices" || gameSettings.controls == "higherlower" || gameSettings.game == "gamename") {
         //if the game has multi choice controls increment the score by 1
         chatters[pos].score++;
-        if (points == "😵") {
+        if (results.points == "😵") {
           //if chatter got the answer wrong set score to 😵 to eliminate them
           chatters[pos].score = "😵";
         }
       } else {
         //if the game has slider controls add the points to the total score
-        chatters[pos].score += points;
+        chatters[pos].score += results.points;
       }
       chatters[pos].lastGuess = round;
       document.getElementById(`${context.username}_dot`).style.visibility = "visible";
@@ -1406,7 +1444,7 @@ function updateLeaderboard() {
   chatters.sort((a, b) => (parseInt(b.score, 10) || 0) - (parseInt(a.score, 10) || 0));
   let list = "";
   for (let index = 0; index < chatters.length; index++) {
-    if (chatters[index].lastGuess < round && gameSettings.controls == "choices") {
+    if (chatters[index].lastGuess < round && (gameSettings.controls == "choices" || gameSettings.controls == "higherlower" || gameSettings.game == "gamename")) {
       //eliminate chatter if they did not answer this round if the game has multi choice controls
       chatters[index].score = "😵";
     }
