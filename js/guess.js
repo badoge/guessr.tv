@@ -126,7 +126,7 @@ let round = 0;
 let score = 0;
 let player = null;
 let max = 0;
-let previousNumber = 0;
+let previousNumber = null;
 let timer;
 let emoteChoices = { a: 1, b: 2, c: 3, d: 4, e: 5 };
 let gameSettings = {
@@ -155,7 +155,7 @@ async function getMainList() {
     let response = await fetch(`https://api.okayeg.com/guess`, requestOptions);
     let list = await response.json();
     mainList = list.guess.guess;
-    max = Math.max(...mainList.map((o) => o.viewers || 0));
+    max = Math.max(...mainList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 1000);
     elements.guessNumber.max = max;
     elements.guessRange.value = 0;
     elements.guessNumber.value = "";
@@ -165,12 +165,12 @@ async function getMainList() {
   }
 } //getMainList
 
-async function getClipsList() {
+async function getMainListClips() {
   try {
     let response = await fetch(`https://api.okayeg.com/guess/clips/${gameSettings.collection}?time=${Date.now()}`, requestOptions);
     let list = await response.json();
     mainList = list.random[0].clips;
-    max = Math.max(...mainList.map((o) => o.viewers || 0));
+    max = Math.max(...mainList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 1000);
     elements.guessNumber.max = max;
     elements.guessRange.value = 0;
     elements.guessNumber.value = "";
@@ -178,7 +178,7 @@ async function getClipsList() {
   } catch (error) {
     console.log(error);
   }
-} //getClipsList
+} //getMainListClips
 
 async function loadGameList() {
   let response = await fetch(`/games.json`, requestOptions);
@@ -239,104 +239,16 @@ function toggleControls(hide = false) {
   }
 } //toggleControls
 
-async function startGame(keepScores = false) {
+async function startGame() {
   guessList = [];
-  if (!keepScores) {
-    //length is not endless so reset scores for streamer and chat
-    chatters = [];
-    score = 0;
-    elements.leaderboardList.innerHTML = "";
-  }
+  chatters = [];
+  score = 0;
+  elements.leaderboardList.innerHTML = "";
 
   //get a new clip set and then use helper to update view count and make sure clips still exist
   if (gameSettings.video == "clips") {
-    await getClipsList(); // needs to be fetched before each game bcz list has 5 clips only
-    let ids = mainList.map((e) => e.id);
-    try {
-      let response = await fetch(`https://helper.pepega.workers.dev/twitch/clips?id=${ids.join(",")}`, requestOptions);
-      if (response.status != 200) {
-        showToast("Something went wrong while updating clip view counts :(", "danger", 3000);
-        return;
-      }
-      let clips = await response.json();
-      for (let index = 0; index < clips.data.length; index++) {
-        let clipIndex = mainList.findIndex((e) => e.id == clips.data[index].id);
-        mainList[clipIndex].viewers = clips.data[index].view_count; //update clips from the bot with up to date view count from helper
-      }
-      guessList = mainList.filter((n) => clips.data.some((n2) => n.id == n2.id));
-      guessList = mainList.filter((n) => !seenClips.includes(n.id));
-      if (guessList.length < 5) {
-        showToast("Clips set contains deleted/already seen clips, getting new set...", "info", 2000);
-        await startGame();
-        return;
-      }
-    } catch (error) {
-      showToast("Something went wrong while updating clip view counts :(", "danger", 3000);
-      console.log(error);
-    }
+    await getClipsGuessList();
   } //clips
-
-  if (gameSettings.video == "streams") {
-    //get 10 random streams from the main list then use helper to update the view count - if a channel is not returned by helper then its offline
-    while (guessList.length < 10) {
-      let random = mainList[Math.floor(Math.random() * mainList.length)];
-      if (guessList.some((e) => e.userid === random.userid) || seenChannels.some((e) => e === random.username)) {
-        continue;
-      }
-      guessList.push(random);
-    }
-    let ids = guessList.map((e) => e.userid);
-    try {
-      let response = await fetch(`https://helper.pepega.workers.dev/twitch/streams?user_id=${ids.join(",")}`, requestOptions);
-      let streams = await response.json();
-      for (let index = 0; index < streams.data.length; index++) {
-        let channelIndex = guessList.findIndex((e) => e.userid == streams.data[index].user_id);
-        guessList[channelIndex].viewers = streams.data[index].viewer_count;
-        guessList[channelIndex].live = true;
-      }
-      for (let index = guessList.length - 1; index >= 0; index--) {
-        if (!guessList[index].live) {
-          let id = guessList[index].userid;
-          guessList = guessList.filter((e) => e.userid != id);
-          mainList = mainList.filter((e) => e.userid != id);
-        }
-      }
-
-      if (guessList.length < 5) {
-        showToast("Not enough live channels, getting new list...", "info", 2000);
-        await startGame();
-        return;
-      }
-    } catch (error) {
-      showToast("Something went wrong while updating the view counts :(", "danger", 3000);
-      console.log(error);
-    }
-  } //streams
-
-  if (gameSettings.game == "followers") {
-    let fetched = 0;
-    for (let index = 0; index < 5; index++) {
-      try {
-        let response = await fetch(`https://helper.pepega.workers.dev/twitch/channels/followers?broadcaster_id=${guessList[index].userid}`, requestOptions);
-        if (response.status != 200) {
-          showToast("Something went wrong while updating the follow counts :(", "danger", 3000);
-          return;
-        }
-        let followers = await response.json();
-        guessList[index].followers = followers.total;
-        fetched++;
-      } catch (error) {
-        showToast("Something went wrong while updating the follow counts :(", "danger", 3000);
-        console.log(error);
-      }
-    }
-    if (fetched < 5) {
-      guessList = [];
-      showToast("Not enough live channels, getting new list...", "info", 2000);
-      await startGame();
-    }
-    max = Math.max(...guessList.map((o) => o.followers || 0));
-  } //followers
 
   if (gameSettings.game == "gamename") {
     gameSettings.controls = "text";
@@ -373,17 +285,132 @@ async function startGame(keepScores = false) {
   elements.gameEndText.innerHTML = "";
   elements.mainCard.style.display = "";
   round = 0;
+  previousNumber = null;
 } //startGame
+
+async function getRandomStream() {
+  //pick a random stream from the main list which has ~700 streams
+  let random = mainList[Math.floor(Math.random() * mainList.length)];
+
+  //check if channel is already seen
+  if (seenChannels.some((e) => e === random.username)) {
+    return await getRandomStream();
+  }
+
+  //update stream info
+  try {
+    let response = await fetch(`https://helper.pepega.workers.dev/twitch/streams?user_id=${random.userid}`, requestOptions);
+    let stream = await response.json();
+
+    if (stream.data[0]) {
+      //get follower count if game mode is followers
+      if (gameSettings.game == "followers") {
+        try {
+          let response = await fetch(`https://helper.pepega.workers.dev/twitch/channels/followers?broadcaster_id=${random.userid}`, requestOptions);
+          let followers = await response.json();
+          random.followers = followers.total;
+        } catch (error) {
+          showToast("Something went wrong while updating the follow count :(", "danger", 3000);
+          console.log(error);
+          return await getRandomStream();
+        }
+      } //followers
+
+      //get a new stream if current one has no category
+      if (!stream.data[0].game_name && gameSettings.game == "gamename") {
+        return await getRandomStream();
+      }
+
+      //update stream info
+      random.viewers = stream.data[0].viewer_count;
+      random.game_name = stream.data[0].game_name;
+      return random;
+    } else {
+      //stream is offline so remove it from the main list and get a new one
+      mainList = mainList.filter((e) => e.username != random.username);
+      return await getRandomStream();
+    }
+  } catch (error) {
+    showToast("Something went wrong while updating the view count :(", "danger", 3000);
+    console.log(error);
+    return await getRandomStream();
+  }
+} //getRandomStream
+
+async function getClipsGuessList() {
+  await getMainListClips(); // needs to be fetched before each game bcz list has 5 clips only
+  let ids = mainList.map((e) => e.id);
+  try {
+    let response = await fetch(`https://helper.pepega.workers.dev/twitch/clips?id=${ids.join(",")}`, requestOptions);
+    if (response.status != 200) {
+      showToast("Something went wrong while updating clip view counts :(", "danger", 3000);
+      // await getClipsGuessList();
+      return;
+    }
+    let clips = await response.json();
+    for (let index = 0; index < clips.data.length; index++) {
+      let clipIndex = mainList.findIndex((e) => e.id == clips.data[index].id);
+      mainList[clipIndex].viewers = clips.data[index].view_count; //update clips from the bot with up to date view count from helper
+    }
+    guessList = mainList.filter((n) => clips.data.some((n2) => n.id == n2.id));
+    //remove seen clips
+    guessList = mainList.filter((n) => !seenClips.includes(n.id));
+    max = Math.max(...guessList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 1000);
+    if (guessList.length < 5) {
+      showToast("Clips set contains deleted/already seen clips, getting new set...", "info", 2000);
+      return await getClipsGuessList();
+    }
+    //get follower counts now if the video type is clips - if the video type is streams the follower count will be fetched in getRandomStream()
+    if (gameSettings.game == "followers") {
+      await getClipsFollowerCount();
+    }
+  } catch (error) {
+    showToast("Something went wrong while updating clip view counts :(", "danger", 3000);
+    //await getClipsGuessList();
+    console.log(error);
+  }
+} //getClipsGuessList
+
+async function getClipsFollowerCount() {
+  let fetched = 0;
+  for (let index = 0; index < 5; index++) {
+    try {
+      let response = await fetch(`https://helper.pepega.workers.dev/twitch/channels/followers?broadcaster_id=${guessList[index].userid}`, requestOptions);
+      if (response.status != 200) {
+        showToast("Something went wrong while updating the follow counts :(", "danger", 3000);
+        return;
+      }
+      let followers = await response.json();
+      guessList[index].followers = followers.total;
+      fetched++;
+    } catch (error) {
+      showToast("Something went wrong while updating the follow counts :(", "danger", 3000);
+      console.log(error);
+    }
+  }
+  if (fetched < 5) {
+    guessList = [];
+    showToast("Clips set contains deleted/already seen clips, getting new set...", "info", 2000);
+    return await getClipsGuessList();
+  }
+  max = Math.max(...guessList.map((o) => o.followers || 0)) + Math.floor(Math.random() * 1000);
+} //getClipsFollowerCount
 
 async function nextRound() {
   elements.nextRound.disabled = true;
   elements.nextRound.innerHTML = spinner;
 
-  //get new list if game uses streaks
-  if (round == 5 && (gameSettings.controls == "choices" || gameSettings.controls == "text" || gameSettings.controls == "higherlower")) {
-    await startGame(true); //true to keep scores
-    nextRound();
-    return;
+  //get new clips list if game uses streaks after 5 rounds
+  if (round == 5 && gameSettings.video == "clips" && (gameSettings.controls == "choices" || gameSettings.controls == "text" || gameSettings.controls == "higherlower")) {
+    await getClipsGuessList();
+    //reset round counter becuase the guess list will get reset
+    round = 0;
+    chatters.map((e) => (e.lastGuess = 0));
+  }
+
+  //get a random stream with updated info and add it to guessList
+  if (gameSettings.video == "streams") {
+    guessList.push(await getRandomStream());
   }
 
   round++;
@@ -413,6 +440,7 @@ async function nextRound() {
   }
 
   if (gameSettings.game == "gamename") {
+    //add the answer to the options list
     if (!gameList.some((e) => e.name === guessList[round - 1].game_name)) {
       elements.gameList.innerHTML = "";
       gameList.push({ name: guessList[round - 1].game_name });
@@ -435,15 +463,17 @@ async function nextRound() {
 
   //set random number for previousNumber in first round
   if (gameSettings.controls == "higherlower") {
-    if (round == 1) {
+    if (previousNumber == null) {
       previousNumber = Math.floor(Math.random() * (gameSettings.game == "viewers" ? 1000 : 50000));
       elements.higherlowerLabel.innerHTML = `Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower ${
         gameSettings.game == "viewers" ? "view count" : "follow count"
-      } than ${previousNumber.toLocaleString()}?`;
+      } than <span class="previous-number">${previousNumber.toLocaleString()}</span>? 
+      <i class="material-icons notranslate" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="The first round has a random starting number, later rounds will be compared to the previous stream">info</i>`;
+      enableTooltips();
     } else {
       elements.higherlowerLabel.innerHTML = `Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower ${
         gameSettings.game == "viewers" ? "view count" : "follow count"
-      } than the previous ${gameSettings.video == "streams" ? "stream" : "clip"} (${previousNumber.toLocaleString()})?`;
+      } than the previous ${gameSettings.video == "streams" ? "stream" : "clip"} <span class="previous-number">(${previousNumber.toLocaleString()})</span>?`;
     }
   }
 
@@ -651,7 +681,7 @@ async function guess(choice, timeUp) {
   //stop timer here because checks above can show some warning instead of ending the round
   stopTimer();
 
-  let { points, percent, diff, color } = calculateScore(answer, guessList[round - 1][gameSettings.game]);
+  let { points, percent, diff, color } = calculateScore(answer);
 
   score += points;
   elements.streamCover.style.display = "none";
@@ -948,7 +978,7 @@ async function guess(choice, timeUp) {
   }
 } //guess
 
-function calculateScore(answer, correct) {
+function calculateScore(answer) {
   let points = 0;
   let percent = 0;
   let diff = 0;
@@ -968,8 +998,8 @@ function calculateScore(answer, correct) {
     //get max view count of current game
     let roundMax = Math.max(...guessList.slice(0, 5).map((o) => o.viewers || 0));
     //get scaled decay between 200 and 3000
-    let decay = (correct / roundMax) * (3000 - 200) + 200;
-    diff = Math.abs(answer - correct);
+    let decay = (guessList[round - 1].viewers / roundMax) * (3000 - 200) + 200;
+    diff = Math.abs(answer - guessList[round - 1].viewers);
     points = Math.round(5000 * Math.exp(-diff / decay));
     percent = Math.round((points / 5000) * 100);
   }
@@ -979,8 +1009,8 @@ function calculateScore(answer, correct) {
     //get max follow count for current game
     let roundMax = Math.max(...guessList.slice(0, 5).map((o) => o.followers || 0));
     //get scaled decay between 10000 and 300000
-    let decay = (correct / roundMax) * (300000 - 10000) + 10000;
-    diff = Math.abs(answer - correct);
+    let decay = (guessList[round - 1].followers / roundMax) * (300000 - 10000) + 10000;
+    diff = Math.abs(answer - guessList[round - 1].followers);
     points = Math.round(5000 * Math.exp(-diff / decay));
     percent = Math.round((points / 5000) * 100);
   }
@@ -1284,21 +1314,21 @@ async function connectChat(channelName) {
       if (answer === null || answer === undefined || answer === "" || answer < 0) {
         return;
       }
-      results = calculateScore(answer, guessList[round - 1][gameSettings.game]);
+      results = calculateScore(answer);
     }
 
     if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
       if (input[0]?.toLowerCase() !== "higher" && input[0]?.toLowerCase() !== "lower") {
         return;
       }
-      results = calculateScore(input[0].toLowerCase(), guessList[round - 1][gameSettings.game]);
+      results = calculateScore(input[0].toLowerCase());
     }
 
     if (gameSettings.game == "gamename") {
       if (input[0]?.toLowerCase() !== "!guess") {
         return;
       }
-      results = calculateScore(input.slice(1).join("").replace(/\s+/g, "").toLowerCase(), guessList[round - 1][gameSettings.game]);
+      results = calculateScore(input.slice(1).join("").replace(/\s+/g, "").toLowerCase());
     }
 
     if (gameSettings.game == "emote") {
@@ -1306,7 +1336,7 @@ async function connectChat(channelName) {
         return;
       }
       let answer = parseInt(elements[`multiChoice${emoteChoices[input[0].toLowerCase()]}`].dataset.answer, 10);
-      results = calculateScore(answer, guessList[round - 1][gameSettings.game]);
+      results = calculateScore(answer);
     }
 
     let pos = chatters.map((e) => e.username).indexOf(context.username);
@@ -1570,6 +1600,11 @@ function shuffleArray(array) {
   }
 } //shuffleArray
 
+function enableTooltips() {
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl));
+} //enableTooltips
+
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels")) || [];
   elements.seenChannels.innerHTML = seenChannels.length;
@@ -1745,7 +1780,4 @@ window.onload = async function () {
   //     return;
   //   }
   // });
-
-  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-  const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl));
 }; //onload

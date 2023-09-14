@@ -29,7 +29,7 @@ If you have Twitch Turbo but still see pre-roll ads and the "Preparing your stre
 
 ## Opt-out
 
-If you want to optout from being picked for the guess list you can use the `=optout` command in [OkayegBOT's chat](https://www.twitch.tv/popout/okayegbot/chat?popout=)
+If you want to optout from being picked for the guess list you can use the `=optout guessr` command in [OkayegBOT's chat](https://www.twitch.tv/popout/okayegbot/chat?popout=)
 
 ## FAQ
 
