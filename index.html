@@ -321,9 +321,39 @@
 
         <div class="col-2 ps-1">
           <div class="card" id="leaderboard" style="display: none">
-            <div class="card-header"><h4 id="chatHint">Type a number in chat to guess</h4></div>
             <div class="card-body" id="leaderboardCard">
-              <ul class="list-group" id="leaderboardList"></ul>
+              <ul class="nav nav-tabs bg-body-tertiary" id="leaderboardTabs" role="tablist" style="display: none">
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link active"
+                    id="totalTab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#total-tab-pane"
+                    type="button"
+                    role="tab"
+                    aria-controls="total-tab-pane"
+                    aria-selected="true"
+                  >
+                    Total standings
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="roundTab" data-bs-toggle="tab" data-bs-target="#round-tab-pane" type="button" role="tab" aria-controls="round-tab-pane" aria-selected="false">
+                    Round results
+                  </button>
+                </li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane fade show active" id="total-tab-pane" role="tabpanel" aria-labelledby="totalTab" tabindex="0">
+                  <ul class="list-group mt-1" id="leaderboardList"></ul>
+                </div>
+                <div class="tab-pane fade" id="round-tab-pane" role="tabpanel" aria-labelledby="roundTab" tabindex="0">
+                  <ul class="list-group mt-1" id="leaderboardListRound"></ul>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <h4 id="chatHint">Type a number in chat to guess</h4>
             </div>
           </div>
         </div>

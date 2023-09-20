@@ -79,7 +79,11 @@ const elements = {
   disclaimer: document.getElementById("disclaimer"),
   getSettingsButton: document.getElementById("getSettingsButton"),
   leaderboard: document.getElementById("leaderboard"),
+  leaderboardTabs: document.getElementById("leaderboardTabs"),
+  totalTab: document.getElementById("totalTab"),
+  roundTab: document.getElementById("roundTab"),
   leaderboardList: document.getElementById("leaderboardList"),
+  leaderboardListRound: document.getElementById("leaderboardListRound"),
   chatHint: document.getElementById("chatHint"),
 };
 
@@ -149,6 +153,7 @@ let client;
 let roundActive = false;
 let chatters = [];
 let usernameSent = false;
+let totalTab, roundTab;
 
 async function getMainList() {
   try {
@@ -244,6 +249,7 @@ async function startGame() {
   chatters = [];
   score = 0;
   elements.leaderboardList.innerHTML = "";
+  elements.leaderboardListRound.innerHTML = "";
 
   //get a new clip set and then use helper to update view count and make sure clips still exist
   if (gameSettings.video == "clips") {
@@ -278,7 +284,7 @@ async function startGame() {
 
   //show chat leaderboard if channel name is provided
   if (gameSettings.chat) {
-    elements.leaderboard.style.display = "";
+    showLeaderboard();
   }
 
   elements.correction.innerHTML = "";
@@ -519,6 +525,12 @@ async function nextRound() {
     >
     </iframe>`;
     seenClips.push(guessList[round - 1].id);
+  }
+
+  if (gameSettings.controls == "slider") {
+    //reset round leaderboard and switch to total tab
+    elements.leaderboardListRound.innerHTML = "";
+    totalTab.show();
   }
 
   elements.correction.innerHTML = "";
@@ -933,11 +945,13 @@ async function guess(choice, timeUp) {
       chatters.push({
         username: username,
         score: points,
+        round: points,
         lastGuess: round,
         color: "#FFFFFF",
       });
     } else {
       chatters[pos].score += points;
+      chatters[pos].round = points;
       chatters[pos].lastGuess = round;
     }
     updateLeaderboard();
@@ -1349,6 +1363,7 @@ async function connectChat(channelName) {
       chatters.push({
         username: context.username,
         score: results.points,
+        round: results.points,
         lastGuess: round,
         color: context.color,
         badges: context.badges,
@@ -1358,6 +1373,13 @@ async function connectChat(channelName) {
         `${round == 1 ? "afterbegin" : "beforeend"}`,
         `<li class="list-group-item"><span>🔵</span><span style="color:${context.color || "#FFFFFF"};">${addBadges(context.badges)} ${context.username}:</span> 🙈</li>`
       );
+      if (gameSettings.controls == "slider") {
+        //add chatter to the round leaderboard if game uses slider controls
+        elements.leaderboardListRound.insertAdjacentHTML(
+          `${round == 1 ? "afterbegin" : "beforeend"}`,
+          `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${addBadges(context.badges)} ${context.username}:</span> 🙈</li>`
+        );
+      }
     } else if (chatters[pos].lastGuess < round && chatters[pos].score != "😵") {
       //chatter is already in the array so check if they already guessed this round and are not eliminated
       if (gameSettings.controls == "choices" || gameSettings.controls == "higherlower" || gameSettings.game == "gamename") {
@@ -1370,6 +1392,7 @@ async function connectChat(channelName) {
       } else {
         //if the game has slider controls add the points to the total score
         chatters[pos].score += results.points;
+        chatters[pos].round = results.points;
       }
       chatters[pos].lastGuess = round;
       document.getElementById(`${context.username}_dot`).style.visibility = "visible";
@@ -1468,6 +1491,18 @@ function stopTimer() {
   }
 } //stopTimer
 
+function showLeaderboard() {
+  elements.leaderboard.style.display = "";
+  if (gameSettings.controls == "slider") {
+    //if game uses a slider then show the total standings/round results tabs in the leaderboard
+    elements.leaderboardTabs.style.display = "";
+  } else {
+    //if game uses any other controls then hide the tabs and switch to total tab
+    elements.leaderboardTabs.style.display = "none";
+    totalTab.show();
+  }
+} //showLeaderboard
+
 function updateLeaderboard() {
   let username = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
   //sort and parse the scores so 😵 get set to 0 and get put at the bottom
@@ -1484,6 +1519,22 @@ function updateLeaderboard() {
     ${chatters[index].score.toLocaleString()}</li>`;
   }
   elements.leaderboardList.innerHTML = list;
+
+  //if game uses slider controls then update round leaderboard
+  if (gameSettings.controls == "slider") {
+    chatters.sort((a, b) => (parseInt(b.round, 10) || 0) - (parseInt(a.round, 10) || 0));
+    let list = "";
+    for (let index = 0; index < chatters.length; index++) {
+      if (chatters[index].lastGuess < round) {
+        //skip chatters that didn't play this round
+        continue;
+      }
+      list += `<li class="list-group-item ${username == chatters[index].username ? "bg-primary" : ""}">
+      <span style="color:${chatters[index].color || "#FFFFFF"};">${addBadges(chatters[index].badges)} ${chatters[index].username}:</span> 
+      ${chatters[index].round.toLocaleString()}</li>`;
+    }
+    elements.leaderboardListRound.innerHTML = list;
+  }
 } //updateLeaderboard
 
 function addBadges(badges) {
@@ -1631,6 +1682,9 @@ window.onload = async function () {
   elements.followersHigherlowerStreak.innerHTML = followersHigherlowerStreak.toLocaleString();
 
   gameSettingsModal = new bootstrap.Modal(elements.gameSettingsModal);
+
+  totalTab = new bootstrap.Tab(elements.totalTab);
+  roundTab = new bootstrap.Tab(elements.roundTab);
 
   elements.streamsVideoType.onchange = function () {
     if (this.checked) {

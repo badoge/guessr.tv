@@ -186,11 +186,18 @@ iframe {
 }
 
 #leaderboardCard {
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   text-align: start;
 }
 
 .previous-number {
   font-size: 1.5rem;
   font-weight: 700;
+}
+
+#leaderboardTabs {
+  margin-left: -17px;
+  margin-right: -17px;
+  margin-top: -17px;
 }
