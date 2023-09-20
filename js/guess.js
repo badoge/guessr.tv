@@ -473,13 +473,13 @@ async function nextRound() {
       previousNumber = Math.floor(Math.random() * (gameSettings.game == "viewers" ? 1000 : 50000));
       elements.higherlowerLabel.innerHTML = `Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower ${
         gameSettings.game == "viewers" ? "view count" : "follow count"
-      } than <span class="previous-number">${previousNumber.toLocaleString()}</span>? 
+      } than <span class="previous-number">${previousNumber.toLocaleString()}?</span> 
       <i class="material-icons notranslate" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="The first round has a random starting number, later rounds will be compared to the previous stream">info</i>`;
       enableTooltips();
     } else {
       elements.higherlowerLabel.innerHTML = `Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower ${
         gameSettings.game == "viewers" ? "view count" : "follow count"
-      } than the previous ${gameSettings.video == "streams" ? "stream" : "clip"} <span class="previous-number">(${previousNumber.toLocaleString()})</span>?`;
+      } than the previous ${gameSettings.video == "streams" ? "stream" : "clip"} <span class="previous-number">(${previousNumber.toLocaleString()})?</span>`;
     }
   }
 
@@ -1396,6 +1396,13 @@ async function connectChat(channelName) {
       }
       chatters[pos].lastGuess = round;
       document.getElementById(`${context.username}_dot`).style.visibility = "visible";
+      if (gameSettings.controls == "slider") {
+        //add chatter to the round leaderboard if game uses slider controls
+        elements.leaderboardListRound.insertAdjacentHTML(
+          `${round == 1 ? "afterbegin" : "beforeend"}`,
+          `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${addBadges(context.badges)} ${context.username}:</span> 🙈</li>`
+        );
+      }
     }
   }); //message
 
