@@ -1286,7 +1286,7 @@ async function getSettings() {
   if (channelName) {
     localStorage.setItem("channelName", channelName);
     gameSettings.chat = true;
-    connectChat(channelName);
+    connectChat();
     channelBadges = await getChannelBadges(channelName);
     globalBadges = await getGlobalBadges();
   } else {
@@ -1304,7 +1304,7 @@ async function getSettings() {
   gameSettingsModal.hide();
 } //getSettings
 
-async function connectChat(channelName) {
+async function connectChat() {
   let options = {
     connection: {
       secure: true,
@@ -1315,7 +1315,7 @@ async function connectChat(channelName) {
   client = new tmi.client(options);
 
   client.on("message", async (target, context, msg, self) => {
-    if (!gameSettings.chat || !roundActive) {
+    if (!gameSettings.chat || !roundActive || context.username == channelName) {
       return;
     }
 
