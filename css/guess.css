@@ -201,3 +201,9 @@ iframe {
   margin-right: -17px;
   margin-top: -17px;
 }
+
+.chat-badge {
+  height: 1.3rem;
+  margin-right: 0.2rem;
+  vertical-align: middle;
+}

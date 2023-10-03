@@ -94,6 +94,7 @@ const requestOptions = {
 
 let channelBadges = { subscriber: [], bits: [] };
 let globalBadges = {};
+let customBadges = [];
 
 const viewersSVG = `<svg class="viewers-svg" width="24px" height="24px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
   <g>
@@ -120,6 +121,8 @@ const spinner = `<div class="spinner-border" role="status">
 </div>`;
 
 let channelName;
+let channelId;
+let streamerColor;
 let mainList = [];
 let gameList = [];
 let emoteList = [];
@@ -947,7 +950,8 @@ async function guess(choice, timeUp) {
         score: points,
         round: points,
         lastGuess: round,
-        color: "#FFFFFF",
+        color: streamerColor,
+        badges: addBadges("streamer", channelId),
       });
     } else {
       chatters[pos].score += points;
@@ -1094,9 +1098,6 @@ function reset() {
   elements.guessLabel.innerHTML = "View count";
   elements.leaderboardList.innerHTML = "";
   elements.gameEndText.innerHTML = "";
-
-  channelBadges = { subscriber: [], bits: [] };
-  globalBadges = {};
 
   round = 0;
   score = 0;
@@ -1289,6 +1290,13 @@ async function getSettings() {
     connectChat();
     channelBadges = await getChannelBadges(channelName);
     globalBadges = await getGlobalBadges();
+    customBadges = await getCustomBadges();
+    if (!channelId) {
+      channelId = await getChannelId();
+    }
+    if (!streamerColor) {
+      streamerColor = await getStreamerColor();
+    }
   } else {
     localStorage.setItem("channelName", "");
     gameSettings.chat = false;
@@ -1366,18 +1374,18 @@ async function connectChat() {
         round: results.points,
         lastGuess: round,
         color: context.color,
-        badges: context.badges,
+        badges: addBadges(context.badges, context["user-id"]),
       });
       //add chatter to the top of the leaderboard if 1st round or at the end otherwise
       elements.leaderboardList.insertAdjacentHTML(
         `${round == 1 ? "afterbegin" : "beforeend"}`,
-        `<li class="list-group-item"><span>🔵</span><span style="color:${context.color || "#FFFFFF"};">${addBadges(context.badges)} ${context.username}:</span> 🙈</li>`
+        `<li class="list-group-item"><span>🔵</span><span style="color:${context.color || "#FFFFFF"};">${chatters[chatters.length - 1].badges} ${context.username}:</span> 🙈</li>`
       );
       if (gameSettings.controls == "slider") {
         //add chatter to the round leaderboard if game uses slider controls
         elements.leaderboardListRound.insertAdjacentHTML(
           `${round == 1 ? "afterbegin" : "beforeend"}`,
-          `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${addBadges(context.badges)} ${context.username}:</span> 🙈</li>`
+          `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${chatters[chatters.length - 1].badges} ${context.username}:</span> 🙈</li>`
         );
       }
     } else if (chatters[pos].lastGuess < round && chatters[pos].score != "😵") {
@@ -1400,7 +1408,7 @@ async function connectChat() {
         //add chatter to the round leaderboard if game uses slider controls
         elements.leaderboardListRound.insertAdjacentHTML(
           `${round == 1 ? "afterbegin" : "beforeend"}`,
-          `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${addBadges(context.badges)} ${context.username}:</span> 🙈</li>`
+          `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${chatters[pos].badges} ${context.username}:</span> 🙈</li>`
         );
       }
     }
@@ -1522,7 +1530,7 @@ function updateLeaderboard() {
     }
     list += `<li class="list-group-item ${username == chatters[index].username ? "bg-primary" : ""}">
     <span id="${chatters[index].username}_dot" style="visibility: hidden">🔵</span>
-    <span style="color:${chatters[index].color || "#FFFFFF"};">${addBadges(chatters[index].badges)} ${chatters[index].username}:</span> 
+    <span style="color:${chatters[index].color || "#FFFFFF"};">${chatters[index].badges} ${chatters[index].username}:</span> 
     ${chatters[index].score.toLocaleString()}</li>`;
   }
   elements.leaderboardList.innerHTML = list;
@@ -1537,28 +1545,38 @@ function updateLeaderboard() {
         continue;
       }
       list += `<li class="list-group-item ${username == chatters[index].username ? "bg-primary" : ""}">
-      <span style="color:${chatters[index].color || "#FFFFFF"};">${addBadges(chatters[index].badges)} ${chatters[index].username}:</span> 
+      <span style="color:${chatters[index].color || "#FFFFFF"};">${chatters[index].badges} ${chatters[index].username}:</span> 
       ${chatters[index].round.toLocaleString()}</li>`;
     }
     elements.leaderboardListRound.innerHTML = list;
   }
 } //updateLeaderboard
 
-function addBadges(badges) {
+function addBadges(badges, userid) {
   try {
     let badgesHTML = "";
-    for (const badge in badges) {
-      if (badge == "subscriber" && badges.subscriber && channelBadges.subscriber.length > 0) {
-        let badge = channelBadges.subscriber.find((obj) => obj.id === badges.subscriber);
-        badgesHTML += `<img src="${badge.url}" style="height:1.3em;" title="Subscriber"/>`;
-      } else if (badge == "bits" && channelBadges.bits.length > 0) {
-        let badge = channelBadges.bits.find((obj) => obj.id === badges.bits);
-        badgesHTML += `<img src="${badge.url}" style="height:1.3em;" title="Bits"/>`;
-      } else if (Object.keys(globalBadges).length > 0) {
-        let version = globalBadges[badge].find((obj) => obj.id === badges[badge]);
-        badgesHTML += `<img src="${version.image_url_4x}" style="height:1.3em;" title="${badge}"/>`;
+    for (let index = 0; index < customBadges.length; index++) {
+      if (customBadges[index].users.includes(userid) && customBadges[index].sites.includes("guessr.tv")) {
+        badgesHTML += `<img src="${customBadges[index].url}" class="chat-badge" title="${customBadges[index].name}"/>`;
       }
     }
+    if (badges == "streamer") {
+      badgesHTML += `<img src="https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/3" class="chat-badge" title="Broadcaster"/>`;
+    } else {
+      for (const badge in badges) {
+        if (badge == "subscriber" && badges.subscriber && channelBadges.subscriber.length > 0) {
+          let badge = channelBadges.subscriber.find((obj) => obj.id === badges.subscriber);
+          badgesHTML += `<img src="${badge.url}" class="chat-badge" title="Subscriber"/>`;
+        } else if (badge == "bits" && channelBadges.bits.length > 0) {
+          let badge = channelBadges.bits.find((obj) => obj.id === badges.bits);
+          badgesHTML += `<img src="${badge.url}" class="chat-badge" title="Bits"/>`;
+        } else if (Object.keys(globalBadges).length > 0) {
+          let version = globalBadges[badge].find((obj) => obj.id === badges[badge]);
+          badgesHTML += `<img src="${version.image_url_4x}" class="chat-badge" title="${badge}"/>`;
+        }
+      }
+    }
+
     return badgesHTML;
   } catch (error) {
     console.log(error);
@@ -1630,6 +1648,48 @@ async function getGlobalBadges() {
     }
   });
 } //getGlobalBadges
+
+async function getCustomBadges() {
+  return new Promise(async function (resolve, reject) {
+    try {
+      let response = await fetch(`https://badges.pepega.workers.dev`, requestOptions);
+      let result = await response.json();
+      if (!result || result.length == 0) {
+        resolve([]);
+      }
+      resolve(result);
+    } catch (error) {
+      console.log("getCustomBadges error", error);
+      resolve([]);
+    }
+  });
+} //getCustomBadges
+
+async function getChannelId() {
+  return new Promise(async function (resolve, reject) {
+    try {
+      let response = await fetch(`https://helper.pepega.workers.dev/twitch/users?login=${channelName}`, requestOptions);
+      let result = await response.json();
+      resolve(result?.data[0]?.id || "");
+    } catch (error) {
+      console.log("getChannelId error", error);
+      resolve("");
+    }
+  });
+} //getChannelId
+
+async function getStreamerColor() {
+  return new Promise(async function (resolve, reject) {
+    try {
+      let response = await fetch(`https://helper.pepega.workers.dev/twitch/chat/color?user_id=${channelId}`, requestOptions);
+      let result = await response.json();
+      resolve(result?.data[0]?.color || "#FFFFFF");
+    } catch (error) {
+      console.log("getStreamerColor error", error);
+      resolve("#FFFFFF");
+    }
+  });
+} //getStreamerColor
 
 async function sendUsername() {
   let body = JSON.stringify({ site: `guessr.tv`, channel: channelName, platform: "twitch" });
