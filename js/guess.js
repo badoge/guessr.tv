@@ -96,6 +96,8 @@ let channelBadges = { subscriber: [], bits: [] };
 let globalBadges = {};
 let customBadges = [];
 
+const mainMenuInnerHTML = elements.twitchEmbed.innerHTML;
+
 const viewersSVG = `<svg class="viewers-svg" width="24px" height="24px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
   <g>
     <path
@@ -1107,76 +1109,7 @@ function reset() {
     client.disconnect();
     client = null;
   }
-  elements.twitchEmbed.innerHTML = `<div class="card mt-5" id="welcomeCard">
-  <div class="card-header"><img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv</div>
-  <div class="card-body">
-    <div class="container-fluid">
-      <div class="row mb-3">
-        <div class="card game-card cursor-pointer" onclick="showSettings('viewers')">
-          <div class="card-body">
-            <h2>
-              Viewers
-              <svg class="viewers-svg" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
-                <g>
-                  <path
-                    fill-rule="evenodd"
-                    d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
-                    clip-rule="evenodd"
-                  ></path>
-                </g>
-              </svg>
-            </h2>
-            <div class="hidden">
-              A random Twitch streamer will be shown and you will have to guess how many viewers they have. The closer you are to the target view count the more points you'll
-              earn.
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row mb-3">
-        <div class="card game-card cursor-pointer" onclick="showSettings('followers')">
-          <div class="card-body">
-            <h2>
-              Followers
-              <svg type="color-fill-current" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px" class="follow-svg">
-                <g>
-                  <path
-                    fill-rule="evenodd"
-                    d="M9.171 4.171A4 4 0 006.343 3H6a4 4 0 00-4 4v.343a4 4 0 001.172 2.829L10 17l6.828-6.828A4 4 0 0018 7.343V7a4 4 0 00-4-4h-.343a4 4 0 00-2.829 1.172L10 5l-.829-.829zm.829 10l5.414-5.414A2 2 0 0016 7.343V7a2 2 0 00-2-2h-.343a2 2 0 00-1.414.586L10 7.828 7.757 5.586A2 2 0 006.343 5H6a2 2 0 00-2 2v.343a2 2 0 00.586 1.414L10 14.172z"
-                    clip-rule="evenodd"
-                  ></path>
-                </g>
-              </svg>
-            </h2>
-            <div class="hidden">Same as the above but you'll be guessing how many followers the random streamers have.</div>
-          </div>
-        </div>
-      </div>
-      <div class="row mb-3">
-        <div class="card game-card cursor-pointer" onclick="showSettings('gamename')">
-          <div class="card-body">
-            <h2>
-              Game
-              <i class="material-icons notranslate mp-icon">sports_esports</i>
-            </h2>
-            <div class="hidden">You will be shown a random Twitch stream and you will have to guess what game they are playing.</div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="card game-card cursor-pointer" onclick="showSettings('emote')">
-          <div class="card-body">
-            <h2>
-              Emote
-              <i class="material-icons notranslate mp-icon">emoji_emotions</i>
-            </h2>
-            <div class="hidden">You will be shown a random Twitch stream and you will have to guess which emote belongs to them.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>`;
+  elements.twitchEmbed.innerHTML = mainMenuInnerHTML;
 } //reset
 
 function showToast(msg, type, timeout) {
