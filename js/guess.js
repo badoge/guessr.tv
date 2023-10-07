@@ -131,6 +131,7 @@ let emoteList = [];
 let guessList = [];
 let seenChannels = [];
 let seenClips = [];
+let roundResults = []; // collecting stuff for final screen
 let round = 0;
 let score = 0;
 let player = null;
@@ -252,9 +253,11 @@ function toggleControls(hide = false) {
 async function startGame() {
   guessList = [];
   chatters = [];
+  roundResults = [];
   score = 0;
   elements.leaderboardList.innerHTML = "";
   elements.leaderboardListRound.innerHTML = "";
+  elements.chatHint.style.display = "";
 
   //get a new clip set and then use helper to update view count and make sure clips still exist
   if (gameSettings.video == "clips") {
@@ -335,6 +338,7 @@ async function getRandomStream() {
       //update stream info
       random.viewers = stream.data[0].viewer_count;
       random.game_name = stream.data[0].game_name;
+      random.thumbnail = stream.data[0].thumbnail_url || "";
       return random;
     } else {
       //stream is offline so remove it from the main list and get a new one
@@ -362,6 +366,7 @@ async function getClipsGuessList() {
     for (let index = 0; index < clips.data.length; index++) {
       let clipIndex = mainList.findIndex((e) => e.id == clips.data[index].id);
       mainList[clipIndex].viewers = clips.data[index].view_count; //update clips from the bot with up to date view count from helper
+      mainList[clipIndex].thumbnail = clips.data[index].thumbnail_url || "";
     }
     guessList = mainList.filter((n) => clips.data.some((n2) => n.id == n2.id));
     //remove seen clips
@@ -523,7 +528,7 @@ async function nextRound() {
   if (gameSettings.video == "clips") {
     elements.twitchEmbed.innerHTML = `
     <iframe 
-    src="https://clips.twitch.tv/embed?clip=${guessList[round - 1].id}&parent=guessr.tv&autoplay=true" 
+    src="https://clips.twitch.tv/embed?clip=${guessList[round - 1].id}&parent=${window.location.hostname}&autoplay=true" 
     height="100%" 
     width="100%" 
     preload="auto" 
@@ -543,7 +548,7 @@ async function nextRound() {
   elements.nextRound.innerHTML = "Next round";
   elements.nextRound.style.display = "none";
   elements.playAgain.disabled = false;
-  elements.playAgain.innerHTML = "Play again";
+  elements.playAgain.innerHTML = "Show results";
   elements.playAgain.style.display = "none";
   elements.resultsDiv.style.display = "none";
 
@@ -698,7 +703,13 @@ async function guess(choice, timeUp) {
   //stop timer here because checks above can show some warning instead of ending the round
   stopTimer();
 
-  let { points, percent, diff, color } = calculateScore(answer);
+  let roundResult = calculateScore(answer);
+
+  // store some data for final screen:
+  roundResult.task = guessList[round - 1];
+  roundResults.push(roundResult);
+
+  let { points, percent, diff, color } = roundResult;
 
   score += points;
   elements.streamCover.style.display = "none";
@@ -942,6 +953,9 @@ async function guess(choice, timeUp) {
     }
   }
 
+  // remember the correction content - will reuse it on the final screen
+  roundResult.correctionHTML = elements.correction.innerHTML;
+
   //update streamers score on the lb and then update all viewers scores
   if (gameSettings.chat) {
     let username = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
@@ -980,6 +994,7 @@ async function guess(choice, timeUp) {
     }
     elements.nextRound.style.display = "none";
     elements.playAgain.style.display = "";
+    elements.playAgain.innerHTML = "Show results";
     elements.gameEndText.style.display = "";
   }
   //end game if game on 5th round and mode is followers
@@ -994,11 +1009,133 @@ async function guess(choice, timeUp) {
     }
     elements.nextRound.style.display = "none";
     elements.playAgain.style.display = "";
+    elements.playAgain.innerHTML = "Show results";
     elements.gameEndText.style.display = "";
   }
 } //guess
 
+function showFinalScreen() {
+  const thumbSize = [640, 360];
+
+  const roundDataMap = roundResults.map((data, i) => {
+    const u = data.task.username.toLowerCase();
+
+    const thumbnail = String(data.task.thumbnail).replace("{width}", thumbSize[0]).replace("{height}", thumbSize[1]);
+    const channelLink = `<a href="https://twitch.tv/${u}" target="_blank">${data.task.display_name || data.task.username}</a>`;
+
+    let iframe;
+    if (gameSettings.video == "clips") {
+      iframe = `
+      <iframe height="100%" width="100%" preload="metadata"
+      src="https://clips.twitch.tv/embed?clip=${data.task.id}&parent=${window.location.hostname}&autoplay=true" 
+      ></iframe>`;
+    } else {
+      iframe = `<iframe src="https://player.twitch.tv/?channel=${u}&parent=${window.location.hostname}" width="100%" height="100%" allowfullscreen autoplay="false"></iframe>`;
+    }
+
+    let pointsText = data.points.toLocaleString() + " Point";
+    if (data.points % 10 !== 1 || data.points % 100 === 11) pointsText += "s";
+    if (data.points === 0) pointsText += " 💀";
+
+    /*
+    let gameSettings = {
+      game: "viewers", // viewers - followers - gamename - emote
+      video: "streams", // streams - clips
+      collection: "random", // "random", "short", "long", "popular", "hottub", "forsen"
+      controls: "slider", // slider - choices - text - higherlower
+      chat: false, // true - false
+    };
+    */
+
+    let roundResultBlock;
+    if (gameSettings.game === "emote") {
+      roundResultBlock = "<p class='m-0'>" + data.correctionHTML + "</p>";
+    } else if (gameSettings.game === "gamename") {
+      roundResultBlock = `<p class='m-0'>
+      Your guess: <span class="text-${i + 1 < roundResults.length ? "success" : "danger"}">${data.answer}</span>
+      <br /><br />
+      Correct answer: <span class="text-info">${data.correct}</span>
+    </p>`;
+    } else if (gameSettings.controls === "slider") {
+      roundResultBlock = `<div class="col-8">
+          <div class="fs-5">
+            <span>${pointsText}</span><br />
+            <div class="progress" role="progressbar" aria-label="score" aria-valuenow="${data.percent}" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar" style="width:${data.percent}%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">${data.correctionHTML}</div>`;
+    } else {
+      roundResultBlock = `<div class="col-6">
+        <p>Your guess:</p>
+        <div>
+          <button type="button" class="btn btn-outline-${i + 1 < roundResults.length ? "success" : "danger"} multiChoice-btn m-0">
+            ${data.answer}
+          </button>
+        </div>
+      </div>
+      <div class="col-6">
+        <p>Correct answer</p>
+        <div>
+          <button type="button" class="btn btn-outline-info multiChoice-btn m-0">
+            ${data.correct}
+          </button>
+        </div>
+      </div>`;
+    }
+
+    return `<div class="row mb-3">
+    <div class="card p-0">
+      <div class="card-body d-flex flex-row p-0">
+        <div class="final-small-embed" onclick='this.innerHTML=\`${iframe}\`'>
+          <img class="h-100 w-auto" src="${thumbnail}" width="${thumbSize[0]}" height="${thumbSize[1]}" alt="">
+          <div class="embed-playbutton">\u25BA</div>
+        </div>
+        <div class="col">
+          <h4 class="m-2 text-start"><b>${1 + i}</b> &ndash; ${channelLink}</h4>
+          <hr />
+          <div class="row px-2">
+            ${roundResultBlock}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  });
+
+  elements.twitchEmbed.innerHTML = `<div class="card w-100" id="gameOverCard">
+    <div class="card-header fs-3">Game over!</div>
+    <div class="card-body">
+      <div class="container-fluid">
+        ${roundDataMap.join("\n")}
+
+        <div class="row align-items-center">
+          <div class="col-4">
+            <button type="button" onclick="reset()" class="btn btn-lg btn-secondary">Choose another mode</button>
+          </div>
+          <div class="col-4">
+            ${elements.gameEndText.innerHTML}
+          </div>
+          <div class="col-4">
+            <button type="button" onclick="playAgainButton(event)" class="btn btn-lg btn-info">Play again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  elements.scoreDiv.style.display = "none";
+  elements.mainCard.style.display = "none";
+  elements.resultsDiv.style.display = "none";
+  elements.chatHint.style.display = "none";
+
+  player = null;
+}
+
 function calculateScore(answer) {
+  const result = {};
+
   let points = 0;
   let percent = 0;
   let diff = 0;
@@ -1011,6 +1148,8 @@ function calculateScore(answer) {
     } else {
       points = 0;
     }
+    result.answer = answer;
+    result.correct = guessList[round - 1].userid;
   }
 
   //calculate score for viewers mode - streams or clips- slider controls
@@ -1022,6 +1161,9 @@ function calculateScore(answer) {
     diff = Math.abs(answer - guessList[round - 1].viewers);
     points = Math.round(5000 * Math.exp(-diff / decay));
     percent = Math.round((points / 5000) * 100);
+
+    result.answer = answer;
+    result.correct = guessList[round - 1].viewers;
   }
 
   //calculate score for followers mode - streams or clips - slider controls
@@ -1033,6 +1175,9 @@ function calculateScore(answer) {
     diff = Math.abs(answer - guessList[round - 1].followers);
     points = Math.round(5000 * Math.exp(-diff / decay));
     percent = Math.round((points / 5000) * 100);
+
+    result.answer = answer;
+    result.correct = guessList[round - 1].viewers;
   }
 
   //check if answer is corrent for multi choice controls - viewers or followers game - streams or clips
@@ -1042,15 +1187,25 @@ function calculateScore(answer) {
     } else {
       points = 0;
     }
+
+    result.answer = answer;
+    result.correct = guessList[round - 1][gameSettings.game];
   }
 
   //check if answer is corrent for higherlower controls - viewers or followers game - streams or clips
   if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
-    if ((answer == "higher" && guessList[round - 1][gameSettings.game] >= previousNumber) || (answer == "lower" && guessList[round - 1][gameSettings.game] <= previousNumber)) {
+    let correctAnswer = answer; // will match if prev number is equal to current number
+    if (guessList[round - 1][gameSettings.game] > previousNumber) correctAnswer = "higher";
+    if (guessList[round - 1][gameSettings.game] < previousNumber) correctAnswer = "lower";
+
+    if (answer === correctAnswer) {
       points = 1;
     } else {
       points = 0;
     }
+
+    result.answer = answer;
+    result.correct = correctAnswer;
   }
 
   //get points for game guesser mode
@@ -1060,12 +1215,18 @@ function calculateScore(answer) {
     } else {
       points = 0;
     }
+
+    result.answer = String(elements.gameInput.value);
+    result.correct = guessList[round - 1].game_name;
   }
 
   //guess() was called by timer and user did not provide an answer so give user 0 points
   if (answer == -1) {
     points = 0;
     percent = 0;
+
+    result.answer = gameSettings.controls == "slider" ? 0 : "⏱️ timed out";
+    result.isTimedOut = true;
   }
 
   //get color class name for correction text
@@ -1077,7 +1238,12 @@ function calculateScore(answer) {
     color = "text-danger";
   }
 
-  return { points: points, percent: percent, diff: diff, color: color };
+  result.points = points;
+  result.percent = percent;
+  result.diff = diff;
+  result.color = color;
+
+  return result;
 } //calculateScore
 
 function reset() {
@@ -1100,6 +1266,7 @@ function reset() {
   elements.guessLabel.innerHTML = "View count";
   elements.leaderboardList.innerHTML = "";
   elements.gameEndText.innerHTML = "";
+  elements.chatHint.style.display = "";
 
   round = 0;
   score = 0;
@@ -1656,6 +1823,17 @@ function enableTooltips() {
   const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl));
 } //enableTooltips
 
+async function playAgainButton(event) {
+  const target = event.currentTarget || event.target;
+  const oldContent = target.innerHTML;
+  target.disabled = true;
+  target.innerHTML = spinner;
+
+  await startGame();
+  nextRound();
+  target.innerHTML = oldContent;
+}
+
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels")) || [];
   elements.seenChannels.innerHTML = seenChannels.length;
@@ -1742,11 +1920,8 @@ window.onload = async function () {
     localStorage.setItem("seenClips", JSON.stringify(seenClips));
     nextRound();
   };
-  elements.playAgain.onclick = async function () {
-    elements.playAgain.disabled = true;
-    elements.playAgain.innerHTML = spinner;
-    await startGame();
-    nextRound();
+  elements.playAgain.onclick = function () {
+    showFinalScreen();
   };
   elements.reset.onclick = function () {
     reset();

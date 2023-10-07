@@ -207,3 +207,33 @@ iframe {
   margin-right: 0.2rem;
   vertical-align: middle;
 }
+
+.final-small-embed {
+  aspect-ratio: 16/9;
+  height: 12em;
+  max-height: 12em;
+  position: relative;
+  background-color: black;
+  cursor: pointer;
+  border-top-left-radius: 0.375rem;
+  border-bottom-left-radius: 0.375rem;
+}
+@media all and (max-width: 800px) {
+  .final-small-embed {
+    display: none;
+  }
+}
+
+.final-small-embed iframe {
+  border-radius: 0;
+}
+
+.embed-playbutton {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px;
+  color: white;
+  text-shadow: 0px 0px 4px black;
+}
