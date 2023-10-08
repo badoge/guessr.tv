@@ -30,10 +30,12 @@ const elements = {
   resultsDiv: document.getElementById("resultsDiv"),
   nextRound: document.getElementById("nextRound"),
   playAgain: document.getElementById("playAgain"),
-  gameEndText: document.getElementById("gameEndText"),
+  changeMode: document.getElementById("changeMode"),
+  breakdown: document.getElementById("breakdown"),
   scoreProgressBarLabel: document.getElementById("scoreProgressBarLabel"),
   progress: document.getElementById("progress"),
   progressBar: document.getElementById("progressBar"),
+  gameEndText: document.getElementById("gameEndText"),
 
   correction: document.getElementById("correction"),
 
@@ -96,6 +98,8 @@ let channelBadges = { subscriber: [], bits: [] };
 let globalBadges = {};
 let customBadges = [];
 
+const mainMenuInnerHTML = elements.twitchEmbed.innerHTML;
+
 const viewersSVG = `<svg class="viewers-svg" width="24px" height="24px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
   <g>
     <path
@@ -129,6 +133,7 @@ let emoteList = [];
 let guessList = [];
 let seenChannels = [];
 let seenClips = [];
+let roundResults = []; // collecting stuff for final screen
 let round = 0;
 let score = 0;
 let player = null;
@@ -250,9 +255,11 @@ function toggleControls(hide = false) {
 async function startGame() {
   guessList = [];
   chatters = [];
+  roundResults = [];
   score = 0;
   elements.leaderboardList.innerHTML = "";
   elements.leaderboardListRound.innerHTML = "";
+  elements.chatHint.style.display = "";
 
   //get a new clip set and then use helper to update view count and make sure clips still exist
   if (gameSettings.video == "clips") {
@@ -293,6 +300,8 @@ async function startGame() {
   elements.correction.innerHTML = "";
   elements.gameEndText.innerHTML = "";
   elements.mainCard.style.display = "";
+  elements.breakdown.disabled = false;
+
   round = 0;
   previousNumber = null;
 } //startGame
@@ -333,6 +342,7 @@ async function getRandomStream() {
       //update stream info
       random.viewers = stream.data[0].viewer_count;
       random.game_name = stream.data[0].game_name;
+      random.thumbnail = stream.data[0].thumbnail_url || "";
       return random;
     } else {
       //stream is offline so remove it from the main list and get a new one
@@ -360,6 +370,7 @@ async function getClipsGuessList() {
     for (let index = 0; index < clips.data.length; index++) {
       let clipIndex = mainList.findIndex((e) => e.id == clips.data[index].id);
       mainList[clipIndex].viewers = clips.data[index].view_count; //update clips from the bot with up to date view count from helper
+      mainList[clipIndex].thumbnail = clips.data[index].thumbnail_url || "";
     }
     guessList = mainList.filter((n) => clips.data.some((n2) => n.id == n2.id));
     //remove seen clips
@@ -521,7 +532,7 @@ async function nextRound() {
   if (gameSettings.video == "clips") {
     elements.twitchEmbed.innerHTML = `
     <iframe 
-    src="https://clips.twitch.tv/embed?clip=${guessList[round - 1].id}&parent=guessr.tv&autoplay=true" 
+    src="https://clips.twitch.tv/embed?clip=${guessList[round - 1].id}&parent=${window.location.hostname}&autoplay=true" 
     height="100%" 
     width="100%" 
     preload="auto" 
@@ -540,9 +551,9 @@ async function nextRound() {
   elements.nextRound.disabled = false;
   elements.nextRound.innerHTML = "Next round";
   elements.nextRound.style.display = "none";
-  elements.playAgain.disabled = false;
-  elements.playAgain.innerHTML = "Play again";
   elements.playAgain.style.display = "none";
+  elements.changeMode.style.display = "none";
+  elements.breakdown.style.display = "none";
   elements.resultsDiv.style.display = "none";
 
   startTimer();
@@ -696,7 +707,13 @@ async function guess(choice, timeUp) {
   //stop timer here because checks above can show some warning instead of ending the round
   stopTimer();
 
-  let { points, percent, diff, color } = calculateScore(answer);
+  let roundResult = calculateScore(answer);
+
+  // store some data for final screen:
+  roundResult.task = guessList[round - 1];
+  roundResults.push(roundResult);
+
+  let { points, percent, diff, color } = roundResult;
 
   score += points;
   elements.streamCover.style.display = "none";
@@ -773,6 +790,8 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.changeMode.style.display = "";
+      elements.breakdown.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > viewersStreak) {
@@ -815,6 +834,8 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.changeMode.style.display = "";
+      elements.breakdown.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > followersStreak) {
@@ -845,6 +866,8 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.changeMode.style.display = "";
+      elements.breakdown.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > gameStreak) {
@@ -887,6 +910,8 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.changeMode.style.display = "";
+      elements.breakdown.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > emoteStreak) {
@@ -929,6 +954,8 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.changeMode.style.display = "";
+      elements.breakdown.style.display = "";
       elements.gameEndText.style.display = "";
       if (score > streak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
@@ -939,6 +966,9 @@ async function guess(choice, timeUp) {
       }
     }
   }
+
+  // remember the correction content - will reuse it on the final screen
+  roundResult.correctionHTML = elements.correction.innerHTML;
 
   //update streamers score on the lb and then update all viewers scores
   if (gameSettings.chat) {
@@ -978,6 +1008,8 @@ async function guess(choice, timeUp) {
     }
     elements.nextRound.style.display = "none";
     elements.playAgain.style.display = "";
+    elements.changeMode.style.display = "";
+    elements.breakdown.style.display = "";
     elements.gameEndText.style.display = "";
   }
   //end game if game on 5th round and mode is followers
@@ -992,11 +1024,115 @@ async function guess(choice, timeUp) {
     }
     elements.nextRound.style.display = "none";
     elements.playAgain.style.display = "";
+    elements.changeMode.style.display = "";
+    elements.breakdown.style.display = "";
     elements.gameEndText.style.display = "";
   }
 } //guess
 
+function showBreakdown() {
+  const thumbSize = [640, 360];
+
+  const roundDataMap = roundResults.map((data, i) => {
+    const u = data.task.username.toLowerCase();
+
+    const thumbnail = String(data.task.thumbnail).replace("{width}", thumbSize[0]).replace("{height}", thumbSize[1]);
+    const channelLink = `<a href="https://twitch.tv/${u}" target="_blank">${data.task.display_name || data.task.username}</a>`;
+
+    let iframe;
+    if (gameSettings.video == "clips") {
+      iframe = `
+      <iframe height="100%" width="100%" preload="metadata"
+      src="https://clips.twitch.tv/embed?clip=${data.task.id}&parent=${window.location.hostname}&autoplay=true" 
+      ></iframe>`;
+    } else {
+      iframe = `<iframe src="https://player.twitch.tv/?channel=${u}&parent=${window.location.hostname}" width="100%" height="100%" allowfullscreen autoplay="false"></iframe>`;
+    }
+
+    let pointsText = data.points.toLocaleString() + " Point";
+    if (data.points % 10 !== 1 || data.points % 100 === 11) {
+      pointsText += "s";
+    }
+    if (data.points === 0) {
+      pointsText += " 💀";
+    }
+
+    let roundResultBlock;
+    if (gameSettings.game === "emote") {
+      roundResultBlock = "<p class='m-0'>" + data.correctionHTML + "</p>";
+    } else if (gameSettings.game === "gamename") {
+      roundResultBlock = `<p class='m-0'>
+      Your guess: <span class="text-${i + 1 < roundResults.length ? "success" : "danger"}">${data.answer}</span>
+      <br /><br />
+      Correct answer: <span class="text-info">${data.correct}</span>
+    </p>`;
+    } else if (gameSettings.controls === "slider") {
+      roundResultBlock = `<div class="col-8">
+          <div class="fs-5">
+            <span>${pointsText}</span><br />
+            <div class="progress" role="progressbar" aria-label="score" aria-valuenow="${data.percent}" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar" style="width:${data.percent}%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">${data.correctionHTML}</div>`;
+    } else {
+      roundResultBlock = `<div class="col-6">
+        <p>Your guess:</p>
+        <div>
+          <button type="button" class="btn btn-outline-${i + 1 < roundResults.length ? "success" : "danger"} multiChoice-btn m-0">
+            ${data.answer}
+          </button>
+        </div>
+      </div>
+      <div class="col-6">
+        <p>Correct answer</p>
+        <div>
+          <button type="button" class="btn btn-outline-info multiChoice-btn m-0">
+            ${data.correct}
+          </button>
+        </div>
+      </div>`;
+    }
+
+    return `<div class="row mb-3">
+    <div class="card p-0">
+      <div class="card-body d-flex flex-row p-0">
+        <div class="final-small-embed rounded-start" onclick='this.innerHTML=\`${iframe}\`'>
+          <img class="h-100 w-auto rounded-start" src="${thumbnail}" width="${thumbSize[0]}" height="${thumbSize[1]}" alt="">
+          <div class="embed-playbutton"><i class="material-icons notranslate mp-icon">play_arrow</i></div>
+        </div>
+        <div class="col">
+          <h4 class="m-2 text-start"><b>${1 + i}</b> &ndash; ${channelLink}</h4>
+          <hr />
+          <div class="row px-2">
+            ${roundResultBlock}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  });
+
+  elements.twitchEmbed.innerHTML = `<div class="card w-100" id="gameOverCard">
+    <div class="card-header fs-3 position-sticky top-0 bg-body-tertiary z-1">Game breakdown</div>
+    <div class="card-body">
+      <div class="container-fluid">
+        ${roundDataMap.join("\n")}
+      </div>
+    </div>
+  </div>`;
+
+  elements.scoreDiv.style.display = "none";
+  elements.chatHint.style.display = "none";
+  elements.breakdown.disabled = true;
+
+  player = null;
+} //showBreakdown
+
 function calculateScore(answer) {
+  const result = {};
+
   let points = 0;
   let percent = 0;
   let diff = 0;
@@ -1009,6 +1145,8 @@ function calculateScore(answer) {
     } else {
       points = 0;
     }
+    result.answer = answer;
+    result.correct = guessList[round - 1].userid;
   }
 
   //calculate score for viewers mode - streams or clips- slider controls
@@ -1020,6 +1158,9 @@ function calculateScore(answer) {
     diff = Math.abs(answer - guessList[round - 1].viewers);
     points = Math.round(5000 * Math.exp(-diff / decay));
     percent = Math.round((points / 5000) * 100);
+
+    result.answer = answer;
+    result.correct = guessList[round - 1].viewers;
   }
 
   //calculate score for followers mode - streams or clips - slider controls
@@ -1031,6 +1172,9 @@ function calculateScore(answer) {
     diff = Math.abs(answer - guessList[round - 1].followers);
     points = Math.round(5000 * Math.exp(-diff / decay));
     percent = Math.round((points / 5000) * 100);
+
+    result.answer = answer;
+    result.correct = guessList[round - 1].viewers;
   }
 
   //check if answer is corrent for multi choice controls - viewers or followers game - streams or clips
@@ -1040,15 +1184,25 @@ function calculateScore(answer) {
     } else {
       points = 0;
     }
+
+    result.answer = answer;
+    result.correct = guessList[round - 1][gameSettings.game];
   }
 
   //check if answer is corrent for higherlower controls - viewers or followers game - streams or clips
   if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
-    if ((answer == "higher" && guessList[round - 1][gameSettings.game] >= previousNumber) || (answer == "lower" && guessList[round - 1][gameSettings.game] <= previousNumber)) {
+    let correctAnswer = answer; // will match if prev number is equal to current number
+    if (guessList[round - 1][gameSettings.game] > previousNumber) correctAnswer = "higher";
+    if (guessList[round - 1][gameSettings.game] < previousNumber) correctAnswer = "lower";
+
+    if (answer === correctAnswer) {
       points = 1;
     } else {
       points = 0;
     }
+
+    result.answer = answer;
+    result.correct = correctAnswer;
   }
 
   //get points for game guesser mode
@@ -1058,12 +1212,18 @@ function calculateScore(answer) {
     } else {
       points = 0;
     }
+
+    result.answer = String(elements.gameInput.value);
+    result.correct = guessList[round - 1].game_name;
   }
 
   //guess() was called by timer and user did not provide an answer so give user 0 points
   if (answer == -1) {
     points = 0;
     percent = 0;
+
+    result.answer = gameSettings.controls == "slider" ? 0 : "⏱️ timed out";
+    result.isTimedOut = true;
   }
 
   //get color class name for correction text
@@ -1075,7 +1235,12 @@ function calculateScore(answer) {
     color = "text-danger";
   }
 
-  return { points: points, percent: percent, diff: diff, color: color };
+  result.points = points;
+  result.percent = percent;
+  result.diff = diff;
+  result.color = color;
+
+  return result;
 } //calculateScore
 
 function reset() {
@@ -1098,6 +1263,7 @@ function reset() {
   elements.guessLabel.innerHTML = "View count";
   elements.leaderboardList.innerHTML = "";
   elements.gameEndText.innerHTML = "";
+  elements.chatHint.style.display = "";
 
   round = 0;
   score = 0;
@@ -1107,76 +1273,7 @@ function reset() {
     client.disconnect();
     client = null;
   }
-  elements.twitchEmbed.innerHTML = `<div class="card mt-5" id="welcomeCard">
-  <div class="card-header"><img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv</div>
-  <div class="card-body">
-    <div class="container-fluid">
-      <div class="row mb-3">
-        <div class="card game-card cursor-pointer" onclick="showSettings('viewers')">
-          <div class="card-body">
-            <h2>
-              Viewers
-              <svg class="viewers-svg" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
-                <g>
-                  <path
-                    fill-rule="evenodd"
-                    d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
-                    clip-rule="evenodd"
-                  ></path>
-                </g>
-              </svg>
-            </h2>
-            <div class="hidden">
-              A random Twitch streamer will be shown and you will have to guess how many viewers they have. The closer you are to the target view count the more points you'll
-              earn.
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row mb-3">
-        <div class="card game-card cursor-pointer" onclick="showSettings('followers')">
-          <div class="card-body">
-            <h2>
-              Followers
-              <svg type="color-fill-current" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px" class="follow-svg">
-                <g>
-                  <path
-                    fill-rule="evenodd"
-                    d="M9.171 4.171A4 4 0 006.343 3H6a4 4 0 00-4 4v.343a4 4 0 001.172 2.829L10 17l6.828-6.828A4 4 0 0018 7.343V7a4 4 0 00-4-4h-.343a4 4 0 00-2.829 1.172L10 5l-.829-.829zm.829 10l5.414-5.414A2 2 0 0016 7.343V7a2 2 0 00-2-2h-.343a2 2 0 00-1.414.586L10 7.828 7.757 5.586A2 2 0 006.343 5H6a2 2 0 00-2 2v.343a2 2 0 00.586 1.414L10 14.172z"
-                    clip-rule="evenodd"
-                  ></path>
-                </g>
-              </svg>
-            </h2>
-            <div class="hidden">Same as the above but you'll be guessing how many followers the random streamers have.</div>
-          </div>
-        </div>
-      </div>
-      <div class="row mb-3">
-        <div class="card game-card cursor-pointer" onclick="showSettings('gamename')">
-          <div class="card-body">
-            <h2>
-              Game
-              <i class="material-icons notranslate mp-icon">sports_esports</i>
-            </h2>
-            <div class="hidden">You will be shown a random Twitch stream and you will have to guess what game they are playing.</div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="card game-card cursor-pointer" onclick="showSettings('emote')">
-          <div class="card-body">
-            <h2>
-              Emote
-              <i class="material-icons notranslate mp-icon">emoji_emotions</i>
-            </h2>
-            <div class="hidden">You will be shown a random Twitch stream and you will have to guess which emote belongs to them.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>`;
+  elements.twitchEmbed.innerHTML = mainMenuInnerHTML;
 } //reset
 
 function showToast(msg, type, timeout) {
@@ -1270,17 +1367,17 @@ async function getSettings() {
   //update chat hint based on mode
   switch (gameSettings.game) {
     case "gamename":
-      elements.chatHint.innerHTML = `Type <kbd class="notranslate">!guess [game name]</kbd> in chat to guess`;
+      elements.chatHint.innerHTML = `<h4>Type <kbd class="notranslate">!guess [game name]</kbd> in chat to guess</h4>`;
       break;
     case "emote":
-      elements.chatHint.innerHTML = "Type an emote's letter (a/b/c/d/e) in chat to guess";
+      elements.chatHint.innerHTML = "<h4>Type an emote's letter (a/b/c/d/e) in chat to guess</h4>";
       break;
     default:
-      elements.chatHint.innerHTML = "Type a number in chat to guess";
+      elements.chatHint.innerHTML = "<h4>Type a number in chat to guess</h4>";
       break;
   }
   if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
-    elements.chatHint.innerHTML = `Type <kbd class="notranslate">higher</kbd> or <kbd class="notranslate">lower</kbd> in chat to guess`;
+    elements.chatHint.innerHTML = `<h4>Type <kbd class="notranslate">higher</kbd> or <kbd class="notranslate">lower</kbd> in chat to guess</h4>`;
   }
 
   channelName = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
@@ -1723,6 +1820,16 @@ function enableTooltips() {
   const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl));
 } //enableTooltips
 
+async function playAgain() {
+  const oldContent = elements.playAgain.innerHTML;
+  elements.playAgain.disabled = true;
+  elements.playAgain.innerHTML = spinner;
+  await startGame();
+  nextRound();
+  elements.playAgain.innerHTML = oldContent;
+  elements.playAgain.disabled = false;
+}
+
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels")) || [];
   elements.seenChannels.innerHTML = seenChannels.length;
@@ -1808,15 +1915,6 @@ window.onload = async function () {
     localStorage.setItem("seenChannels", JSON.stringify(seenChannels));
     localStorage.setItem("seenClips", JSON.stringify(seenClips));
     nextRound();
-  };
-  elements.playAgain.onclick = async function () {
-    elements.playAgain.disabled = true;
-    elements.playAgain.innerHTML = spinner;
-    await startGame();
-    nextRound();
-  };
-  elements.reset.onclick = function () {
-    reset();
   };
 
   elements.resetHighScore.onclick = function () {
