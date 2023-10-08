@@ -1037,16 +1037,6 @@ function showFinalScreen() {
     if (data.points % 10 !== 1 || data.points % 100 === 11) pointsText += "s";
     if (data.points === 0) pointsText += " 💀";
 
-    /*
-    let gameSettings = {
-      game: "viewers", // viewers - followers - gamename - emote
-      video: "streams", // streams - clips
-      collection: "random", // "random", "short", "long", "popular", "hottub", "forsen"
-      controls: "slider", // slider - choices - text - higherlower
-      chat: false, // true - false
-    };
-    */
-
     let roundResultBlock;
     if (gameSettings.game === "emote") {
       roundResultBlock = "<p class='m-0'>" + data.correctionHTML + "</p>";
@@ -1105,11 +1095,13 @@ function showFinalScreen() {
   });
 
   elements.twitchEmbed.innerHTML = `<div class="card w-100" id="gameOverCard">
-    <div class="card-header fs-3">Game over!</div>
+    <div class="card-header fs-3 position-sticky top-0 bg-body-tertiary z-1">Game over!</div>
     <div class="card-body">
       <div class="container-fluid">
         ${roundDataMap.join("\n")}
-
+      </div>
+    </div>
+    <div class="card-footer position-sticky bottom-0 bg-body-tertiary z-1">
         <div class="row align-items-center">
           <div class="col-4">
             <button type="button" onclick="reset()" class="btn btn-lg btn-secondary">Choose another mode</button>
@@ -1119,7 +1111,6 @@ function showFinalScreen() {
           </div>
           <div class="col-4">
             <button type="button" onclick="playAgainButton(event)" class="btn btn-lg btn-info">Play again</button>
-          </div>
         </div>
       </div>
     </div>
