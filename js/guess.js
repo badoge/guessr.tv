@@ -30,7 +30,8 @@ const elements = {
   resultsDiv: document.getElementById("resultsDiv"),
   nextRound: document.getElementById("nextRound"),
   playAgain: document.getElementById("playAgain"),
-  gameEndText: document.getElementById("gameEndText"),
+  showResults: document.getElementById("showResults"),
+  gameEndText: document.createElement("div"), // former div#gameEndText
   scoreProgressBarLabel: document.getElementById("scoreProgressBarLabel"),
   progress: document.getElementById("progress"),
   progressBar: document.getElementById("progressBar"),
@@ -548,8 +549,11 @@ async function nextRound() {
   elements.nextRound.innerHTML = "Next round";
   elements.nextRound.style.display = "none";
   elements.playAgain.disabled = false;
-  elements.playAgain.innerHTML = "Show results";
+  elements.playAgain.innerHTML = "Play again";
   elements.playAgain.style.display = "none";
+  elements.showResults.disabled = false;
+  elements.showResults.innerHTML = "Show results";
+  elements.showResults.style.display = "none";
   elements.resultsDiv.style.display = "none";
 
   startTimer();
@@ -786,6 +790,7 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.showResults.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > viewersStreak) {
@@ -828,6 +833,7 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.showResults.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > followersStreak) {
@@ -858,6 +864,7 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.showResults.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > gameStreak) {
@@ -900,6 +907,7 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.showResults.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > emoteStreak) {
@@ -942,6 +950,7 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
+      elements.showResults.style.display = "";
       elements.gameEndText.style.display = "";
       if (score > streak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
@@ -994,7 +1003,9 @@ async function guess(choice, timeUp) {
     }
     elements.nextRound.style.display = "none";
     elements.playAgain.style.display = "";
-    elements.playAgain.innerHTML = "Show results";
+    elements.playAgain.innerHTML = "Play again";
+    elements.showResults.style.display = "";
+    elements.showResults.innerHTML = "Show results";
     elements.gameEndText.style.display = "";
   }
   //end game if game on 5th round and mode is followers
@@ -1009,7 +1020,9 @@ async function guess(choice, timeUp) {
     }
     elements.nextRound.style.display = "none";
     elements.playAgain.style.display = "";
-    elements.playAgain.innerHTML = "Show results";
+    elements.playAgain.innerHTML = "Play again";
+    elements.showResults.style.display = "";
+    elements.showResults.innerHTML = "Show results";
     elements.gameEndText.style.display = "";
   }
 } //guess
@@ -1102,15 +1115,15 @@ function showFinalScreen() {
       </div>
     </div>
     <div class="card-footer position-sticky bottom-0 bg-body-tertiary z-1">
-        <div class="row align-items-center">
-          <div class="col-4">
-            <button type="button" onclick="reset()" class="btn btn-lg btn-secondary">Choose another mode</button>
-          </div>
-          <div class="col-4">
-            ${elements.gameEndText.innerHTML}
-          </div>
-          <div class="col-4">
-            <button type="button" onclick="playAgainButton(event)" class="btn btn-lg btn-info">Play again</button>
+      <div class="row align-items-center">
+        <div class="col-4">
+          <button type="button" onclick="reset()" class="btn btn-lg btn-secondary">Choose another mode</button>
+        </div>
+        <div class="col-4">
+          ${elements.gameEndText.innerHTML}
+        </div>
+        <div class="col-4">
+          <button type="button" onclick="playAgainButton(event)" class="btn btn-lg btn-info">Play again</button>
         </div>
       </div>
     </div>
@@ -1911,9 +1924,8 @@ window.onload = async function () {
     localStorage.setItem("seenClips", JSON.stringify(seenClips));
     nextRound();
   };
-  elements.playAgain.onclick = function () {
-    showFinalScreen();
-  };
+  elements.playAgain.onclick = playAgainButton;
+  elements.showResults.onclick = showFinalScreen;
   elements.reset.onclick = function () {
     reset();
   };
