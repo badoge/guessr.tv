@@ -121,11 +121,16 @@ iframe {
 
 .guess,
 #nextRound,
-#playAgain,
-#showResults {
+#playAgain {
   font-size: 200%;
   width: 100%;
-  margin-bottom: 2px;
+}
+
+#breakdown,
+#changeMode {
+  font-size: 150%;
+  width: 49%;
+  padding: 0;
 }
 
 #guessInputDiv {
@@ -212,6 +217,9 @@ iframe {
 
 #gameOverCard {
   height: 75vh;
+}
+
+#gameOverCard > .card-body {
   overflow: auto;
 }
 
@@ -222,8 +230,6 @@ iframe {
   position: relative;
   background-color: black;
   cursor: pointer;
-  border-top-left-radius: 0.375rem;
-  border-bottom-left-radius: 0.375rem;
 }
 @media all and (max-width: 800px) {
   .final-small-embed {

@@ -30,11 +30,12 @@ const elements = {
   resultsDiv: document.getElementById("resultsDiv"),
   nextRound: document.getElementById("nextRound"),
   playAgain: document.getElementById("playAgain"),
-  showResults: document.getElementById("showResults"),
-  gameEndText: document.createElement("div"), // former div#gameEndText
+  changeMode: document.getElementById("changeMode"),
+  breakdown: document.getElementById("breakdown"),
   scoreProgressBarLabel: document.getElementById("scoreProgressBarLabel"),
   progress: document.getElementById("progress"),
   progressBar: document.getElementById("progressBar"),
+  gameEndText: document.getElementById("gameEndText"),
 
   correction: document.getElementById("correction"),
 
@@ -299,6 +300,8 @@ async function startGame() {
   elements.correction.innerHTML = "";
   elements.gameEndText.innerHTML = "";
   elements.mainCard.style.display = "";
+  elements.breakdown.disabled = false;
+
   round = 0;
   previousNumber = null;
 } //startGame
@@ -548,12 +551,9 @@ async function nextRound() {
   elements.nextRound.disabled = false;
   elements.nextRound.innerHTML = "Next round";
   elements.nextRound.style.display = "none";
-  elements.playAgain.disabled = false;
-  elements.playAgain.innerHTML = "Play again";
   elements.playAgain.style.display = "none";
-  elements.showResults.disabled = false;
-  elements.showResults.innerHTML = "Show results";
-  elements.showResults.style.display = "none";
+  elements.changeMode.style.display = "none";
+  elements.breakdown.style.display = "none";
   elements.resultsDiv.style.display = "none";
 
   startTimer();
@@ -790,7 +790,8 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
-      elements.showResults.style.display = "";
+      elements.changeMode.style.display = "";
+      elements.breakdown.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > viewersStreak) {
@@ -833,7 +834,8 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
-      elements.showResults.style.display = "";
+      elements.changeMode.style.display = "";
+      elements.breakdown.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > followersStreak) {
@@ -864,7 +866,8 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
-      elements.showResults.style.display = "";
+      elements.changeMode.style.display = "";
+      elements.breakdown.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > gameStreak) {
@@ -907,7 +910,8 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
-      elements.showResults.style.display = "";
+      elements.changeMode.style.display = "";
+      elements.breakdown.style.display = "";
       elements.gameEndText.style.display = "";
 
       if (score > emoteStreak) {
@@ -950,7 +954,8 @@ async function guess(choice, timeUp) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
       elements.playAgain.style.display = "";
-      elements.showResults.style.display = "";
+      elements.changeMode.style.display = "";
+      elements.breakdown.style.display = "";
       elements.gameEndText.style.display = "";
       if (score > streak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
@@ -1003,9 +1008,8 @@ async function guess(choice, timeUp) {
     }
     elements.nextRound.style.display = "none";
     elements.playAgain.style.display = "";
-    elements.playAgain.innerHTML = "Play again";
-    elements.showResults.style.display = "";
-    elements.showResults.innerHTML = "Show results";
+    elements.changeMode.style.display = "";
+    elements.breakdown.style.display = "";
     elements.gameEndText.style.display = "";
   }
   //end game if game on 5th round and mode is followers
@@ -1020,14 +1024,13 @@ async function guess(choice, timeUp) {
     }
     elements.nextRound.style.display = "none";
     elements.playAgain.style.display = "";
-    elements.playAgain.innerHTML = "Play again";
-    elements.showResults.style.display = "";
-    elements.showResults.innerHTML = "Show results";
+    elements.changeMode.style.display = "";
+    elements.breakdown.style.display = "";
     elements.gameEndText.style.display = "";
   }
 } //guess
 
-function showFinalScreen() {
+function showBreakdown() {
   const thumbSize = [640, 360];
 
   const roundDataMap = roundResults.map((data, i) => {
@@ -1047,8 +1050,12 @@ function showFinalScreen() {
     }
 
     let pointsText = data.points.toLocaleString() + " Point";
-    if (data.points % 10 !== 1 || data.points % 100 === 11) pointsText += "s";
-    if (data.points === 0) pointsText += " 💀";
+    if (data.points % 10 !== 1 || data.points % 100 === 11) {
+      pointsText += "s";
+    }
+    if (data.points === 0) {
+      pointsText += " 💀";
+    }
 
     let roundResultBlock;
     if (gameSettings.game === "emote") {
@@ -1091,9 +1098,9 @@ function showFinalScreen() {
     return `<div class="row mb-3">
     <div class="card p-0">
       <div class="card-body d-flex flex-row p-0">
-        <div class="final-small-embed" onclick='this.innerHTML=\`${iframe}\`'>
-          <img class="h-100 w-auto" src="${thumbnail}" width="${thumbSize[0]}" height="${thumbSize[1]}" alt="">
-          <div class="embed-playbutton">\u25BA</div>
+        <div class="final-small-embed rounded-start" onclick='this.innerHTML=\`${iframe}\`'>
+          <img class="h-100 w-auto rounded-start" src="${thumbnail}" width="${thumbSize[0]}" height="${thumbSize[1]}" alt="">
+          <div class="embed-playbutton"><i class="material-icons notranslate mp-icon">play_arrow</i></div>
         </div>
         <div class="col">
           <h4 class="m-2 text-start"><b>${1 + i}</b> &ndash; ${channelLink}</h4>
@@ -1108,34 +1115,20 @@ function showFinalScreen() {
   });
 
   elements.twitchEmbed.innerHTML = `<div class="card w-100" id="gameOverCard">
-    <div class="card-header fs-3 position-sticky top-0 bg-body-tertiary z-1">Game over!</div>
+    <div class="card-header fs-3 position-sticky top-0 bg-body-tertiary z-1">Game breakdown</div>
     <div class="card-body">
       <div class="container-fluid">
         ${roundDataMap.join("\n")}
       </div>
     </div>
-    <div class="card-footer position-sticky bottom-0 bg-body-tertiary z-1">
-      <div class="row align-items-center">
-        <div class="col-4">
-          <button type="button" onclick="reset()" class="btn btn-lg btn-secondary">Choose another mode</button>
-        </div>
-        <div class="col-4">
-          ${elements.gameEndText.innerHTML}
-        </div>
-        <div class="col-4">
-          <button type="button" onclick="playAgainButton(event)" class="btn btn-lg btn-info">Play again</button>
-        </div>
-      </div>
-    </div>
   </div>`;
 
   elements.scoreDiv.style.display = "none";
-  elements.mainCard.style.display = "none";
-  elements.resultsDiv.style.display = "none";
   elements.chatHint.style.display = "none";
+  elements.breakdown.disabled = true;
 
   player = null;
-}
+} //showBreakdown
 
 function calculateScore(answer) {
   const result = {};
@@ -1374,17 +1367,17 @@ async function getSettings() {
   //update chat hint based on mode
   switch (gameSettings.game) {
     case "gamename":
-      elements.chatHint.innerHTML = `Type <kbd class="notranslate">!guess [game name]</kbd> in chat to guess`;
+      elements.chatHint.innerHTML = `<h4>Type <kbd class="notranslate">!guess [game name]</kbd> in chat to guess</h4>`;
       break;
     case "emote":
-      elements.chatHint.innerHTML = "Type an emote's letter (a/b/c/d/e) in chat to guess";
+      elements.chatHint.innerHTML = "<h4>Type an emote's letter (a/b/c/d/e) in chat to guess</h4>";
       break;
     default:
-      elements.chatHint.innerHTML = "Type a number in chat to guess";
+      elements.chatHint.innerHTML = "<h4>Type a number in chat to guess</h4>";
       break;
   }
   if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
-    elements.chatHint.innerHTML = `Type <kbd class="notranslate">higher</kbd> or <kbd class="notranslate">lower</kbd> in chat to guess`;
+    elements.chatHint.innerHTML = `<h4>Type <kbd class="notranslate">higher</kbd> or <kbd class="notranslate">lower</kbd> in chat to guess</h4>`;
   }
 
   channelName = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
@@ -1827,15 +1820,14 @@ function enableTooltips() {
   const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl));
 } //enableTooltips
 
-async function playAgainButton(event) {
-  const target = event.currentTarget || event.target;
-  const oldContent = target.innerHTML;
-  target.disabled = true;
-  target.innerHTML = spinner;
-
+async function playAgain() {
+  const oldContent = elements.playAgain.innerHTML;
+  elements.playAgain.disabled = true;
+  elements.playAgain.innerHTML = spinner;
   await startGame();
   nextRound();
-  target.innerHTML = oldContent;
+  elements.playAgain.innerHTML = oldContent;
+  elements.playAgain.disabled = false;
 }
 
 window.onload = async function () {
@@ -1923,11 +1915,6 @@ window.onload = async function () {
     localStorage.setItem("seenChannels", JSON.stringify(seenChannels));
     localStorage.setItem("seenClips", JSON.stringify(seenClips));
     nextRound();
-  };
-  elements.playAgain.onclick = playAgainButton;
-  elements.showResults.onclick = showFinalScreen;
-  elements.reset.onclick = function () {
-    reset();
   };
 
   elements.resetHighScore.onclick = function () {
