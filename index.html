@@ -40,41 +40,61 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <div class="container text-center">
-              <div class="row">
-                <div class="col-6 mt-3">
-                  <button type="button" id="resetHighScore" class="btn btn-warning">Reset High Scores</button>
-                  <br />
-                  <small>Resets your viewers mode (<span id="viewersHS">0</span>) and followers mode (<span id="followersHS">0</span>) high scores </small>
-                </div>
-                <div class="col-6 mt-3">
-                  <button type="button" id="resetMaxStreaks" class="btn btn-warning">Reset max streaks</button>
-                  <br />
-                  <small>
-                    Resets your viewers mode (<span id="viewersStreak">0</span>) and followers mode (<span id="followersStreak">0</span>) and game name mode (<span id="gameStreak">0</span>)
-                    and emote mode (<span id="emoteStreak">0</span>) and viewers mode (higher/lower) (<span id="viewersHigherlowerStreak">0</span>) and followers mode (higher/lower) (<span
-                      id="followersHigherlowerStreak"
-                      >0</span
-                    >) max streaks
-                  </small>
-                </div>
-                <div class="col-6 mt-3">
-                  <button type="button" id="resetSeenChannels" class="btn btn-warning">Reset Seen Channels</button>
-                  <br />
-                  <small>
-                    Resets your channel history. The channel history keeps track of which channels you've seen to not show them again. You have seen
-                    <span id="seenChannels">0</span> different channels.
-                  </small>
-                </div>
-                <div class="col-6 mt-3">
-                  <button type="button" id="resetSeenClips" class="btn btn-warning">Reset Seen Clips</button>
-                  <br />
-                  <small>
-                    Resets your clip history. The clip history keeps track of the clips that you've seen to not show them again. You have seen <span id="seenClips">0</span> different clips.
-                  </small>
-                </div>
-              </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text">Viewers mode high score:</span>
+              <span class="input-group-text" id="viewersHS">0</span>
+              <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('viewersHS')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
             </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text">Followers mode high score:</span>
+              <span class="input-group-text" id="followersHS">0</span>
+              <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('followersHS')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+            </div>
+            <hr />
+            <div class="input-group mb-3">
+              <span class="input-group-text">Viewers mode max streak:</span>
+              <span class="input-group-text" id="viewersStreak">0</span>
+              <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('viewersStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text">Followers mode max streak:</span>
+              <span class="input-group-text" id="followersStreak">0</span>
+              <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('followersStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text">Game name mode max streak:</span>
+              <span class="input-group-text" id="gameStreak">0</span>
+              <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('gameStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text">Emote mode max streak:</span>
+              <span class="input-group-text" id="emoteStreak">0</span>
+              <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('emoteStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+            </div>
+            <hr />
+            <div class="input-group mb-3">
+              <span class="input-group-text">Viewers mode higher/lower max streak:</span>
+              <span class="input-group-text" id="viewersHigherlowerStreak">0</span>
+              <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('viewersHigherlowerStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text">Followers mode higher/lower max streak:</span>
+              <span class="input-group-text" id="followersHigherlowerStreak">0</span>
+              <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('followersHigherlowerStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+            </div>
+            <hr />
+            <div class="input-group mt-3">
+              <span class="input-group-text">Seen Channels:</span>
+              <span class="input-group-text" id="seenChannels">0</span>
+              <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+            </div>
+            <small>Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>
+            <div class="input-group mt-3">
+              <span class="input-group-text">Seen clips:</span>
+              <span class="input-group-text" id="seenClips">0</span>
+              <button class="btn btn-outline-warning" type="button" id="resetSeenClips"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+            </div>
+            <small>Resets your clip history. The clip history keeps track of the clips that you've seen to not show them again.</small>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -425,9 +445,11 @@
               <div id="resultsDiv" class="row align-items-center" style="display: none">
                 <div class="col-3">
                   <button type="button" id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
-                  <button type="button" id="playAgain" class="btn btn-lg btn-warning" onclick="playAgain()" style="display: none">Play Again</button>
-                  <button type="button" id="changeMode" class="btn btn-lg btn-secondary mt-1" onclick="reset()" style="display: none">Change mode</button>
-                  <button type="button" id="breakdown" class="btn btn-lg btn-success mt-1" onclick="showBreakdown()" style="display: none">Breakdown</button>
+                  <div id="endButtons" style="display: none">
+                    <button type="button" id="playAgain" class="btn btn-lg btn-warning" onclick="playAgain()">Play Again</button>
+                    <button type="button" id="changeMode" class="btn btn-lg btn-secondary mt-1" onclick="reset()">Change mode</button>
+                    <button type="button" id="breakdown" class="btn btn-lg btn-success mt-1" onclick="showBreakdown()">Breakdown</button>
+                  </div>
                 </div>
                 <div class="col-6">
                   <div id="scoreProgressBar">

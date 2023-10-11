@@ -29,8 +29,8 @@ const elements = {
 
   resultsDiv: document.getElementById("resultsDiv"),
   nextRound: document.getElementById("nextRound"),
+  endButtons: document.getElementById("endButtons"),
   playAgain: document.getElementById("playAgain"),
-  changeMode: document.getElementById("changeMode"),
   breakdown: document.getElementById("breakdown"),
   scoreProgressBarLabel: document.getElementById("scoreProgressBarLabel"),
   progress: document.getElementById("progress"),
@@ -48,10 +48,8 @@ const elements = {
   streamCover: document.getElementById("streamCover"),
   clipCover: document.getElementById("clipCover"),
 
-  resetHighScore: document.getElementById("resetHighScore"),
   viewersHS: document.getElementById("viewersHS"),
   followersHS: document.getElementById("followersHS"),
-  resetMaxStreaks: document.getElementById("resetMaxStreaks"),
   viewersStreak: document.getElementById("viewersStreak"),
   followersStreak: document.getElementById("followersStreak"),
   gameStreak: document.getElementById("gameStreak"),
@@ -148,14 +146,18 @@ let gameSettings = {
   controls: "slider", // slider - choices - text - higherlower
   chat: false, // true - false
 };
-let viewersHS = 0;
-let followersHS = 0;
-let viewersStreak = 0;
-let followersStreak = 0;
-let gameStreak = 0;
-let emoteStreak = 0;
-let viewersHigherlowerStreak = 0;
-let followersHigherlowerStreak = 0;
+
+let highscores = {
+  viewersHS: 0,
+  followersHS: 0,
+  viewersStreak: 0,
+  followersStreak: 0,
+  gameStreak: 0,
+  emoteStreak: 0,
+  viewersHigherlowerStreak: 0,
+  followersHigherlowerStreak: 0,
+};
+
 let gameSettingsModal;
 let client;
 let roundActive = false;
@@ -551,9 +553,7 @@ async function nextRound() {
   elements.nextRound.disabled = false;
   elements.nextRound.innerHTML = "Next round";
   elements.nextRound.style.display = "none";
-  elements.playAgain.style.display = "none";
-  elements.changeMode.style.display = "none";
-  elements.breakdown.style.display = "none";
+  elements.endButtons.style.display = "none";
   elements.resultsDiv.style.display = "none";
 
   startTimer();
@@ -768,12 +768,12 @@ async function guess(choice, timeUp) {
   if (gameSettings.game == "viewers" && gameSettings.controls == "choices") {
     let overUnder = answer - guessList[round - 1].viewers > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
     diff = Math.abs(answer - guessList[round - 1].viewers);
-    percent = (score / viewersStreak) * 100;
+    percent = (score / highscores.viewersStreak) * 100;
 
     elements.scoreProgressBarLabel.innerHTML =
-      score > viewersStreak
+      score > highscores.viewersStreak
         ? `You beat your high score! Your new highscore is ${score.toLocaleString()}`
-        : `${viewersStreak - score + 1} more ${viewersStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
+        : `${highscores.viewersStreak - score + 1} more ${highscores.viewersStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
     elements.progress.ariaValueNow = percent;
     elements.progressBar.style.width = `${percent}%`;
 
@@ -789,17 +789,15 @@ async function guess(choice, timeUp) {
     if (points == 0) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-      elements.playAgain.style.display = "";
-      elements.changeMode.style.display = "";
-      elements.breakdown.style.display = "";
+      elements.endButtons.style.display = "";
       elements.gameEndText.style.display = "";
 
-      if (score > viewersStreak) {
+      if (score > highscores.viewersStreak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
-        viewersStreak = score;
-        localStorage.setItem("viewersStreak", viewersStreak);
+        highscores.viewersStreak = score;
+        localStorage.setItem("viewersStreak", highscores.viewersStreak);
       } else {
-        elements.gameEndText.innerHTML += `<br>High Score: ${viewersStreak.toLocaleString()}`;
+        elements.gameEndText.innerHTML += `<br>High Score: ${highscores.viewersStreak.toLocaleString()}`;
       }
     }
   }
@@ -808,12 +806,12 @@ async function guess(choice, timeUp) {
   if (gameSettings.game == "followers" && gameSettings.controls == "choices") {
     let overUnder = answer - guessList[round - 1].followers > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
     diff = Math.abs(answer - guessList[round - 1].followers);
-    percent = (score / followersStreak) * 100;
+    percent = (score / highscores.followersStreak) * 100;
 
     elements.scoreProgressBarLabel.innerHTML =
-      score > followersStreak
+      score > highscores.followersStreak
         ? `You beat your high score! Your new highscore is ${score.toLocaleString()}`
-        : `${followersStreak - score + 1} more ${followersStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
+        : `${highscores.followersStreak - score + 1} more ${highscores.followersStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
     elements.progress.ariaValueNow = percent;
     elements.progressBar.style.width = `${percent}%`;
 
@@ -833,29 +831,27 @@ async function guess(choice, timeUp) {
     if (points == 0) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-      elements.playAgain.style.display = "";
-      elements.changeMode.style.display = "";
-      elements.breakdown.style.display = "";
+      elements.endButtons.style.display = "";
       elements.gameEndText.style.display = "";
 
-      if (score > followersStreak) {
+      if (score > highscores.followersStreak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
-        followersStreak = score;
-        localStorage.setItem("followersStreak", followersStreak);
+        highscores.followersStreak = score;
+        localStorage.setItem("followersStreak", highscores.followersStreak);
       } else {
-        elements.gameEndText.innerHTML += `<br>High Score: ${followersStreak.toLocaleString()}`;
+        elements.gameEndText.innerHTML += `<br>High Score: ${highscores.followersStreak.toLocaleString()}`;
       }
     }
   }
 
   //show progress bar and correction for gamename game - multi choice controls - streams or clips
   if (gameSettings.game == "gamename") {
-    percent = (score / gameStreak) * 100;
+    percent = (score / highscores.gameStreak) * 100;
 
     elements.scoreProgressBarLabel.innerHTML =
-      score > gameStreak
+      score > highscores.gameStreak
         ? `You beat your high score! Your new highscore is ${score}`
-        : `${gameStreak - score + 1} more ${gameStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
+        : `${highscores.gameStreak - score + 1} more ${highscores.gameStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
     elements.progress.ariaValueNow = percent;
     elements.progressBar.style.width = `${percent}%`;
 
@@ -865,17 +861,15 @@ async function guess(choice, timeUp) {
     if (points == 0) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-      elements.playAgain.style.display = "";
-      elements.changeMode.style.display = "";
-      elements.breakdown.style.display = "";
+      elements.endButtons.style.display = "";
       elements.gameEndText.style.display = "";
 
-      if (score > gameStreak) {
+      if (score > highscores.gameStreak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
-        gameStreak = score;
-        localStorage.setItem("gameStreak", gameStreak);
+        highscores.gameStreak = score;
+        localStorage.setItem("gameStreak", highscores.gameStreak);
       } else {
-        elements.gameEndText.innerHTML += `<br>High Score: ${gameStreak.toLocaleString()}`;
+        elements.gameEndText.innerHTML += `<br>High Score: ${highscores.gameStreak.toLocaleString()}`;
       }
     }
   }
@@ -884,12 +878,12 @@ async function guess(choice, timeUp) {
   if (gameSettings.game == "emote") {
     let emote = elements[`multiChoice${choice}`].dataset.emote;
 
-    percent = (score / emoteStreak) * 100;
+    percent = (score / highscores.emoteStreak) * 100;
 
     elements.scoreProgressBarLabel.innerHTML =
-      score > emoteStreak
+      score > highscores.emoteStreak
         ? `You beat your high score! Your new highscore is ${score}`
-        : `${emoteStreak - score + 1} more ${emoteStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
+        : `${highscores.emoteStreak - score + 1} more ${highscores.emoteStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
     elements.progress.ariaValueNow = percent;
     elements.progressBar.style.width = `${percent}%`;
 
@@ -909,24 +903,22 @@ async function guess(choice, timeUp) {
     if (points == 0) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-      elements.playAgain.style.display = "";
-      elements.changeMode.style.display = "";
-      elements.breakdown.style.display = "";
+      elements.endButtons.style.display = "";
       elements.gameEndText.style.display = "";
 
-      if (score > emoteStreak) {
+      if (score > highscores.emoteStreak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
-        emoteStreak = score;
-        localStorage.setItem("emoteStreak", emoteStreak);
+        highscores.emoteStreak = score;
+        localStorage.setItem("emoteStreak", highscores.emoteStreak);
       } else {
-        elements.gameEndText.innerHTML += `<br>High Score: ${emoteStreak.toLocaleString()}`;
+        elements.gameEndText.innerHTML += `<br>High Score: ${highscores.emoteStreak.toLocaleString()}`;
       }
     }
   }
 
   //show progress bar and correction for viewers or followers mode - higherlower controls - streams or clips
   if ((gameSettings.game == "viewers" || gameSettings.game == "followers") && gameSettings.controls == "higherlower") {
-    let streak = gameSettings.game == "viewers" ? viewersHigherlowerStreak : followersHigherlowerStreak;
+    let streak = gameSettings.game == "viewers" ? highscores.viewersHigherlowerStreak : highscores.followersHigherlowerStreak;
     percent = (score / streak) * 100;
     elements.scoreProgressBarLabel.innerHTML =
       score > streak ? `You beat your high score! Your new highscore is ${score}` : `${streak - score + 1} more ${streak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
@@ -953,13 +945,11 @@ async function guess(choice, timeUp) {
     if (points == 0) {
       elements.nextRound.style.display = "none";
       elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-      elements.playAgain.style.display = "";
-      elements.changeMode.style.display = "";
-      elements.breakdown.style.display = "";
+      elements.endButtons.style.display = "";
       elements.gameEndText.style.display = "";
       if (score > streak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
-        gameSettings.game == "viewers" ? (viewersHigherlowerStreak = score) : (followersHigherlowerStreak = score);
+        gameSettings.game == "viewers" ? (highscores.viewersHigherlowerStreak = score) : (highscores.followersHigherlowerStreak = score);
         localStorage.setItem(gameSettings.game == "viewers" ? "viewersHigherlowerStreak" : "followersHigherlowerStreak", score);
       } else {
         elements.gameEndText.innerHTML += `<br>High Score: ${score.toLocaleString()}`;
@@ -999,33 +989,29 @@ async function guess(choice, timeUp) {
   //end game if game on 5th round and mode is viewers
   if (round == 5 && gameSettings.game == "viewers") {
     elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-    if (score > viewersHS) {
+    if (score > highscores.viewersHS) {
       elements.gameEndText.innerHTML += `<br>New High Score!`;
-      viewersHS = score;
-      localStorage.setItem("viewersHS", viewersHS);
+      highscores.viewersHS = score;
+      localStorage.setItem("viewersHS", highscores.viewersHS);
     } else {
-      elements.gameEndText.innerHTML += `<br>High Score: ${viewersHS.toLocaleString()}`;
+      elements.gameEndText.innerHTML += `<br>High Score: ${highscores.viewersHS.toLocaleString()}`;
     }
     elements.nextRound.style.display = "none";
-    elements.playAgain.style.display = "";
-    elements.changeMode.style.display = "";
-    elements.breakdown.style.display = "";
+    elements.endButtons.style.display = "";
     elements.gameEndText.style.display = "";
   }
   //end game if game on 5th round and mode is followers
   if (round == 5 && gameSettings.game == "followers") {
     elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-    if (score > followersHS) {
+    if (score > highscores.followersHS) {
       elements.gameEndText.innerHTML += `<br>New High Score!`;
-      followersHS = score;
-      localStorage.setItem("followersHS", followersHS);
+      highscores.followersHS = score;
+      localStorage.setItem("followersHS", highscores.followersHS);
     } else {
-      elements.gameEndText.innerHTML += `<br>High Score: ${followersHS.toLocaleString()}`;
+      elements.gameEndText.innerHTML += `<br>High Score: ${highscores.followersHS.toLocaleString()}`;
     }
     elements.nextRound.style.display = "none";
-    elements.playAgain.style.display = "";
-    elements.changeMode.style.display = "";
-    elements.breakdown.style.display = "";
+    elements.endButtons.style.display = "";
     elements.gameEndText.style.display = "";
   }
 } //guess
@@ -1149,7 +1135,7 @@ function calculateScore(answer) {
     result.correct = guessList[round - 1].userid;
   }
 
-  //calculate score for viewers mode - streams or clips- slider controls
+  //calculate score for viewers mode - streams or clips - slider controls
   if (gameSettings.game == "viewers" && gameSettings.controls == "slider") {
     //get max view count of current game
     let roundMax = Math.max(...guessList.slice(0, 5).map((o) => o.viewers || 0));
@@ -1192,8 +1178,12 @@ function calculateScore(answer) {
   //check if answer is corrent for higherlower controls - viewers or followers game - streams or clips
   if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
     let correctAnswer = answer; // will match if prev number is equal to current number
-    if (guessList[round - 1][gameSettings.game] > previousNumber) correctAnswer = "higher";
-    if (guessList[round - 1][gameSettings.game] < previousNumber) correctAnswer = "lower";
+    if (guessList[round - 1][gameSettings.game] > previousNumber) {
+      correctAnswer = "higher";
+    }
+    if (guessList[round - 1][gameSettings.game] < previousNumber) {
+      correctAnswer = "lower";
+    }
 
     if (answer === correctAnswer) {
       points = 1;
@@ -1829,31 +1819,36 @@ async function playAgain() {
   elements.playAgain.innerHTML = oldContent;
   elements.playAgain.disabled = false;
 }
+function resetHighScore(scoreName) {
+  localStorage.setItem(scoreName, 0);
+  highscores[scoreName] = 0;
+  elements[scoreName].innerHTML = 0;
+} //resetHighScore
 
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels")) || [];
   elements.seenChannels.innerHTML = seenChannels.length;
   seenClips = JSON.parse(localStorage.getItem("seenClips")) || [];
   elements.seenClips.innerHTML = seenClips.length;
-  viewersHS = parseInt(localStorage.getItem("viewersHS"), 10) || 0;
-  followersHS = parseInt(localStorage.getItem("followersHS"), 10) || 0;
-  viewersStreak = parseInt(localStorage.getItem("viewersStreak"), 10) || 0;
-  followersStreak = parseInt(localStorage.getItem("followersStreak"), 10) || 0;
-  gameStreak = parseInt(localStorage.getItem("gameStreak"), 10) || 0;
-  emoteStreak = parseInt(localStorage.getItem("emoteStreak"), 10) || 0;
-  viewersHigherlowerStreak = parseInt(localStorage.getItem("viewersHigherlowerStreak"), 10) || 0;
-  followersHigherlowerStreak = parseInt(localStorage.getItem("followersHigherlowerStreak"), 10) || 0;
+  highscores.viewersHS = parseInt(localStorage.getItem("viewersHS"), 10) || 0;
+  highscores.followersHS = parseInt(localStorage.getItem("followersHS"), 10) || 0;
+  highscores.viewersStreak = parseInt(localStorage.getItem("viewersStreak"), 10) || 0;
+  highscores.followersStreak = parseInt(localStorage.getItem("followersStreak"), 10) || 0;
+  highscores.gameStreak = parseInt(localStorage.getItem("gameStreak"), 10) || 0;
+  highscores.emoteStreak = parseInt(localStorage.getItem("emoteStreak"), 10) || 0;
+  highscores.viewersHigherlowerStreak = parseInt(localStorage.getItem("viewersHigherlowerStreak"), 10) || 0;
+  highscores.followersHigherlowerStreak = parseInt(localStorage.getItem("followersHigherlowerStreak"), 10) || 0;
   channelName = localStorage.getItem("channelName") || "";
   elements.channelName.value = channelName;
 
-  elements.viewersHS.innerHTML = viewersHS.toLocaleString();
-  elements.followersHS.innerHTML = followersHS.toLocaleString();
-  elements.viewersStreak.innerHTML = viewersStreak.toLocaleString();
-  elements.followersStreak.innerHTML = followersStreak.toLocaleString();
-  elements.gameStreak.innerHTML = gameStreak.toLocaleString();
-  elements.emoteStreak.innerHTML = emoteStreak.toLocaleString();
-  elements.viewersHigherlowerStreak.innerHTML = viewersHigherlowerStreak.toLocaleString();
-  elements.followersHigherlowerStreak.innerHTML = followersHigherlowerStreak.toLocaleString();
+  elements.viewersHS.innerHTML = highscores.viewersHS.toLocaleString();
+  elements.followersHS.innerHTML = highscores.followersHS.toLocaleString();
+  elements.viewersStreak.innerHTML = highscores.viewersStreak.toLocaleString();
+  elements.followersStreak.innerHTML = highscores.followersStreak.toLocaleString();
+  elements.gameStreak.innerHTML = highscores.gameStreak.toLocaleString();
+  elements.emoteStreak.innerHTML = highscores.emoteStreak.toLocaleString();
+  elements.viewersHigherlowerStreak.innerHTML = highscores.viewersHigherlowerStreak.toLocaleString();
+  elements.followersHigherlowerStreak.innerHTML = highscores.followersHigherlowerStreak.toLocaleString();
 
   gameSettingsModal = new bootstrap.Modal(elements.gameSettingsModal);
 
@@ -1917,36 +1912,6 @@ window.onload = async function () {
     nextRound();
   };
 
-  elements.resetHighScore.onclick = function () {
-    localStorage.setItem("viewersHS", 0);
-    localStorage.setItem("followersHS", 0);
-    viewersHS = 0;
-    followersHS = 0;
-    elements.viewersHS.innerHTML = 0;
-    elements.followersHS.innerHTML = 0;
-    showToast("High scores reset", "success", 2000);
-  };
-  elements.resetMaxStreaks.onclick = function () {
-    localStorage.setItem("viewersStreak", 0);
-    localStorage.setItem("followersStreak", 0);
-    localStorage.setItem("gameStreak", 0);
-    localStorage.setItem("emoteStreak", 0);
-    localStorage.setItem("viewersHigherlowerStreak", 0);
-    localStorage.setItem("followersHigherlowerStreak", 0);
-    viewersStreak = 0;
-    followersStreak = 0;
-    gameStreak = 0;
-    emoteStreak = 0;
-    viewersHigherlowerStreak = 0;
-    followersHigherlowerStreak = 0;
-    elements.viewersStreak.innerHTML = 0;
-    elements.followersStreak.innerHTML = 0;
-    elements.gameStreak.innerHTML = 0;
-    elements.emoteStreak.innerHTML = 0;
-    elements.viewersHigherlowerStreak.innerHTML = 0;
-    elements.followersHigherlowerStreak.innerHTML = 0;
-    showToast("High scores reset", "success", 2000);
-  };
   elements.resetSeenChannels.onclick = function () {
     localStorage.setItem("seenChannels", JSON.stringify([]));
     seenChannels = [];
