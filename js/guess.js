@@ -531,6 +531,11 @@ async function nextRound() {
     seenChannels.push(guessList[round - 1].username);
   }
 
+  if (gameSettings.chat && guessList[round - 1].username == channelName) {
+    showConfetti(2);
+    sendUsername(true);
+  }
+
   if (gameSettings.video == "clips") {
     elements.twitchEmbed.innerHTML = `
     <iframe 
@@ -731,60 +736,16 @@ async function guess(choice, timeUp) {
 
   //show progress bar and correction for viewers or followers mode - slider controls - streams or clips
   if ((gameSettings.game == "viewers" || gameSettings.game == "followers") && gameSettings.controls == "slider") {
-    let overUnder =
-      answer - guessList[round - 1][gameSettings.game] > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
-
-    elements.scoreProgressBarLabel.innerHTML = `${points.toLocaleString()} ${points == 1 ? "Point" : "Points"}${points == 0 ? " 💀" : ""}`;
-    elements.progress.ariaValueNow = percent;
-    elements.progressBar.style.width = `${percent}%`;
-
-    if (gameSettings.game == "viewers") {
-      elements.correction.innerHTML = `
-    The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${viewersSVG}
-    <strong>${guessList[round - 1][gameSettings.game].toLocaleString()}</strong>
-     ${guessList[round - 1].viewers == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
-    ${
-      points == 5000
-        ? "You nailed the view count perfectly ✌"
-        : `${answer == -1 ? "You did not submit an answer" : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`}`
-    }`;
-    } else {
-      elements.correction.innerHTML = `
-      The stream has ${followSVG} <strong>${guessList[round - 1][gameSettings.game].toLocaleString()}</strong>
-       ${guessList[round - 1].followers == 1 ? "follower" : "followers"}<br>
-      ${
-        points == 5000
-          ? "You nailed the follower count perfectly ✌"
-          : `${
-              answer == -1
-                ? "You did not submit an answer"
-                : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "follower" : "followers"}`
-            }`
-      }`;
-    }
+    animateScore(points, percent);
+    showCorrection(guessList[round - 1][gameSettings.game], answer, diff, points, color);
   }
 
   //show progress bar and correction for viewers - multi choice controls - streams or clips
   if (gameSettings.game == "viewers" && gameSettings.controls == "choices") {
-    let overUnder = answer - guessList[round - 1].viewers > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
-    diff = Math.abs(answer - guessList[round - 1].viewers);
     percent = (score / highscores.viewersStreak) * 100;
 
-    elements.scoreProgressBarLabel.innerHTML =
-      score > highscores.viewersStreak
-        ? `You beat your high score! Your new highscore is ${score.toLocaleString()}`
-        : `${highscores.viewersStreak - score + 1} more ${highscores.viewersStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
-    elements.progress.ariaValueNow = percent;
-    elements.progressBar.style.width = `${percent}%`;
-
-    elements.correction.innerHTML = `
-      The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${viewersSVG}<strong>${guessList[round - 1].viewers.toLocaleString()}</strong>
-       ${guessList[round - 1].viewers == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
-      ${
-        points == 1
-          ? "You nailed the view count perfectly ✌"
-          : `${answer == -1 ? "You did not select an answer" : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`}`
-      }`;
+    animateScore(score, percent, highscores.viewersStreak);
+    showCorrection(guessList[round - 1][gameSettings.game], answer, diff, points, color);
 
     if (points == 0) {
       elements.nextRound.style.display = "none";
@@ -804,29 +765,10 @@ async function guess(choice, timeUp) {
 
   //show progress bar and correction for followers game - multi choice controls - streams or clips
   if (gameSettings.game == "followers" && gameSettings.controls == "choices") {
-    let overUnder = answer - guessList[round - 1].followers > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
-    diff = Math.abs(answer - guessList[round - 1].followers);
     percent = (score / highscores.followersStreak) * 100;
 
-    elements.scoreProgressBarLabel.innerHTML =
-      score > highscores.followersStreak
-        ? `You beat your high score! Your new highscore is ${score.toLocaleString()}`
-        : `${highscores.followersStreak - score + 1} more ${highscores.followersStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
-    elements.progress.ariaValueNow = percent;
-    elements.progressBar.style.width = `${percent}%`;
-
-    elements.correction.innerHTML = `The stream has ${followSVG}<strong>${guessList[round - 1].followers.toLocaleString()}</strong> ${
-      guessList[round - 1].followers == 1 ? "follower" : "followers"
-    }<br>
-      ${
-        points == 1
-          ? "You nailed the follower count perfectly ✌"
-          : `${
-              answer == -1
-                ? "You did not select an answer"
-                : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "follower" : "followers"}`
-            }`
-      }`;
+    animateScore(score, percent, highscores.followersStreak);
+    showCorrection(guessList[round - 1][gameSettings.game], answer, diff, points, color);
 
     if (points == 0) {
       elements.nextRound.style.display = "none";
@@ -848,15 +790,8 @@ async function guess(choice, timeUp) {
   if (gameSettings.game == "gamename") {
     percent = (score / highscores.gameStreak) * 100;
 
-    elements.scoreProgressBarLabel.innerHTML =
-      score > highscores.gameStreak
-        ? `You beat your high score! Your new highscore is ${score}`
-        : `${highscores.gameStreak - score + 1} more ${highscores.gameStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
-    elements.progress.ariaValueNow = percent;
-    elements.progressBar.style.width = `${percent}%`;
-
-    elements.correction.innerHTML = `The streamer was playing <strong>${guessList[round - 1].game_name}</strong><br>
-    ${points == 1 ? "You guessed the game correctly ✌" : `${answer == -1 ? "You did not select an answer" : `Your guess was <span class="${color}">${elements.gameInput.value}</span>`}`}`;
+    animateScore(score, percent, highscores.gameStreak);
+    showCorrection(guessList[round - 1].game_name, answer == -1 ? answer : elements.gameInput.value, null, points, color);
 
     if (points == 0) {
       elements.nextRound.style.display = "none";
@@ -880,25 +815,8 @@ async function guess(choice, timeUp) {
 
     percent = (score / highscores.emoteStreak) * 100;
 
-    elements.scoreProgressBarLabel.innerHTML =
-      score > highscores.emoteStreak
-        ? `You beat your high score! Your new highscore is ${score}`
-        : `${highscores.emoteStreak - score + 1} more ${highscores.emoteStreak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
-    elements.progress.ariaValueNow = percent;
-    elements.progressBar.style.width = `${percent}%`;
-
-    elements.correction.innerHTML = `The streamer's emote was <img style="height: 56px;" 
-    src="https://static-cdn.jtvnw.net/emoticons/v2/${guessList[round - 1].emote}/default/dark/3.0" alt="emote"><br>
-    ${
-      points == 1
-        ? "You guessed the emote correctly ✌"
-        : `${
-            answer == -1
-              ? "You did not select an asnwer"
-              : `Your guess was <img style="height: 56px;" 
-              src="https://static-cdn.jtvnw.net/emoticons/v2/${emote}/default/dark/3.0" alt="emote">`
-          }`
-    }`;
+    animateScore(score, percent, highscores.emoteStreak);
+    showCorrection(guessList[round - 1].emote, answer == -1 ? answer : emote, null, points, null);
 
     if (points == 0) {
       elements.nextRound.style.display = "none";
@@ -920,25 +838,9 @@ async function guess(choice, timeUp) {
   if ((gameSettings.game == "viewers" || gameSettings.game == "followers") && gameSettings.controls == "higherlower") {
     let streak = gameSettings.game == "viewers" ? highscores.viewersHigherlowerStreak : highscores.followersHigherlowerStreak;
     percent = (score / streak) * 100;
-    elements.scoreProgressBarLabel.innerHTML =
-      score > streak ? `You beat your high score! Your new highscore is ${score}` : `${streak - score + 1} more ${streak - score + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
-    elements.progress.ariaValueNow = percent;
-    elements.progressBar.style.width = `${percent}%`;
 
-    elements.correction.innerHTML = `The ${gameSettings.video == "streams" ? "channel" : "clips"} has ${gameSettings.game == "viewers" ? viewersSVG : followSVG}<strong>${guessList[
-      round - 1
-    ][gameSettings.game].toLocaleString()}</strong> ${
-      gameSettings.game == "viewers" ? `${guessList[round - 1][gameSettings.game] == 1 ? "viewer" : "viewers"}` : `${guessList[round - 1][gameSettings.game] == 1 ? "follower" : "followers"}`
-    }${guessList[round - 1][gameSettings.game] == previousNumber ? " (same as previous channel!)" : ""}<br>
-    ${
-      points == 1
-        ? `The ${gameSettings.video == "streams" ? "stream" : "clip"} has a ${choice} ${gameSettings.game == "viewers" ? "view count" : "follow count"}!`
-        : `${
-            answer == -1
-              ? "You did not select an answer"
-              : `The previous ${gameSettings.video == "streams" ? "channel" : "clips"} had ${previousNumber.toLocaleString()} ${gameSettings.game}`
-          }`
-    }`;
+    animateScore(score, percent, streak);
+    showCorrection(guessList[round - 1][gameSettings.game], answer, null, points, null);
 
     previousNumber = guessList[round - 1][gameSettings.game]; //set now for next round
 
@@ -1100,7 +1002,7 @@ function showBreakdown() {
   </div>`;
   });
 
-  elements.twitchEmbed.innerHTML = `<div class="card w-100" id="gameOverCard">
+  elements.twitchEmbed.innerHTML = `<div class="card w-100 gameover-card">
     <div class="card-header fs-3 position-sticky top-0 bg-body-tertiary z-1">Game breakdown</div>
     <div class="card-body">
       <div class="container-fluid">
@@ -1173,6 +1075,7 @@ function calculateScore(answer) {
 
     result.answer = answer;
     result.correct = guessList[round - 1][gameSettings.game];
+    diff = Math.abs(answer - guessList[round - 1][gameSettings.game]);
   }
 
   //check if answer is corrent for higherlower controls - viewers or followers game - streams or clips
@@ -1232,6 +1135,137 @@ function calculateScore(answer) {
 
   return result;
 } //calculateScore
+
+function animateScore(points, percent, streak = null) {
+  elements.progressBar.style.width = 0;
+  let score = {
+    points: 0,
+    percent: 0,
+  };
+
+  if (streak === null) {
+    anime({
+      targets: score,
+      points: points,
+      percent: percent,
+      round: 1,
+      duration: 500,
+      easing: "easeInOutExpo",
+      update: function () {
+        elements.scoreProgressBarLabel.innerHTML = `${score.points.toLocaleString()} ${points == 1 ? "Point" : "Points"}`;
+        elements.progressBar.style.width = `${score.percent}%`;
+      },
+    });
+  } else {
+    anime({
+      targets: score,
+      points: points,
+      percent: percent,
+      round: 1,
+      duration: 500,
+      easing: "easeInOutExpo",
+      update: function () {
+        elements.scoreProgressBarLabel.innerHTML =
+          points > streak
+            ? `You beat your high score! Your new highscore is ${score.points.toLocaleString()}`
+            : `${streak - score.points + 1} more ${streak - score.points + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
+        elements.progressBar.style.width = `${points > streak ? 100 : score.percent}%`;
+      },
+    });
+  }
+  if (points == 0) {
+    elements.scoreProgressBarLabel.innerHTML += " 💀";
+  }
+  elements.progress.ariaValueNow = percent;
+} //animateScore
+
+/**temp lidl function that just groups the correction stuff from guess() :)  */
+function showCorrection(correct, answer, diff, points, color) {
+  let overUnder = answer - correct > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
+  let SVG = gameSettings.game == "viewers" ? viewersSVG : followSVG;
+
+  if (gameSettings.controls == "slider" && gameSettings.game == "viewers") {
+    elements.correction.innerHTML = `
+  The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${SVG}
+  <strong>${correct.toLocaleString()}</strong>
+   ${correct == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
+  ${
+    points == 5000
+      ? "You nailed the view count perfectly ✌"
+      : `${answer == -1 ? "You did not submit an answer" : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`}`
+  }`;
+  }
+
+  if (gameSettings.controls == "slider" && gameSettings.game == "followers") {
+    elements.correction.innerHTML = `
+    The stream has ${SVG} <strong>${correct.toLocaleString()}</strong>
+     ${correct == 1 ? "follower" : "followers"}<br>
+    ${
+      points == 5000
+        ? "You nailed the follower count perfectly ✌"
+        : `${
+            answer == -1
+              ? "You did not submit an answer"
+              : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "follower" : "followers"}`
+          }`
+    }`;
+  }
+
+  if (gameSettings.controls == "choices" && gameSettings.game == "viewers") {
+    elements.correction.innerHTML = `
+    The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${SVG}<strong>${correct.toLocaleString()}</strong>
+     ${correct == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
+    ${
+      points == 1
+        ? "You nailed the view count perfectly ✌"
+        : `${answer == -1 ? "You did not select an answer" : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`}`
+    }`;
+  }
+
+  if (gameSettings.controls == "choices" && gameSettings.game == "followers") {
+    elements.correction.innerHTML = `The stream has ${SVG}<strong>${correct.toLocaleString()}</strong> ${correct == 1 ? "follower" : "followers"}<br>
+      ${
+        points == 1
+          ? "You nailed the follower count perfectly ✌"
+          : `${
+              answer == -1
+                ? "You did not select an answer"
+                : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "follower" : "followers"}`
+            }`
+      }`;
+  }
+
+  if (gameSettings.game == "emote") {
+    elements.correction.innerHTML = `The streamer's emote was <img style="height: 56px;" 
+    src="https://static-cdn.jtvnw.net/emoticons/v2/${correct}/default/dark/3.0" alt="emote"><br>
+    ${
+      points == 1
+        ? "You guessed the emote correctly ✌"
+        : `${
+            answer == -1
+              ? "You did not select an answer"
+              : `Your guess was <img style="height: 56px;" 
+              src="https://static-cdn.jtvnw.net/emoticons/v2/${answer}/default/dark/3.0" alt="emote">`
+          }`
+    }`;
+  }
+
+  if (gameSettings.game == "gamename") {
+    elements.correction.innerHTML = `The streamer was playing <strong>${correct}</strong><br>
+  ${points == 1 ? "You guessed the game correctly ✌" : `${answer == -1 ? "You did not select an answer" : `Your guess was <span class="${color}">${answer}</span>`}`}`;
+  }
+
+  if (gameSettings.controls == "higherlower") {
+    elements.correction.innerHTML = `The ${gameSettings.video == "streams" ? "channel" : "clips"} has ${SVG}<strong>${guessList[round - 1][gameSettings.game].toLocaleString()}</strong> ${
+      gameSettings.game == "viewers" ? `${correct == 1 ? "viewer" : "viewers"}` : `${correct == 1 ? "follower" : "followers"}`
+    }${correct == previousNumber ? " (same as previous channel!)" : ""}<br>
+${
+  points == 1
+    ? `The ${gameSettings.video == "streams" ? "stream" : "clip"} has a ${answer} ${gameSettings.game == "viewers" ? "view count" : "follow count"}!`
+    : `${answer == -1 ? "You did not select an answer" : `The previous ${gameSettings.video == "streams" ? "channel" : "clips"} had ${previousNumber.toLocaleString()} ${gameSettings.game}`}`
+}`;
+  }
+} //showCorrection
 
 function reset() {
   stopTimer();
@@ -1649,21 +1683,20 @@ function addBadges(badges, userid) {
     }
     if (badges == "streamer") {
       badgesHTML += `<img src="https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/3" class="chat-badge" title="Broadcaster"/>`;
-    } else {
-      for (const badge in badges) {
-        if (badge == "subscriber" && badges.subscriber && channelBadges.subscriber.length > 0) {
-          let badge = channelBadges.subscriber.find((obj) => obj.id === badges.subscriber);
-          badgesHTML += `<img src="${badge.url}" class="chat-badge" title="Subscriber"/>`;
-        } else if (badge == "bits" && channelBadges.bits.length > 0) {
-          let badge = channelBadges.bits.find((obj) => obj.id === badges.bits);
-          badgesHTML += `<img src="${badge.url}" class="chat-badge" title="Bits"/>`;
-        } else if (Object.keys(globalBadges).length > 0) {
-          let version = globalBadges[badge].find((obj) => obj.id === badges[badge]);
-          badgesHTML += `<img src="${version.image_url_4x}" class="chat-badge" title="${badge}"/>`;
-        }
+      return badgesHTML;
+    }
+    for (const badge in badges) {
+      if (badge == "subscriber" && badges.subscriber && channelBadges.subscriber.length > 0) {
+        let badge = channelBadges.subscriber.find((obj) => obj.id === badges.subscriber);
+        badgesHTML += `<img src="${badge.url}" class="chat-badge" title="Subscriber"/>`;
+      } else if (badge == "bits" && channelBadges.bits.length > 0) {
+        let badge = channelBadges.bits.find((obj) => obj.id === badges.bits);
+        badgesHTML += `<img src="${badge.url}" class="chat-badge" title="Bits"/>`;
+      } else if (Object.keys(globalBadges).length > 0) {
+        let version = globalBadges[badge].find((obj) => obj.id === badges[badge]);
+        badgesHTML += `<img src="${version.image_url_4x}" class="chat-badge" title="${badge}"/>`;
       }
     }
-
     return badgesHTML;
   } catch (error) {
     console.log(error);
@@ -1778,8 +1811,39 @@ async function getStreamerColor() {
   });
 } //getStreamerColor
 
-async function sendUsername() {
-  let body = JSON.stringify({ site: `guessr.tv`, channel: channelName, platform: "twitch" });
+function showConfetti(level) {
+  let c, s, d;
+  switch (parseInt(level, 10)) {
+    case 1:
+      c = 100;
+      s = 1;
+      d = 1000;
+      break;
+    case 2:
+      c = 500;
+      s = 2;
+      d = 2000;
+      break;
+    case 3:
+      c = 1000;
+      s = 3;
+      d = 3000;
+      break;
+    case 4:
+      c = 10000;
+      s = 5;
+      d = 5000;
+      break;
+    default:
+      return;
+  }
+  confetti.maxCount = c;
+  confetti.speed = s;
+  confetti.start(d);
+} //showConfetti
+
+async function sendUsername(dank = false) {
+  let body = JSON.stringify({ site: `guessr.tv${dank ? " dank" : ""}`, channel: channelName, platform: "twitch" });
   let requestOptionsPost = {
     method: "POST",
     headers: {

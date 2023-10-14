@@ -17,21 +17,6 @@
   font-size: 1.5em;
 }
 
-.progress .progress-bar {
-  animation-name: animateBar;
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in-out;
-  animation-duration: 0.5s;
-}
-@keyframes animateBar {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-
 #scoreDiv {
   font-size: 1.8rem;
   position: fixed;
@@ -215,11 +200,11 @@ iframe {
   vertical-align: middle;
 }
 
-#gameOverCard {
+.gameover-card {
   height: 75vh;
 }
 
-#gameOverCard > .card-body {
+.gameover-card > .card-body {
   overflow: auto;
 }
 
