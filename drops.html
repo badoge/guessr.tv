@@ -143,12 +143,10 @@
         try {
           access_token = url.match(/\#(?:access_token)\=([\S\s]*?)\&/)[1];
           if (!access_token) {
-            document.getElementById("login").innerHTML = `<span class="text-danger">Could not login</span>`;
             window.history.replaceState(null, "", window.location.pathname);
             return;
           }
         } catch (error) {
-          document.getElementById("login").innerHTML = `<span class="text-danger">Could not login</span>`;
           window.history.replaceState(null, "", window.location.pathname);
           return;
         }
