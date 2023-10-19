@@ -76,6 +76,7 @@ const elements = {
   timerValue: document.getElementById("timerValue"),
   chatSettingsDiv: document.getElementById("chatSettingsDiv"),
   channelName: document.getElementById("channelName"),
+  drops: document.getElementById("drops"),
   disclaimer: document.getElementById("disclaimer"),
   getSettingsButton: document.getElementById("getSettingsButton"),
   leaderboard: document.getElementById("leaderboard"),
@@ -1905,6 +1906,12 @@ window.onload = async function () {
   channelName = localStorage.getItem("channelName") || "";
   elements.channelName.value = channelName;
 
+  if (channelName) {
+    elements.drops.style.display = "";
+  } else {
+    elements.drops.style.display = "none";
+  }
+
   elements.viewersHS.innerHTML = highscores.viewersHS.toLocaleString();
   elements.followersHS.innerHTML = highscores.followersHS.toLocaleString();
   elements.viewersStreak.innerHTML = highscores.viewersStreak.toLocaleString();
@@ -1967,6 +1974,14 @@ window.onload = async function () {
     elements.guessRange.value = (100 * Math.log(value)) / Math.log(max);
     if (value == 0) {
       elements.guessRange.value = 0;
+    }
+  };
+
+  elements.channelName.oninput = function () {
+    if (this.value) {
+      elements.drops.style.display = "";
+    } else {
+      elements.drops.style.display = "none";
     }
   };
 
