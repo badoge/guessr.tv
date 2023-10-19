@@ -136,11 +136,21 @@
     </div>
 
     <script>
-      let url = window.location.href;
-      let access_token = url.match(/\#(?:access_token)\=([\S\s]*?)\&/)[1];
       getUsername();
-
       async function getUsername() {
+        let url = window.location.href;
+        let access_token;
+        try {
+          access_token = url.match(/\#(?:access_token)\=([\S\s]*?)\&/)[1];
+          if (!access_token) {
+            document.getElementById("login").innerHTML = `<span class="text-danger">Could not login</span>`;
+            return;
+          }
+        } catch (error) {
+          document.getElementById("login").innerHTML = `<span class="text-danger">Could not login</span>`;
+          return;
+        }
+
         let myHeaders = new Headers();
         myHeaders.append("Authorization", "Bearer " + access_token);
         myHeaders.append("Client-Id", "ed2ch5dsxogpczmisjnbfnm92n4zps");
