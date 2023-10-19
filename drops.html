@@ -163,7 +163,7 @@
               userID: result.data[0].id,
             })
           );
-          document.getElementById("login").style.display = "none";
+          document.getElementById("login").innerHTML = `<span class="text-success">Twitch account connected!</span>`;
           window.history.replaceState(null, "", window.location.pathname);
         } catch (error) {
           console.log("error", error);
