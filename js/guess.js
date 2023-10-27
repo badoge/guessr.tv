@@ -574,11 +574,9 @@ function generateChoices(answer) {
     [Math.floor(Math.random() * 100), Math.floor(Math.random() * 100), Math.floor(Math.random() * 100), Math.floor(Math.random() * 100)],
     [Math.floor(Math.random() * 10) + 10, Math.floor(Math.random() * 10) + 100, Math.floor(Math.random() * 10) + 1000, Math.floor(Math.random() * 10) + 10000],
     [answer + 1, answer + 2, answer + 3, answer + 4],
-    [(1, 2, 3, 4)],
+    [1, 2, 3, 4],
   ];
-  let options = [];
-  options.push(...patterns[Math.floor(Math.random() * patterns.length)]);
-  options.push(answer);
+  let options = [answer].concat(patterns[Math.floor(Math.random() * patterns.length)]);
 
   //remove duplicates
   while (hasDuplicates(options)) {
@@ -591,13 +589,10 @@ function generateChoices(answer) {
   }
   //check if answer is included in the options
   if (!options.includes(answer)) {
-    options.pop();
-    options.push(answer);
+    options[0] = answer;
   }
-  //shuffle
-  options.sort(function () {
-    return 0.5 - Math.random();
-  });
+  shuffleArray(options);
+
   for (let index = 0; index < options.length; index++) {
     elements[`multiChoice${index + 1}`].dataset.answer = options[index];
     elements[`multiChoice${index + 1}`].innerHTML = options[index].toLocaleString();
