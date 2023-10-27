@@ -235,3 +235,37 @@ iframe {
   color: white;
   text-shadow: 0px 0px 4px black;
 }
+
+.btn-powerup {
+  display: flex;
+  flex-flow: row nowrap;
+  position: relative;
+  overflow: hidden;
+}
+.powerup-count {
+  font-weight: bold;
+  color: var(--bs-body-color);
+}
+.powerup-added {
+  font-weight: bold;
+  color: var(--bs-success);
+  margin-right: 4px;
+  position: relative;
+  animation: powerup-added-animate 2s ease-in-out forwards;
+}
+@keyframes powerup-added-animate {
+  0% {
+    opacity: 0%;
+    right: 50%;
+  }
+  20% {
+    opacity: 100%;
+    right: 0;
+  }
+  85% {
+    opacity: 100%;
+  }
+  100% {
+    opacity: 0%;
+  }
+}
