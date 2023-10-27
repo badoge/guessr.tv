@@ -574,7 +574,7 @@ function generateChoices(answer) {
     [Math.floor(Math.random() * 100), Math.floor(Math.random() * 100), Math.floor(Math.random() * 100), Math.floor(Math.random() * 100)],
     [Math.floor(Math.random() * 10) + 10, Math.floor(Math.random() * 10) + 100, Math.floor(Math.random() * 10) + 1000, Math.floor(Math.random() * 10) + 10000],
     [answer + 1, answer + 2, answer + 3, answer + 4],
-    [(1, 2, 3, 4)],
+    [1, 2, 3, 4],
   ];
   let options = [];
   options.push(...patterns[Math.floor(Math.random() * patterns.length)]);
