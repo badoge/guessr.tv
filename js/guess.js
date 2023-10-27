@@ -985,12 +985,14 @@ function showBreakdown() {
       pointsText += " 💀";
     }
 
+    const answer = data.answer === -1 ? "❌" : data.answer;
+
     let roundResultBlock;
     if (gameSettings.game === "emote") {
       roundResultBlock = "<p class='m-0'>" + data.correctionHTML + "</p>";
     } else if (gameSettings.game === "gamename") {
       roundResultBlock = `<p class='m-0'>
-      Your guess: <span class="text-${i + 1 < roundResults.length ? "success" : "danger"}">${data.answer}</span>
+      Your guess: <span class="text-${i + 1 < roundResults.length ? "success" : "danger"}">${answer}</span>
       <br /><br />
       Correct answer: <span class="text-info">${data.correct}</span>
     </p>`;
@@ -1009,7 +1011,7 @@ function showBreakdown() {
         <p>Your guess:</p>
         <div>
           <button type="button" class="btn btn-outline-${i + 1 < roundResults.length ? "success" : "danger"} multiChoice-btn m-0">
-            ${data.answer}
+            ${answer}
           </button>
         </div>
       </div>
