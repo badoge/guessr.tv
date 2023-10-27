@@ -119,6 +119,11 @@ const followSVG = `<svg type="color-fill-current" width="24px" height="24px" ver
 </g>
 </svg>`;
 
+const powerupIcons = {
+  p5050: `<i class="material-icons notranslate" title="50-50">theater_comedy</i>`,
+  pSkip: `<i class="material-icons notranslate" title="Round skipped">moving</i>`,
+};
+
 const spinner = `<div class="spinner-border" role="status">
 <span class="visually-hidden">Loading...</span>
 </div>`;
@@ -1033,7 +1038,12 @@ function showBreakdown() {
           <div class="embed-playbutton"><i class="material-icons notranslate mp-icon">play_arrow</i></div>
         </div>
         <div class="col">
-          <h4 class="m-2 text-start"><b>${1 + i}</b> &ndash; ${channelLink}</h4>
+          <div class="d-flex flex-row m-2 align-items-center text-start">
+            <h4 class="flex-grow-1 m-0"><b>${1 + i}</b> &ndash; ${channelLink}</h4>
+            <div class="d-flex flex-row gap-1" style="cursor:default">
+              ${data.powerups.map((p) => powerupIcons[p]).join(" ")}
+            </div>
+          </div>
           <hr />
           <div class="row px-2">
             ${roundResultBlock}
