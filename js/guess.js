@@ -121,7 +121,7 @@ const followSVG = `<svg type="color-fill-current" width="24px" height="24px" ver
 
 const powerupIcons = {
   p5050: `<i class="material-icons notranslate" title="50-50">theater_comedy</i>`,
-  pSkip: `<i class="material-icons notranslate" title="Round skipped">moving</i>`,
+  pSkip: `<i class="material-icons notranslate" title="Round skipped">skip_next</i>`,
 };
 
 const spinner = `<div class="spinner-border" role="status">
