@@ -32,14 +32,15 @@
   <body>
     <noscript><div class="alert alert-danger" role="alert">WARNING! JavaScript is disabled. This site will not work properly without it.</div></noscript>
 
-    <div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetLabel" aria-hidden="true">
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="resetLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="resetLabel">Reset stats</h1>
+            <h1 class="modal-title fs-5" id="resetLabel">Settings</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
+            <h5>Reset stats</h5>
             <div class="input-group mb-3">
               <span class="input-group-text">Viewers mode high score:</span>
               <span class="input-group-text" id="viewersHS">0</span>
@@ -250,14 +251,20 @@
       <span id="timer">0</span>
     </div>
 
-    <ul class="nav flex-column position-fixed">
+    <ul class="nav nav-underline flex-column position-fixed">
       <li class="nav-item">
         <a class="nav-link active" aria-current="page" id="reset" onclick="reset()">
           <img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
         </a>
       </li>
+      <!-- <li class="nav-item" >
+        <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/bingo.html"><i class="material-icons notranslate">casino</i> Bingo</a>
+      </li>
       <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="modal" data-bs-target="#resetModal"><i class="material-icons notranslate">restart_alt</i> Reset stats</a>
+        <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/watch.html"><i class="material-icons notranslate">live_tv</i> Watch</a>
+      </li> -->
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="material-icons notranslate">settings</i> Settings</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" data-bs-toggle="modal" data-bs-target="#aboutModal"><i class="material-icons notranslate">help_outline</i> About</a>
@@ -519,7 +526,7 @@
     <script src="/js/confetti.min.js"></script>
     <script src="/js/anime.min.js"></script>
     <script src="/js/tmi.min.js"></script>
-    <script src="/js/guess.js"></script>
+    <script src="/js/guess.min.js"></script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RMN1GV8B4J"></script>
     <script>

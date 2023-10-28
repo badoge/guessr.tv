@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: https://ogp.me/ns#" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>Guessr.tv Watch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Guess the view count. You will be presented with a random Twitch stream and you have to guess how many viewers they have." />
+    <meta name="keywords" content="guessr.tv, Twitch" />
+    <meta property="og:title" content="guessr.tv Watch" />
+    <meta property="og:site_name" content="Guessr.tv Watch" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://guessr.tv/watch" />
+    <meta property="og:image" content="https://guessr.tv/pics/guessr.png" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:description" content="Guess the view count. You will be presented with a random Twitch stream and you have to guess how many viewers they have." />
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/pics/icon/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/pics/icon/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/pics/icon/favicon-16x16.png" />
+    <link rel="manifest" href="/pics/icon/site.webmanifest" />
+    <link rel="mask-icon" href="/pics/icon/safari-pinned-tab.svg" color="#ff8280" />
+    <link rel="shortcut icon" href="/pics/icon/favicon.ico" />
+    <meta name="msapplication-TileColor" content="#9f00a7" />
+    <meta name="msapplication-config" content="/pics/icon/browserconfig.xml" />
+    <meta name="theme-color" content="#212529" />
+
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/icons.css" />
+    <link rel="stylesheet" href="/css/guess.min.css" />
+  </head>
+
+  <body>
+    <noscript><div class="alert alert-danger" role="alert">WARNING! JavaScript is disabled. This site will not work properly without it.</div></noscript>
+
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="resetLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="resetLabel">Settings</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <h5>:)</h5>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="aboutModalLabel">About</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="card border mb-3">
+              <div class="card-header">About the site</div>
+              <div class="card-body">
+                More info <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#readme">here</a><br /><br />
+
+                Every 30 minutes a bot fetches live channels from the Twitch API to make the channel list. The answer is updated using the API just before starting the game but it can still
+                be off because the API is not as accurate view count on the embedded stream. Some channels might also have gone offline during the time it takes the API to update.<br />
+
+                <br />
+                You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of them you can subscribe to Twitch Turbo or change the video type to clips or
+                get a better Adblocker :)<br />
+                If you have Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. If you use Firefox you will need to
+                <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow cross-site tracking cookies</a>
+                <hr />
+                If you want to optout from being picked for the guess list you can use the <kbd>=optout guessr</kbd> command in
+                <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
+                <hr />
+                <span id="infoTime">Channel list updated on [updates when game starts]</span><br />
+              </div>
+            </div>
+            <div class="card border">
+              <div class="card-header">Contact info</div>
+              <div class="card-body">
+                Site by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/badoge">badoge</a> :) <br />
+                Idea by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/nymn">nymn</a><br />
+                Inspired by <a target="_blank" rel="noopener noreferrer" href="https://geoguessr.com">GeoGuessr</a><br /><br />
+                <p>
+                  If you find any issues or if you have suggestions or questions, you can contact me: <br /><a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://www.twitch.tv/popout/badoge/chat?popout="
+                    >in this chat</a
+                  >
+                  <br />or on <a target="_blank" rel="noopener noreferrer" href="https://discord.gg/eF54kvd">discord</a> <br />or by
+                  <a href="mailto:help@guessr.tv">email</a>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="nav nav-underline flex-column position-fixed">
+      <li class="nav-item">
+        <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/">
+          <img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/bingo.html"><i class="material-icons notranslate">casino</i> Bingo</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active site-link" aria-current="page" target="_self" rel="noopener noreferrer" href="/watch.html"><i class="material-icons notranslate">live_tv</i> Watch</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="material-icons notranslate">settings</i> Settings</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="modal" data-bs-target="#aboutModal"><i class="material-icons notranslate">help_outline</i> About</a>
+      </li>
+    </ul>
+
+    <div class="container-fluid text-center mt-3">
+      <div class="row">
+        <div class="col-2">
+          <div aria-live="polite" aria-atomic="true" class="position-relative">
+            <div id="toastContainer" class="toast-container"></div>
+          </div>
+        </div>
+        <div class="col-8 position-relative pe-1">:)</div>
+
+        <div class="col-2 ps-1"></div>
+      </div>
+    </div>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="https://embed.twitch.tv/embed/v1.js"></script>
+    <script src="/js/easytimer.min.js"></script>
+    <script src="/js/confetti.min.js"></script>
+    <script src="/js/anime.min.js"></script>
+    <script src="/js/tmi.min.js"></script>
+    <script src="/js/watch.min.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RMN1GV8B4J"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-RMN1GV8B4J");
+    </script>
+  </body>
+</html>

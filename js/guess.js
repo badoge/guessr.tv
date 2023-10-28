@@ -1829,6 +1829,15 @@ async function getGlobalBadges() {
   });
 } //getGlobalBadges
 
+// function changeSiteLinkTarget(target) {
+//   let links = document.getElementsByClassName("site-link");
+//   for (let index = 0; index < links.length; index++) {
+//     links[index].setAttribute("target", target);
+//   }
+// } //changeSiteLinkTarget
+// changeSiteLinkTarget("_self");
+// changeSiteLinkTarget("_blank");
+
 async function getCustomBadges() {
   return new Promise(async function (resolve, reject) {
     try {
