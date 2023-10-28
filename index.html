@@ -421,8 +421,24 @@
               </div>
 
               <div id="multiChoiceDiv" class="row align-items-center" style="display: none">
-                <div class="col-xl-4"><label id="multiChoiceLabel" class="form-label">How many viewers does this stream have?</label></div>
-                <div class="col-xl-8">
+                <div class="col-xl-2">
+                  <div class="d-flex flex-column gap-1" id="multiChoicePowerupCard">
+                    <button class="btn btn-outline-primary btn-powerup" onclick="usePowerup('pSkip')">
+                      <div><i class="material-icons notranslate">skip_next</i> Skip</div>
+                      <div class="flex-grow-1"></div>
+                      <div class="powerup-added powerup-pSkip-added"></div>
+                      <div class="powerup-count powerup-pSkip-count">0</div>
+                    </button>
+                    <button class="btn btn-outline-primary btn-powerup" onclick="usePowerup('p5050')">
+                      <div><i class="material-icons notranslate">theater_comedy</i> 50/50</div>
+                      <div class="flex-grow-1"></div>
+                      <div class="powerup-added powerup-p5050-added"></div>
+                      <div class="powerup-count powerup-p5050-count">0</div>
+                    </button>
+                  </div>
+                </div>
+                <div class="col-xl-3"><label id="multiChoiceLabel" class="form-label">How many viewers does this stream have?</label></div>
+                <div class="col-xl-7">
                   <button type="button" onclick="guess(1,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice1">????????</button>
                   <button type="button" onclick="guess(2,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice2">????????</button>
                   <button type="button" onclick="guess(3,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice3">????????</button>
@@ -443,8 +459,24 @@
               </div>
 
               <div id="higherlowerDiv" class="row align-items-center" style="display: none">
-                <div class="col-6"><label id="higherlowerLabel" class="form-label">Does this stream have a higher or lower view count than</label><br /></div>
-                <div class="col-6">
+                <div class="col-2">
+                  <div class="d-flex flex-column gap-1" id="higherLowerPowerupCard">
+                    <button class="btn btn-outline-primary btn-powerup" onclick="usePowerup('pSkip')">
+                      <div><i class="material-icons notranslate">skip_next</i> Skip</div>
+                      <div class="flex-grow-1"></div>
+                      <div class="powerup-added powerup-pSkip-added"></div>
+                      <div class="powerup-count powerup-pSkip-count">0</div>
+                    </button>
+                    <button class="btn btn-outline-primary btn-powerup" onclick="usePowerup('p5050')" disabled>
+                      <div><i class="material-icons notranslate">theater_comedy</i> 50/50</div>
+                      <div class="flex-grow-1"></div>
+                      <div class="powerup-added powerup-p5050-added visually-hidden"></div>
+                      <div class="powerup-count powerup-p5050-count visually-hidden">0</div>
+                    </button>
+                  </div>
+                </div>
+                <div class="col-5"><label id="higherlowerLabel" class="form-label">Does this stream have a higher or lower view count than</label><br /></div>
+                <div class="col-5">
                   <button type="button" onclick="guess('higher',false)" class="btn btn-outline-success multiChoice-btn me-5" id="higher">Higher</button>
                   <button type="button" onclick="guess('lower',false)" class="btn btn-outline-danger multiChoice-btn" id="lower">Lower</button>
                 </div>

@@ -119,6 +119,11 @@ const followSVG = `<svg type="color-fill-current" width="24px" height="24px" ver
 </g>
 </svg>`;
 
+const powerupIcons = {
+  p5050: `<i class="material-icons notranslate" title="50-50">theater_comedy</i>`,
+  pSkip: `<i class="material-icons notranslate" title="Round skipped">skip_next</i>`,
+};
+
 const spinner = `<div class="spinner-border" role="status">
 <span class="visually-hidden">Loading...</span>
 </div>`;
@@ -133,6 +138,7 @@ let guessList = [];
 let seenChannels = [];
 let seenClips = [];
 let roundResults = []; // collecting stuff for final screen
+let usedPowerups = []; // list of powerups used in current round
 let round = 0;
 let score = 0;
 let player = null;
@@ -146,6 +152,10 @@ let gameSettings = {
   collection: "random", // "random", "short", "long", "popular", "hottub", "forsen"
   controls: "slider", // slider - choices - text - higherlower
   chat: false, // true - false
+};
+let powerups = {
+  p5050: 0,
+  pSkip: 0,
 };
 
 let highscores = {
@@ -307,6 +317,10 @@ async function startGame() {
 
   round = 0;
   previousNumber = null;
+
+  for (const pType in powerups) {
+    powerups[pType] = 1;
+  }
 } //startGame
 
 async function getRandomStream() {
@@ -443,6 +457,31 @@ async function nextRound() {
   elements.guessNumber.value = "";
   elements.gameInput.value = "";
 
+  // update powerup count
+  usedPowerups = [];
+  const addedPowerups = {};
+  if (round > 1) {
+    if (round % 3 === 0) {
+      addedPowerups.p5050 = 1;
+    }
+    if (round % 7 === 0) {
+      addedPowerups.pSkip = 1;
+    }
+  }
+  for (const pType in powerups) {
+    if (pType in addedPowerups) {
+      powerups[pType] += addedPowerups[pType];
+    }
+    // updates available powerup counter
+    document.querySelectorAll(`.powerup-${pType}-count`).forEach((elem) => {
+      elem.innerText = powerups[pType];
+    });
+    // updates animated incrementor
+    document.querySelectorAll(`.powerup-${pType}-added`).forEach((elem) => {
+      elem.innerText = pType in addedPowerups ? "+" + addedPowerups[pType] : "";
+    });
+  }
+
   toggleControls();
 
   if (gameSettings.game == "viewers") {
@@ -576,9 +615,7 @@ function generateChoices(answer) {
     [answer + 1, answer + 2, answer + 3, answer + 4],
     [1, 2, 3, 4],
   ];
-  let options = [];
-  options.push(...patterns[Math.floor(Math.random() * patterns.length)]);
-  options.push(answer);
+  let options = [answer].concat(patterns[Math.floor(Math.random() * patterns.length)]);
 
   //remove duplicates
   while (hasDuplicates(options)) {
@@ -591,16 +628,17 @@ function generateChoices(answer) {
   }
   //check if answer is included in the options
   if (!options.includes(answer)) {
-    options.pop();
-    options.push(answer);
+    options[0] = answer;
   }
-  //shuffle
-  options.sort(function () {
-    return 0.5 - Math.random();
-  });
+  shuffleArray(options);
+
   for (let index = 0; index < options.length; index++) {
-    elements[`multiChoice${index + 1}`].dataset.answer = options[index];
-    elements[`multiChoice${index + 1}`].innerHTML = options[index].toLocaleString();
+    const mcIndex = `multiChoice${index + 1}`;
+    elements[mcIndex].disabled = false;
+    elements[mcIndex].classList.add("btn-outline-success");
+    elements[mcIndex].classList.remove("btn-outline-secondary");
+    elements[mcIndex].dataset.answer = options[index];
+    elements[mcIndex].innerHTML = options[index].toLocaleString();
   }
 } //generateChoices
 
@@ -637,11 +675,15 @@ async function generateEmoteChoices(userid) {
     }
     shuffleArray(random);
     for (let index = 0; index < random.length; index++) {
-      elements[`multiChoice${index + 1}`].dataset.answer = random[index].id;
-      elements[`multiChoice${index + 1}`].dataset.emote = random[index].emote;
-      elements[`multiChoice${index + 1}`].innerHTML = `${
-        gameSettings.chat ? Object.keys(emoteChoices).find((e) => emoteChoices[e] === index + 1) : ""
-      } <img src="https://static-cdn.jtvnw.net/emoticons/v2/${random[index].emote}/default/dark/3.0" alt="emote #${index + 1}">`;
+      const mcIndex = `multiChoice${index + 1}`;
+      elements[mcIndex].disabled = false;
+      elements[mcIndex].classList.add("btn-outline-success");
+      elements[mcIndex].classList.remove("btn-outline-secondary");
+      elements[mcIndex].dataset.answer = random[index].id;
+      elements[mcIndex].dataset.emote = random[index].emote;
+      elements[mcIndex].innerHTML = `${gameSettings.chat ? Object.keys(emoteChoices).find((e) => emoteChoices[e] === index + 1) : ""} <img src="https://static-cdn.jtvnw.net/emoticons/v2/${
+        random[index].emote
+      }/default/dark/3.0" alt="emote #${index + 1}">`;
     }
   } catch (error) {
     console.log("generateEmoteChoices error", error);
@@ -663,7 +705,7 @@ async function checkEmote(id) {
   }
 } //checkEmote
 
-async function guess(choice, timeUp) {
+async function guess(choice, timeUp = false, skipped = false) {
   roundActive = false;
   let answer;
 
@@ -701,6 +743,7 @@ async function guess(choice, timeUp) {
 
     default:
       //user did not answer and time is up so set answer to -1 so they get 0 points
+      //also works when `skipped` is 'true' - in that case user gets max points
       answer = -1;
   }
 
@@ -713,10 +756,11 @@ async function guess(choice, timeUp) {
   //stop timer here because checks above can show some warning instead of ending the round
   stopTimer();
 
-  let roundResult = calculateScore(answer);
+  let roundResult = calculateScore(answer, skipped);
 
   // store some data for final screen:
   roundResult.task = guessList[round - 1];
+  roundResult.powerups = usedPowerups;
   roundResults.push(roundResult);
 
   let { points, percent, diff, color } = roundResult;
@@ -812,7 +856,7 @@ async function guess(choice, timeUp) {
 
   //show progress bar and correction for emote mode - multi choice controls - streams or clips
   if (gameSettings.game == "emote") {
-    let emote = elements[`multiChoice${choice}`].dataset.emote;
+    let emote = choice === null ? null : elements[`multiChoice${choice}`].dataset.emote;
 
     percent = (score / highscores.emoteStreak) * 100;
 
@@ -885,7 +929,7 @@ async function guess(choice, timeUp) {
   }
 
   //multi choice and text and higherlower controls are endless so return and dont end game
-  if (round == 5 && (gameSettings.controls == "choices" || gameSettings.controls == "text" || gameSettings.controls == "higherlower")) {
+  if (gameSettings.controls == "choices" || gameSettings.controls == "text" || gameSettings.controls == "higherlower") {
     return;
   }
 
@@ -946,12 +990,14 @@ function showBreakdown() {
       pointsText += " 💀";
     }
 
+    const answer = data.answer === -1 ? "❌" : data.answer;
+
     let roundResultBlock;
     if (gameSettings.game === "emote") {
       roundResultBlock = "<p class='m-0'>" + data.correctionHTML + "</p>";
     } else if (gameSettings.game === "gamename") {
       roundResultBlock = `<p class='m-0'>
-      Your guess: <span class="text-${i + 1 < roundResults.length ? "success" : "danger"}">${data.answer}</span>
+      Your guess: <span class="text-${i + 1 < roundResults.length ? "success" : "danger"}">${answer}</span>
       <br /><br />
       Correct answer: <span class="text-info">${data.correct}</span>
     </p>`;
@@ -970,7 +1016,7 @@ function showBreakdown() {
         <p>Your guess:</p>
         <div>
           <button type="button" class="btn btn-outline-${i + 1 < roundResults.length ? "success" : "danger"} multiChoice-btn m-0">
-            ${data.answer}
+            ${answer}
           </button>
         </div>
       </div>
@@ -992,7 +1038,12 @@ function showBreakdown() {
           <div class="embed-playbutton"><i class="material-icons notranslate mp-icon">play_arrow</i></div>
         </div>
         <div class="col">
-          <h4 class="m-2 text-start"><b>${1 + i}</b> &ndash; ${channelLink}</h4>
+          <div class="d-flex flex-row m-2 align-items-center text-start">
+            <h4 class="flex-grow-1 m-0"><b>${1 + i}</b> &ndash; ${channelLink}</h4>
+            <div class="d-flex flex-row gap-1" style="cursor:default">
+              ${data.powerups.map((p) => powerupIcons[p]).join(" ")}
+            </div>
+          </div>
           <hr />
           <div class="row px-2">
             ${roundResultBlock}
@@ -1019,7 +1070,7 @@ function showBreakdown() {
   player = null;
 } //showBreakdown
 
-function calculateScore(answer) {
+function calculateScore(answer, skipped = false) {
   const result = {};
 
   let points = 0;
@@ -1029,7 +1080,7 @@ function calculateScore(answer) {
 
   //check emote mode answer
   if (gameSettings.game == "emote") {
-    if (answer == guessList[round - 1].userid) {
+    if (skipped || answer == guessList[round - 1].userid) {
       points = 1;
     } else {
       points = 0;
@@ -1068,7 +1119,7 @@ function calculateScore(answer) {
 
   //check if answer is corrent for multi choice controls - viewers or followers game - streams or clips
   if (gameSettings.controls == "choices" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
-    if (answer == guessList[round - 1][gameSettings.game]) {
+    if (skipped || answer == guessList[round - 1][gameSettings.game]) {
       points = 1;
     } else {
       points = 0;
@@ -1089,7 +1140,7 @@ function calculateScore(answer) {
       correctAnswer = "lower";
     }
 
-    if (answer === correctAnswer) {
+    if (skipped || answer === correctAnswer) {
       points = 1;
     } else {
       points = 0;
@@ -1101,7 +1152,7 @@ function calculateScore(answer) {
 
   //get points for game guesser mode
   if (gameSettings.game == "gamename") {
-    if (answer == guessList[round - 1].game_name.replace(/\s+/g, "").toLowerCase()) {
+    if (skipped || answer == guessList[round - 1].game_name.replace(/\s+/g, "").toLowerCase()) {
       points = 1;
     } else {
       points = 0;
@@ -1112,7 +1163,7 @@ function calculateScore(answer) {
   }
 
   //guess() was called by timer and user did not provide an answer so give user 0 points
-  if (answer == -1) {
+  if (!skipped && answer == -1) {
     points = 0;
     percent = 0;
 
@@ -1218,8 +1269,12 @@ function showCorrection(correct, answer, diff, points, color) {
      ${correct == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
     ${
       points == 1
-        ? "You nailed the view count perfectly ✌"
-        : `${answer == -1 ? "You did not select an answer" : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`}`
+        ? answer == -1
+          ? "You skipped this round 🤷"
+          : "You nailed the view count perfectly ✌"
+        : answer == -1
+        ? "You did not select an answer"
+        : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`
     }`;
   }
 
@@ -1227,12 +1282,12 @@ function showCorrection(correct, answer, diff, points, color) {
     elements.correction.innerHTML = `The stream has ${SVG}<strong>${correct.toLocaleString()}</strong> ${correct == 1 ? "follower" : "followers"}<br>
       ${
         points == 1
-          ? "You nailed the follower count perfectly ✌"
-          : `${
-              answer == -1
-                ? "You did not select an answer"
-                : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "follower" : "followers"}`
-            }`
+          ? answer == -1
+            ? "You skipped this round 🤷"
+            : "You nailed the view count perfectly ✌"
+          : answer == -1
+          ? "You did not select an answer"
+          : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "follower" : "followers"}`
       }`;
   }
 
@@ -1241,13 +1296,13 @@ function showCorrection(correct, answer, diff, points, color) {
     src="https://static-cdn.jtvnw.net/emoticons/v2/${correct}/default/dark/3.0" alt="emote"><br>
     ${
       points == 1
-        ? "You guessed the emote correctly ✌"
-        : `${
-            answer == -1
-              ? "You did not select an answer"
-              : `Your guess was <img style="height: 56px;" 
+        ? answer == -1
+          ? "You skipped this round 🤷"
+          : "You guessed the emote correctly ✌"
+        : answer == -1
+        ? "You did not select an answer"
+        : `Your guess was <img style="height: 56px;" 
               src="https://static-cdn.jtvnw.net/emoticons/v2/${answer}/default/dark/3.0" alt="emote">`
-          }`
     }`;
   }
 
@@ -1262,8 +1317,12 @@ function showCorrection(correct, answer, diff, points, color) {
     }${correct == previousNumber ? " (same as previous channel!)" : ""}<br>
 ${
   points == 1
-    ? `The ${gameSettings.video == "streams" ? "stream" : "clip"} has a ${answer} ${gameSettings.game == "viewers" ? "view count" : "follow count"}!`
-    : `${answer == -1 ? "You did not select an answer" : `The previous ${gameSettings.video == "streams" ? "channel" : "clips"} had ${previousNumber.toLocaleString()} ${gameSettings.game}`}`
+    ? answer == -1
+      ? "<br>You skipped this round 🤷"
+      : `This ${gameSettings.video == "streams" ? "stream" : "clip"} has a <i>${answer}</i> ${gameSettings.game == "viewers" ? "view count" : "follow count"} than previous`
+    : answer == -1
+    ? "You did not select an answer"
+    : `The previous ${gameSettings.video == "streams" ? "channel" : "clips"} had ${previousNumber.toLocaleString()} ${gameSettings.game}`
 }`;
   }
 } //showCorrection
@@ -1868,6 +1927,7 @@ function shuffleArray(array) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
+  return array;
 } //shuffleArray
 
 function enableTooltips() {
@@ -1883,12 +1943,78 @@ async function playAgain() {
   nextRound();
   elements.playAgain.innerHTML = oldContent;
   elements.playAgain.disabled = false;
-}
+} // playAgain
 function resetHighScore(scoreName) {
   localStorage.setItem(scoreName, 0);
   highscores[scoreName] = 0;
   elements[scoreName].innerHTML = 0;
 } //resetHighScore
+
+function usePowerup(pType) {
+  if (!(pType in powerups)) {
+    throw new Error("Unknown powerup type requested: " + pType);
+  }
+  if (usedPowerups.indexOf(pType) >= 0) {
+    console.warn(`You have already used powerup [${pType}] on this round!`);
+    return;
+  }
+  if (powerups[pType] <= 0) {
+    console.warn(`Not enough points to use [${pType}] powerup!`);
+    return;
+  }
+
+  switch (pType) {
+    case "pSkip": {
+      if (gameSettings.controls === "higherlower" || gameSettings.controls === "choices") {
+        // call `guess()` with empty answer, but add "skipped" flag for max points:
+        guess(null, false, true);
+      } else {
+        throw new Error(`Powerup [${pType}] not allowed for game mode [${gameSettings.controls}]`);
+      }
+      break;
+    }
+    case "p5050": {
+      if (gameSettings.controls === "choices") {
+        const correct = gameSettings.game === "emote" ? Number(guessList[round - 1].userid) : guessList[round - 1][gameSettings.game];
+
+        const choiceBtns = Array.from(document.querySelectorAll("#multiChoiceDiv .multiChoice-btn"));
+        const answers = choiceBtns.map((el) => parseInt(el.dataset.answer, 10));
+
+        const indexList = shuffleArray(answers.map((e, i) => i));
+        const correctIndex = answers.indexOf(correct);
+        let fakeIndex = -1;
+
+        // find a 'fake' button which has incorrect answer
+        while (indexList.length > 0) {
+          const newFakeIndex = indexList.pop();
+          if (newFakeIndex !== correctIndex) {
+            fakeIndex = newFakeIndex;
+            break;
+          }
+        }
+
+        // leave two active buttons: one correct, one incorrect (fake)
+        for (let i = 0; i < choiceBtns.length; i++) {
+          if (i !== fakeIndex && i !== correctIndex) {
+            choiceBtns[i].disabled = true;
+            choiceBtns[i].classList.remove("btn-outline-success");
+            choiceBtns[i].classList.add("btn-outline-secondary");
+          }
+        }
+      } else {
+        throw new Error(`Powerup [${pType}] not allowed for game mode [${gameSettings.controls}]`);
+      }
+      break;
+    }
+  }
+
+  // if no error up to this point - hint usage was successful
+  usedPowerups.push(pType);
+  powerups[pType] -= 1;
+  document.querySelectorAll(`.powerup-${pType}-count`).forEach((elem) => {
+    elem.innerText = powerups[pType];
+  });
+}
 
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels")) || [];
