@@ -1,6 +1,7 @@
 const elements = {
   toastContainer: document.getElementById("toastContainer"),
   twitchEmbed: document.getElementById("twitchEmbed"),
+  nextStream: document.getElementById("nextStream"),
 };
 
 let mainList = [];
@@ -18,6 +19,10 @@ async function getMainList() {
 } //getMainList
 
 async function nextStream() {
+  elements.nextStream.disabled = true;
+  setTimeout(() => {
+    elements.nextStream.disabled = false;
+  }, 2000);
   if (mainList.length == 0) {
     showToast("No more channels left on the list, refresh to get a new list", "danger", "3000");
     return;
