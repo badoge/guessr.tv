@@ -55,7 +55,7 @@ async function nextStream() {
     parent: ["guessr.tv", "127.0.0.1"],
   };
   if (!player) {
-    player = new Twitch.Player("twitchEmbed", options);
+    player = new Twitch.Embed("twitchEmbed", options);
   } else {
     player.setChannel(channel.username);
   }
