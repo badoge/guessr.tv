@@ -1,0 +1,18 @@
+.bingo-board {
+  width: fit-content;
+  border: 2px solid #969696;
+  background-color: #cfcfcf;
+}
+
+.bingo-cell {
+  z-index: 2;
+  color: rgb(10, 10, 10);
+  height: 20vh;
+  min-width: 20vh;
+  border: 2px solid #969696;
+  cursor: pointer;
+}
+
+.filled {
+  background-color: #18ee22;
+}
