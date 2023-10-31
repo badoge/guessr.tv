@@ -76,7 +76,7 @@ const elements = {
   timerValue: document.getElementById("timerValue"),
   chatSettingsDiv: document.getElementById("chatSettingsDiv"),
   channelName: document.getElementById("channelName"),
-  drops: document.getElementById("drops"),
+  //drops: document.getElementById("drops"),
   disclaimer: document.getElementById("disclaimer"),
   getSettingsButton: document.getElementById("getSettingsButton"),
   leaderboard: document.getElementById("leaderboard"),
@@ -1767,11 +1767,11 @@ window.onload = async function () {
   channelName = localStorage.getItem("channelName") || "";
   elements.channelName.value = channelName;
 
-  if (channelName) {
-    elements.drops.style.display = "";
-  } else {
-    elements.drops.style.display = "none";
-  }
+  // if (channelName) {
+  //   elements.drops.style.display = "";
+  // } else {
+  //   elements.drops.style.display = "none";
+  // }
 
   elements.viewersHS.innerHTML = highscores.viewersHS.toLocaleString();
   elements.followersHS.innerHTML = highscores.followersHS.toLocaleString();
@@ -1838,13 +1838,13 @@ window.onload = async function () {
     }
   };
 
-  elements.channelName.oninput = function () {
-    if (this.value) {
-      elements.drops.style.display = "";
-    } else {
-      elements.drops.style.display = "none";
-    }
-  };
+  // elements.channelName.oninput = function () {
+  //   if (this.value) {
+  //     elements.drops.style.display = "";
+  //   } else {
+  //     elements.drops.style.display = "none";
+  //   }
+  // };
 
   elements.nextRound.onclick = function () {
     localStorage.setItem("seenChannels", JSON.stringify(seenChannels));
