@@ -123,49 +123,69 @@
       </li>
     </ul>
 
+    <div class="container-fluid" id="board" style="top: 35%; left: 5%">
+      <div class="row m-0">
+        <div class="col bingo-cell" style="border-top-left-radius: 6px">asd1</div>
+        <div class="col bingo-cell">asd2</div>
+        <div class="col bingo-cell">asd3</div>
+        <div class="col bingo-cell">asd4</div>
+        <div class="col bingo-cell" style="border-top-right-radius: 6px">asd5</div>
+      </div>
+      <div class="row m-0">
+        <div class="col bingo-cell">asd6</div>
+        <div class="col bingo-cell">asd7</div>
+        <div class="col bingo-cell">asd8</div>
+        <div class="col bingo-cell">asd9</div>
+        <div class="col bingo-cell">asd10</div>
+      </div>
+      <div class="row m-0">
+        <div class="col bingo-cell">asd11</div>
+        <div class="col bingo-cell">asd12</div>
+        <div class="col bingo-cell">asd13</div>
+        <div class="col bingo-cell">asd14</div>
+        <div class="col bingo-cell">asd15</div>
+      </div>
+      <div class="row m-0">
+        <div class="col bingo-cell">asd16</div>
+        <div class="col bingo-cell">asd17</div>
+        <div class="col bingo-cell">asd18</div>
+        <div class="col bingo-cell">asd19</div>
+        <div class="col bingo-cell">asd20</div>
+      </div>
+      <div class="row m-0">
+        <div class="col bingo-cell" style="border-bottom-left-radius: 6px">asd21</div>
+        <div class="col bingo-cell">asd22</div>
+        <div class="col bingo-cell">asd23</div>
+        <div class="col bingo-cell">asd24</div>
+        <div class="col bingo-cell" style="border-bottom-right-radius: 6px">asd25</div>
+      </div>
+    </div>
+
     <div class="container-fluid text-center mt-3">
       <div class="row">
-        <div class="col-2">
+        <div class="col-1">
           <div aria-live="polite" aria-atomic="true" class="position-relative">
             <div id="toastContainer" class="toast-container"></div>
           </div>
         </div>
-        <div class="col-10 position-relative">
-          <div class="container-fluid bingo-board">
-            <div class="row">
-              <div class="col bingo-cell">asd1</div>
-              <div class="col bingo-cell">asd2</div>
-              <div class="col bingo-cell">asd3</div>
-              <div class="col bingo-cell">asd4</div>
-              <div class="col bingo-cell">asd5</div>
-            </div>
-            <div class="row">
-              <div class="col bingo-cell">asd6</div>
-              <div class="col bingo-cell">asd7</div>
-              <div class="col bingo-cell">asd8</div>
-              <div class="col bingo-cell">asd9</div>
-              <div class="col bingo-cell">asd10</div>
-            </div>
-            <div class="row">
-              <div class="col bingo-cell">asd11</div>
-              <div class="col bingo-cell">asd12</div>
-              <div class="col bingo-cell">asd13</div>
-              <div class="col bingo-cell">asd14</div>
-              <div class="col bingo-cell">asd15</div>
-            </div>
-            <div class="row">
-              <div class="col bingo-cell">asd16</div>
-              <div class="col bingo-cell">asd17</div>
-              <div class="col bingo-cell">asd18</div>
-              <div class="col bingo-cell">asd19</div>
-              <div class="col bingo-cell">asd20</div>
-            </div>
-            <div class="row">
-              <div class="col bingo-cell">asd21</div>
-              <div class="col bingo-cell">asd22</div>
-              <div class="col bingo-cell">asd23</div>
-              <div class="col bingo-cell">asd24</div>
-              <div class="col bingo-cell">asd25</div>
+        <div class="col-11 position-relative">
+          <div id="twitchEmbed"></div>
+        </div>
+      </div>
+      <div class="row mb-3 mt-2" id="bottomRow">
+        <div class="col-1"></div>
+        <div class="col-11">
+          <div class="card" id="mainCard">
+            <div class="card-body container-fluid">
+              <div id="sliderDiv" class="row align-items-center">
+                <div class="col-9">:)</div>
+
+                <div class="col-3">
+                  <button type="button" id="nextStream" onclick="nextStream()" class="btn btn-lg btn-success float-end">
+                    <i class="material-icons notranslate" title="Round skipped">skip_next</i> Next stream
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
