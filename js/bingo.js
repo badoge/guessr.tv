@@ -56,6 +56,7 @@ async function nextStream() {
     height: "100%",
     channel: channel.username,
     layout: "video-with-chat",
+    theme: "dark",
     parent: ["guessr.tv", "127.0.0.1"],
   };
   if (!player) {
@@ -152,6 +153,7 @@ function bingoSave() {
 
   for (let index = 0; index < elements.cells.length; index++) {
     elements.cells[index].innerText = itemValues[index];
+    elements.cells[index].title = itemValues[index];
   }
 } //bingoSave
 

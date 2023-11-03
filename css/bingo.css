@@ -1,8 +1,8 @@
 #board {
   position: fixed;
   width: fit-content;
-  border: 2px solid #d6d6d6;
-  background-color: #7c7c7c;
+  border: 2px solid var(--bs-secondary-border-subtle);
+  background-color: var(--bs-tertiary-bg);
   border-radius: 6px;
   padding: 20px;
   cursor: move;
@@ -12,14 +12,18 @@
 
 .bingo-cell {
   text-align: center;
-  color: rgb(10, 10, 10);
-  background-color: #535353;
+  color: var(--bs-light-text-emphasis);
+  background-color: var(--bs-secondary-bg);
   min-width: 10vh;
   min-height: 10vh;
-  border: 2px solid #a0a0a0;
+  max-width: 10vh;
+  max-height: 10vh;
+  border: 2px solid var(--bs-light-border-subtle);
   cursor: pointer;
-  font-size: 0.8cqw;
   font-weight: 700;
+  overflow: hidden;
+  word-wrap: break-word;
+  font-size: 100%;
 }
 
 #bingoEdit {
@@ -32,7 +36,7 @@
 }
 
 .filled {
-  background-color: #18ee22;
+  background-color: var(--bs-green);
 }
 .nav-link {
   cursor: pointer;
