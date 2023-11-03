@@ -14,10 +14,21 @@
   text-align: center;
   color: rgb(10, 10, 10);
   background-color: #535353;
-  height: 10vh;
   min-width: 10vh;
+  min-height: 10vh;
   border: 2px solid #a0a0a0;
   cursor: pointer;
+  font-size: 0.8cqw;
+  font-weight: 700;
+}
+
+#bingoEdit {
+  cursor: pointer;
+  width: fit-content;
+}
+
+.pointer-events-none {
+  pointer-events: none;
 }
 
 .filled {

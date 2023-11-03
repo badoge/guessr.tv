@@ -1,4 +1,6 @@
 const elements = {
+  bingoItems: document.querySelectorAll(".bingo-item"),
+  randomize: document.querySelectorAll(".bingo-random"),
   board: document.getElementById("board"),
   cells: document.querySelectorAll(".bingo-cell"),
   toastContainer: document.getElementById("toastContainer"),
@@ -89,7 +91,7 @@ function dragElement() {
   };
 
   elements.board.onmousedown = (event) => {
-    if (event.target.classList.contains("bingo-cell")) {
+    if (event.target.classList.contains("bingo-cell") || event.target.classList.contains("material-icons")) {
       return;
     }
     event.preventDefault();
@@ -101,15 +103,72 @@ function dragElement() {
   };
 }
 
+const suggestions = [
+  "PotFriend",
+  "forsen",
+  "VTuber",
+  "Streamer AFK",
+  "Channel with over 10,000 viewers",
+  "Pet cam",
+  "IRL stream",
+  "Hottub stream",
+  `"Artifact" stream`,
+  "Streamer you follow",
+  "Console stream",
+  "Speedrunner",
+  "Empty chat",
+  "Oldie",
+  "Playing Slots",
+  "Sleeping during a subathon",
+  "Korean dancer",
+  "#AD stream",
+  "Eating and reacting to YouTube",
+  "Low quality cam",
+  "Cam bigger than gameplay",
+  "NotLikeThis screen",
+  "ASMR stream",
+  "1k+ viewers with an inactive chat",
+  "Hand cam",
+  "Cosplaying",
+  "Overlay full of gifs",
+  "Driving stream",
+];
+
+function randomize(event) {
+  const id = event.target.dataset.itemId;
+  const input = document.querySelector(`[data-item-id="${id}"]`);
+  const taken = [...elements.bingoItems].map((x) => x.value);
+  let random = suggestions[Math.floor(Math.random() * suggestions.length)];
+
+  while (taken.includes(random)) {
+    random = suggestions[Math.floor(Math.random() * suggestions.length)];
+  }
+
+  input.value = random;
+} //randomize
+
+function bingoSave() {
+  const itemValues = shuffleArray([...elements.bingoItems].map((x) => x.value));
+
+  for (let index = 0; index < elements.cells.length; index++) {
+    elements.cells[index].innerText = itemValues[index];
+  }
+} //bingoSave
+
 window.onload = async function () {
   for (let index = 0; index < elements.cells.length; index++) {
     elements.cells[index].onclick = (event) => {
       event.target.classList.toggle("filled");
     };
   }
+  for (let index = 0; index < elements.randomize.length; index++) {
+    elements.randomize[index].onclick = (event) => {
+      randomize(event);
+    };
+  }
   dragElement();
 
-  //await getMainList();
-  //shuffleArray(mainList);
-  //nextStream();
+  await getMainList();
+  shuffleArray(mainList);
+  nextStream();
 }; //onload
