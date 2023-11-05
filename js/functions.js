@@ -140,6 +140,33 @@ function shuffleArray(array) {
   return array;
 } //shuffleArray
 
+function checkSimilarity(guess, answer) {
+  const distanceMatrix = Array(answer.length + 1)
+    .fill(null)
+    .map(() => Array(guess.length + 1).fill(null));
+  for (let i = 0; i <= guess.length; i++) {
+    distanceMatrix[0][i] = i;
+  }
+  for (let j = 0; j <= answer.length; j++) {
+    distanceMatrix[j][0] = j;
+  }
+  for (let j = 1; j <= answer.length; j++) {
+    for (let i = 1; i <= guess.length; i++) {
+      const indicator = guess[i - 1] === answer[j - 1] ? 0 : 1;
+      distanceMatrix[j][i] = Math.min(distanceMatrix[j][i - 1] + 1, distanceMatrix[j - 1][i] + 1, distanceMatrix[j - 1][i - 1] + indicator);
+    }
+  }
+  return distanceMatrix[answer.length][guess.length] <= 2;
+} //checkSimilarity
+
+function cleanString(s) {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/gi, "")
+    .toLowerCase();
+} //cleanString
+
 function enableTooltips() {
   const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
   const tooltipList = [...tooltipTriggerList].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl));

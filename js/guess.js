@@ -330,6 +330,7 @@ async function getRandomStream() {
       //update stream info
       random.viewers = stream.data[0].viewer_count;
       random.game_name = stream.data[0].game_name;
+      random.game_name_clean = cleanString(stream.data[0].game_name);
       random.thumbnail = stream.data[0].thumbnail_url || "";
       return random;
     } else {
@@ -693,7 +694,7 @@ async function guess(choice, timeUp = false, skipped = false) {
       break;
 
     case "game":
-      answer = elements.gameInput.value.replace(/\s+/g, "").toLowerCase();
+      answer = cleanString(elements.gameInput.value);
       //show warning if no answer is provided but only if timer is not over
       if (!answer && !timeUp) {
         showToast("Invalid answer", "warning", 2000);
@@ -701,7 +702,7 @@ async function guess(choice, timeUp = false, skipped = false) {
         return;
       }
       //show warning if answer does not exist in the game list
-      if (!gameList.some((x) => x.name.replace(/\s+/g, "").toLowerCase() === answer) && !timeUp) {
+      if (!gameList.some((x) => cleanString(x.name) === answer) && !timeUp) {
         showToast("Answer must be from the suggestions list", "warning", 2000);
         elements.gameInput.value = "";
         return;
@@ -1119,7 +1120,16 @@ function calculateScore(answer, skipped = false) {
 
   //get points for game guesser mode
   if (gameSettings.game == "gamename") {
-    if (skipped || answer == guessList[round - 1].game_name.replace(/\s+/g, "").toLowerCase()) {
+    let correctGuess = false;
+
+    if (/\d/.test(guessList[round - 1].game_name_clean)) {
+      //if the game name has numbers then compare the exact value
+      correctGuess = guessList[round - 1].game_name_clean === answer;
+    } else {
+      correctGuess = checkSimilarity(answer, guessList[round - 1].game_name_clean);
+    }
+
+    if (skipped || correctGuess) {
       points = 1;
     } else {
       points = 0;
@@ -1475,7 +1485,7 @@ async function connectChat() {
       if (input[0]?.toLowerCase() !== "!guess") {
         return;
       }
-      results = calculateScore(input.slice(1).join("").replace(/\s+/g, "").toLowerCase());
+      results = calculateScore(cleanString(input.slice(1).join("")));
     }
 
     if (gameSettings.game == "emote") {
