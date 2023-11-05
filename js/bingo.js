@@ -1,3 +1,35 @@
+const suggestions = [
+  "VTuber",
+  "Streamer AFK",
+  "Over 10,000 viewers",
+  "Pet cam",
+  "IRL stream",
+  "Hottub stream",
+  "Watching a movie/TV show",
+  "Streamer you follow",
+  "Console stream",
+  "Speedrunning",
+  "Empty chat",
+  "Playing Slots",
+  "Sleeping during a subathon",
+  "Korean dancer",
+  "#AD stream",
+  "Reacting to videos",
+  "Low quality cam",
+  "Cam bigger than gameplay",
+  "NotLikeThis screen",
+  "ASMR stream",
+  "1k+ viewers with an inactive chat",
+  "Hand cam",
+  "Cosplaying",
+  "Random gifs in overlay",
+  "Driving stream",
+  "Esports tournament",
+  "Playing an instrument",
+  "Subscribers only chat",
+  "Room full of RGB lights",
+];
+
 const elements = {
   bingoItems: document.querySelectorAll(".bingo-item"),
   randomize: document.querySelectorAll(".bingo-random"),
@@ -5,6 +37,8 @@ const elements = {
   cells: document.querySelectorAll(".bingo-cell"),
   toastContainer: document.getElementById("toastContainer"),
   twitchEmbed: document.getElementById("twitchEmbed"),
+  boardSize: document.getElementById("boardSize"),
+  boardOpacity: document.getElementById("boardOpacity"),
   nextStream: document.getElementById("nextStream"),
 };
 
@@ -102,38 +136,7 @@ function dragElement() {
     document.onmouseup = dragMouseUp;
     document.onmousemove = dragMouseMove;
   };
-}
-
-const suggestions = [
-  "PotFriend",
-  "forsen",
-  "VTuber",
-  "Streamer AFK",
-  "Channel with over 10,000 viewers",
-  "Pet cam",
-  "IRL stream",
-  "Hottub stream",
-  `"Artifact" stream`,
-  "Streamer you follow",
-  "Console stream",
-  "Speedrunner",
-  "Empty chat",
-  "Oldie",
-  "Playing Slots",
-  "Sleeping during a subathon",
-  "Korean dancer",
-  "#AD stream",
-  "Eating and reacting to YouTube",
-  "Low quality cam",
-  "Cam bigger than gameplay",
-  "NotLikeThis screen",
-  "ASMR stream",
-  "1k+ viewers with an inactive chat",
-  "Hand cam",
-  "Cosplaying",
-  "Overlay full of gifs",
-  "Driving stream",
-];
+} //dragElement
 
 function randomize(event) {
   const id = event.target.dataset.itemId;
@@ -147,6 +150,13 @@ function randomize(event) {
 
   input.value = random;
 } //randomize
+
+function randomizeAll() {
+  let options = shuffleArray(structuredClone(suggestions));
+  for (let index = 0; index < elements.bingoItems.length; index++) {
+    elements.bingoItems[index].value = options.pop();
+  }
+} //randomizeAll
 
 function bingoSave() {
   const itemValues = shuffleArray([...elements.bingoItems].map((x) => x.value));
@@ -168,7 +178,25 @@ window.onload = async function () {
       randomize(event);
     };
   }
+
+  elements.boardSize.oninput = function () {
+    elements.board.style.scale = this.value;
+  };
+
+  elements.boardOpacity.oninput = function () {
+    elements.board.style.opacity = this.value;
+  };
+
+  elements.board.addEventListener("mousewheel", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    let scale = parseFloat(getComputedStyle(elements.board).getPropertyValue("scale"));
+    elements.board.style.scale = event.wheelDelta > 0 ? Math.min(scale + 0.07, 2) : Math.max(scale - 0.07, 0.1);
+    elements.boardSize.value = event.wheelDelta > 0 ? scale + 0.07 : scale - 0.07;
+  });
+
   dragElement();
+  enableTooltips();
 
   await getMainList();
   shuffleArray(mainList);

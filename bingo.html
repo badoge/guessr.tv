@@ -110,7 +110,9 @@
             <h1 class="modal-title fs-5" id="editModalLabel">Edit</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body" style="height: 60vh; overflow: auto">
+            <button type="button" class="btn btn-warning mb-3" onclick="randomizeAll()"><i class="material-icons notranslate pointer-events-none">casino</i> Randomize all</button>
+
             <div class="input-group mb-1">
               <input type="text" class="form-control bingo-item" placeholder="Bingo item #1" data-item-id="1" aria-label="Bingo item #1" />
               <button class="btn btn-outline-secondary bingo-random" data-item-id="1" type="button" title="Fill with random item">
@@ -292,7 +294,7 @@
       </li>
     </ul>
 
-    <div class="container-fluid" id="board" style="top: 35%; left: 5%">
+    <div class="container-fluid" id="board" style="top: 25%; left: 5%">
       <div class="row m-0">
         <div class="col bingo-cell" style="border-top-left-radius: 6px">1</div>
         <div class="col bingo-cell">2</div>
@@ -328,12 +330,6 @@
         <div class="col bingo-cell">24</div>
         <div class="col bingo-cell" style="border-bottom-right-radius: 6px">25</div>
       </div>
-
-      <div class="row">
-        <div class="col p-0" style="margin-bottom: -20px">
-          <i class="material-icons notranslate float-end" id="bingoEdit" data-bs-toggle="modal" data-bs-target="#editModal">edit</i>
-        </div>
-      </div>
     </div>
 
     <div class="container-fluid text-center mt-3">
@@ -352,8 +348,26 @@
         <div class="col-11">
           <div class="card" id="mainCard">
             <div class="card-body container-fluid">
-              <div id="sliderDiv" class="row align-items-center">
-                <div class="col-9">:)</div>
+              <div id="sliderDiv" class="row">
+                <div class="col-9">
+                  <button type="button" class="btn btn-lg btn-primary float-start" data-bs-toggle="modal" data-bs-target="#editModal">
+                    <i class="material-icons notranslate">edit</i>Edit board
+                  </button>
+
+                  <label for="boardSize" class="form-label"><i class="material-icons notranslate">zoom_in</i>Board size</label>
+                  <i
+                    class="material-icons notranslate text-info"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Use your scroll wheel while hovering over the board to quickly adjust the size :)"
+                  >
+                    lightbulb
+                  </i>
+                  <input type="range" class="form-range align-middle me-5" id="boardSize" value="1" min="0.1" max="2" step="0.01" />
+
+                  <label for="boardOpacity" class="form-label"><i class="material-icons notranslate">opacity</i>Board opacity</label>
+                  <input type="range" class="form-range align-middle" id="boardOpacity" value="1" min="0" max="1" step="0.01" />
+                </div>
 
                 <div class="col-3">
                   <button type="button" id="nextStream" onclick="nextStream()" class="btn btn-lg btn-success float-end">

@@ -8,6 +8,7 @@
   cursor: move;
   box-shadow: 3px 3px 10px #000000;
   z-index: 10;
+  scale: 1;
 }
 
 .bingo-cell {
@@ -26,13 +27,12 @@
   font-size: 100%;
 }
 
-#bingoEdit {
-  cursor: pointer;
-  width: fit-content;
-}
-
 .pointer-events-none {
   pointer-events: none;
+}
+
+.form-range {
+  width: 300px;
 }
 
 .filled {
