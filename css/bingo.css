@@ -15,16 +15,17 @@
   text-align: center;
   color: var(--bs-light-text-emphasis);
   background-color: var(--bs-secondary-bg);
-  min-width: 10vh;
-  min-height: 10vh;
-  max-width: 10vh;
-  max-height: 10vh;
+  min-width: 12vh;
+  min-height: 12vh;
+  max-width: 12vh;
+  max-height: 12vh;
   border: 2px solid var(--bs-light-border-subtle);
   cursor: pointer;
   font-weight: 700;
   overflow: hidden;
   word-wrap: break-word;
   font-size: 100%;
+  padding: 5px;
 }
 
 .pointer-events-none {
@@ -47,7 +48,7 @@
 }
 
 #bingoLink {
-  min-width: 250px;
+  max-width: 300px;
 }
 
 #toastContainer {

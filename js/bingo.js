@@ -32,6 +32,7 @@ const suggestions = [
 
 const elements = {
   loginExpiredModal: document.getElementById("loginExpiredModal"),
+  editModal: document.getElementById("editModal"),
   bingoItems: document.querySelectorAll(".bingo-item"),
   randomize: document.querySelectorAll(".bingo-random"),
   board: document.getElementById("board"),
@@ -54,7 +55,7 @@ let TWITCH = {
   userID: "",
 };
 
-let loginExpiredModal;
+let loginExpiredModal, editModal;
 let copyButton;
 let mainList = [];
 let player;
@@ -172,13 +173,57 @@ function randomizeAll() {
   }
 } //randomizeAll
 
-function bingoSave() {
-  const itemValues = shuffleArray([...elements.bingoItems].map((x) => x.value));
+function clearAll() {
+  for (let index = 0; index < elements.bingoItems.length; index++) {
+    elements.bingoItems[index].value = "";
+  }
+} //clearAll
+
+async function bingoSave() {
+  const itemValues = shuffleArray([...elements.bingoItems].map((x) => x.value.trim()));
+
+  if (itemValues.includes("")) {
+    showToast("Board must be full", "warning", 2000);
+    return;
+  }
+  if (hasDuplicates(itemValues)) {
+    showToast("Board must not have duplicates", "warning", 2000);
+    return;
+  }
 
   for (let index = 0; index < elements.cells.length; index++) {
     elements.cells[index].innerText = itemValues[index];
     elements.cells[index].title = itemValues[index];
   }
+
+  if (TWITCH?.access_token) {
+    let body = JSON.stringify({
+      userid: TWITCH.userID,
+      username: TWITCH.channel,
+      access_token: TWITCH.access_token,
+      time: new Date(),
+      board: itemValues,
+    });
+    let requestOptions = {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: body,
+      redirect: "follow",
+    };
+    try {
+      let response = await fetch(`https://bingo.guessr.tv/save`, requestOptions);
+      let result = await response.json();
+      showToast(result.message, "info", 3000);
+    } catch (error) {
+      showToast("Could not upload board", "danger", 3000);
+      console.log("save error", error);
+    }
+  }
+
+  editModal.hide();
 } //bingoSave
 
 function login() {
@@ -230,6 +275,7 @@ function copyLink() {
 
 window.onload = async function () {
   loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
+  editModal = new bootstrap.Modal(elements.editModal);
   copyButton = new bootstrap.Tooltip(elements.copyButton);
 
   TWITCH = JSON.parse(localStorage.getItem("TWITCH"));

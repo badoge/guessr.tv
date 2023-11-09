@@ -113,6 +113,7 @@
           </div>
           <div class="modal-body" style="height: 60vh; overflow: auto">
             <button type="button" class="btn btn-warning mb-3" onclick="randomizeAll()"><i class="material-icons notranslate pointer-events-none">casino</i> Randomize all</button>
+            <button type="button" class="btn btn-danger mb-3" onclick="clearAll()"><i class="material-icons notranslate pointer-events-none">delete_forever</i> Clear all</button>
 
             <div class="input-group mb-1">
               <input type="text" class="form-control bingo-item" placeholder="Bingo item #1" data-item-id="1" aria-label="Bingo item #1" />
@@ -267,7 +268,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-success" onclick="bingoSave()" data-bs-dismiss="modal"><i class="material-icons notranslate">save</i> Save</button>
+            <button type="button" class="btn btn-success" onclick="bingoSave()"><i class="material-icons notranslate">save</i> Save</button>
           </div>
         </div>
       </div>
@@ -316,17 +317,17 @@
       </li>
     </ul>
 
-    <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasLeaderboard" aria-labelledby="offcanvasLeaderboardLabel">
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasLeaderboard" aria-labelledby="offcanvasLeaderboardLabel">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasLeaderboardLabel">Leaderboard</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-        <p>Leaderboard :)</p>
+        <p>Not working yet :)</p>
       </div>
     </div>
 
-    <div class="container-fluid" id="board" style="top: 25%; left: 5%">
+    <div class="container-fluid" id="board" style="top: 4%; left: 10%">
       <div class="row m-0">
         <div class="col bingo-cell" style="border-top-left-radius: 6px">1</div>
         <div class="col bingo-cell">2</div>
@@ -441,7 +442,7 @@
                       <i class="material-icons notranslate">content_copy</i>
                     </button>
                     <button class="btn btn-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLeaderboard" aria-controls="offcanvasLeaderboard">
-                      <i class="material-icons notranslate">leaderboard</i>
+                      <i class="material-icons notranslate" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Chat leaderboard">leaderboard</i>
                     </button>
                   </div>
                 </div>
