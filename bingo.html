@@ -26,6 +26,7 @@
 
     <link rel="stylesheet" href="/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/icons.css" />
+    <link rel="stylesheet" href="/css/common.min.css" />
     <link rel="stylesheet" href="/css/bingo.min.css" />
   </head>
 
@@ -272,6 +273,27 @@
       </div>
     </div>
 
+    <div class="modal" id="loginExpiredModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Login expired</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row justify-content-center">
+              Renew login:<br />
+              <button type="button" data-bs-dismiss="modal" onclick="login()" class="btn btn-twitch"><span class="twitch-icon"></span>Sign in with Twitch</button>
+              <br /><small class="text-body-secondary">Logins expire after 2 months.<br />Or after you change your password.</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="logout()"><i class="material-icons notranslate">logout</i>Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <ul class="nav nav-underline flex-column position-fixed">
       <li class="nav-item">
         <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/">
@@ -293,6 +315,16 @@
         <a class="nav-link" data-bs-toggle="modal" data-bs-target="#aboutModal"><i class="material-icons notranslate">help_outline</i> About</a>
       </li>
     </ul>
+
+    <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasLeaderboard" aria-labelledby="offcanvasLeaderboardLabel">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasLeaderboardLabel">Leaderboard</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <p>Leaderboard :)</p>
+      </div>
+    </div>
 
     <div class="container-fluid" id="board" style="top: 25%; left: 5%">
       <div class="row m-0">
@@ -349,24 +381,69 @@
           <div class="card" id="mainCard">
             <div class="card-body container-fluid">
               <div id="sliderDiv" class="row">
-                <div class="col-9">
+                <div class="col-6">
                   <button type="button" class="btn btn-lg btn-primary float-start" data-bs-toggle="modal" data-bs-target="#editModal">
                     <i class="material-icons notranslate">edit</i>Edit board
                   </button>
 
-                  <label for="boardSize" class="form-label"><i class="material-icons notranslate">zoom_in</i>Board size</label>
-                  <i
-                    class="material-icons notranslate text-info"
+                  <div class="vstack">
+                    <div>
+                      <label for="boardSize" class="form-label"><i class="material-icons notranslate">zoom_in</i>Board size</label>
+                      <i
+                        class="material-icons notranslate text-info"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="Use your scroll wheel while hovering over the board to quickly adjust the size :)"
+                      >
+                        lightbulb
+                      </i>
+                      <input type="range" class="form-range align-middle" id="boardSize" value="1" min="0.1" max="2" step="0.01" />
+                    </div>
+                    <div>
+                      <label for="boardOpacity" class="form-label"><i class="material-icons notranslate">opacity</i>Board opacity</label>
+                      <input type="range" class="form-range align-middle" id="boardOpacity" value="1" min="0" max="1" step="0.01" />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-3">
+                  <a
+                    id="loginButton"
                     data-bs-toggle="tooltip"
                     data-bs-placement="top"
-                    data-bs-title="Use your scroll wheel while hovering over the board to quickly adjust the size :)"
+                    data-bs-title="Sign in to enable sharing with viewers"
+                    class="btn btn-twitch"
+                    href="#"
+                    onclick="login()"
                   >
-                    lightbulb
-                  </i>
-                  <input type="range" class="form-range align-middle me-5" id="boardSize" value="1" min="0.1" max="2" step="0.01" />
+                    <span class="twitch-icon"></span> Sign in with Twitch
+                  </a>
 
-                  <label for="boardOpacity" class="form-label"><i class="material-icons notranslate">opacity</i>Board opacity</label>
-                  <input type="range" class="form-range align-middle" id="boardOpacity" value="1" min="0" max="1" step="0.01" />
+                  <div class="input-group" id="loginInfo" style="display: none">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <img id="loginInfoPFP" src="/pics/donk.png" alt="profile pic" style="height: 2em" />
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      <li>
+                        <a class="dropdown-item" href="#" onclick="logout()"><i class="material-icons notranslate">logout</i>Logout</a>
+                      </li>
+                    </ul>
+                    <input disabled value="asd" id="bingoLink" type="text" class="form-control" aria-label="Bingo share link" />
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      id="copyButton"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="manual"
+                      data-bs-placement="top"
+                      data-bs-title="Link copied :)"
+                      onclick="copyLink()"
+                    >
+                      <i class="material-icons notranslate">content_copy</i>
+                    </button>
+                    <button class="btn btn-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLeaderboard" aria-controls="offcanvasLeaderboard">
+                      <i class="material-icons notranslate">leaderboard</i>
+                    </button>
+                  </div>
                 </div>
 
                 <div class="col-3">
@@ -387,8 +464,8 @@
     <script src="/js/confetti.min.js"></script>
     <script src="/js/anime.min.js"></script>
     <script src="/js/tmi.min.js"></script>
-    <script src="/js/functions.min.js"></script>
-    <script src="/js/bingo.min.js"></script>
+    <script src="/js/functions.js"></script>
+    <script src="/js/bingo.js"></script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RMN1GV8B4J"></script>
     <script>

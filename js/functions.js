@@ -22,6 +22,8 @@ const spinner = `<div class="spinner-border" role="status">
 <span class="visually-hidden">Loading...</span>
 </div>`;
 
+const CLIENT_ID = "ed2ch5dsxogpczmisjnbfnm92n4zps";
+
 const requestOptions = {
   method: "GET",
   redirect: "follow",
@@ -122,6 +124,77 @@ async function getGlobalBadges() {
     }
   });
 } //getGlobalBadges
+
+async function get7TVPFP(userID) {
+  if (!userID) {
+    return "/pics/donk.png";
+  }
+  return new Promise(async function (resolve, reject) {
+    try {
+      let response = await fetch(`https://7tv.io/v3/users/twitch/${userID}`, GETrequestOptions);
+      if (response.status !== 200) {
+        resolve("/pics/donk.png");
+      }
+      let result = await response.json();
+      if (!result?.user?.avatar_url) {
+        resolve("/pics/donk.png");
+      } else {
+        resolve(result.user.avatar_url);
+      }
+    } catch (error) {
+      resolve("/pics/donk.png");
+      console.log("getprofilepic 7tv error", error);
+    }
+  });
+} //get7TVPFP
+
+async function getTwitchPFP(username, access_token) {
+  let myHeaders = new Headers();
+  myHeaders.append("client-id", CLIENT_ID);
+  myHeaders.append("Authorization", `Bearer ${access_token}`);
+  let requestOptions = {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+  return new Promise(async function (resolve, reject) {
+    try {
+      let response = await fetch(`https://api.twitch.tv/helix/users?login=${username}`, requestOptions);
+      let result = await response.json();
+      resolve(result.data[0].profile_image_url);
+    } catch (error) {
+      resolve("/pics/donk.png");
+      console.log("getprofilepic twitch error", error);
+    }
+  });
+} //getTwitchPFP
+
+async function checkToken(access_token) {
+  let myHeaders = new Headers();
+  myHeaders.append("Authorization", `OAuth ${access_token}`);
+  let requestOptions = {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+  return new Promise(async function (resolve, reject) {
+    try {
+      let response = await fetch("https://id.twitch.tv/oauth2/validate", requestOptions);
+      if (!response.ok) {
+        resolve(false);
+      }
+      let result = await response.json();
+      if (result.expires_in < 600) {
+        resolve(false);
+      } else {
+        resolve(true);
+      }
+    } catch (error) {
+      console.log("checkToken error", error);
+      resolve(false);
+    }
+  });
+} //checkToken
 
 function changeSiteLinkTarget(target) {
   let links = document.getElementsByClassName("site-link");

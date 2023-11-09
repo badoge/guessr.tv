@@ -31,6 +31,7 @@ const suggestions = [
 ];
 
 const elements = {
+  loginExpiredModal: document.getElementById("loginExpiredModal"),
   bingoItems: document.querySelectorAll(".bingo-item"),
   randomize: document.querySelectorAll(".bingo-random"),
   board: document.getElementById("board"),
@@ -39,9 +40,22 @@ const elements = {
   twitchEmbed: document.getElementById("twitchEmbed"),
   boardSize: document.getElementById("boardSize"),
   boardOpacity: document.getElementById("boardOpacity"),
+  loginButton: document.getElementById("loginButton"),
+  loginInfo: document.getElementById("loginInfo"),
+  loginInfoPFP: document.getElementById("loginInfoPFP"),
+  bingoLink: document.getElementById("bingoLink"),
+  copyButton: document.getElementById("copyButton"),
   nextStream: document.getElementById("nextStream"),
 };
 
+let TWITCH = {
+  channel: "",
+  access_token: "",
+  userID: "",
+};
+
+let loginExpiredModal;
+let copyButton;
 let mainList = [];
 let player;
 let retryLimit = 0;
@@ -167,7 +181,67 @@ function bingoSave() {
   }
 } //bingoSave
 
+function login() {
+  elements.loginInfoPFP.src = "/pics/donk.png";
+  elements.bingoLink.value = `Loading...`;
+  elements.loginButton.innerHTML = spinner;
+  window.open("/prompt.html", "loginWindow", "toolbar=0,status=0,scrollbars=0,width=500px,height=800px");
+  return false;
+} //login
+
+function resetLoginButton() {
+  elements.loginButton.innerHTML = `<span class="twitch-icon"></span> Sign in with Twitch`;
+} //resetLoginButton
+
+function logout() {
+  TWITCH = { channel: "", access_token: "", userID: "" };
+  localStorage.setItem("TWITCH", JSON.stringify(TWITCH));
+  elements.loginButton.style.display = "";
+  elements.loginInfo.style.display = "none";
+  elements.loginInfoPFP.src = "/pics/donk.png";
+  elements.bingoLink.value = `https://bingo.guessr.tv`;
+} //logout
+
+async function loadPFP() {
+  let pfpURL = await get7TVPFP(TWITCH.userID);
+  if (pfpURL == "/pics/donk.png" && TWITCH.access_token) {
+    pfpURL = await getTwitchPFP(TWITCH.channel, TWITCH.access_token);
+  }
+  elements.loginInfoPFP.src = pfpURL;
+} //loadPFP
+
+function loadInfo() {
+  elements.loginButton.style.display = "none";
+  elements.loginInfo.style.display = "";
+  elements.bingoLink.value = `https://bingo.guessr.tv/${TWITCH.channel}`;
+  loadPFP();
+} //loadInfo
+
+function copyLink() {
+  elements.bingoLink.select();
+  elements.bingoLink.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(elements.bingoLink.value);
+  copyButton.show();
+  setTimeout(() => {
+    copyButton.hide();
+  }, 1000);
+} //copyLink
+
 window.onload = async function () {
+  loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
+  copyButton = new bootstrap.Tooltip(elements.copyButton);
+
+  TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
+  if (TWITCH?.access_token && !(await checkToken(TWITCH.access_token))) {
+    TWITCH.channel = "";
+    TWITCH.access_token = "";
+    loginExpiredModal.show();
+  }
+
+  if (TWITCH?.channel) {
+    loadInfo();
+  }
+
   for (let index = 0; index < elements.cells.length; index++) {
     elements.cells[index].onclick = (event) => {
       event.target.classList.toggle("filled");
