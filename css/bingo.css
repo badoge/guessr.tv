@@ -46,6 +46,10 @@
   vertical-align: middle;
 }
 
+#bingoLink {
+  min-width: 250px;
+}
+
 #toastContainer {
   position: fixed;
   bottom: 10px;

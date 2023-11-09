@@ -211,6 +211,7 @@ async function loadPFP() {
 } //loadPFP
 
 function loadInfo() {
+  TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
   elements.loginButton.style.display = "none";
   elements.loginInfo.style.display = "";
   elements.bingoLink.value = `https://bingo.guessr.tv/${TWITCH.channel}`;

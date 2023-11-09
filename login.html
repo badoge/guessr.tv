@@ -73,6 +73,7 @@
               userID: result.data[0].id,
             })
           );
+          window.opener.loadInfo();
           window.close();
         } catch (error) {
           console.log("error", error);
@@ -82,7 +83,7 @@
         }
       } //getUsername
       window.onbeforeunload = function (e) {
-        window.opener.loadInfo();
+        window.opener.resetLoginButton();
       };
     </script>
 
