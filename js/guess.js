@@ -152,7 +152,7 @@ async function getMainList() {
     let response = await fetch(`https://api.okayeg.com/guess`, requestOptions);
     let list = await response.json();
     mainList = list.guess.guess;
-    max = Math.max(...mainList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 1000);
+    max = Math.max(...mainList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 5000);
     elements.guessNumber.max = max;
     elements.guessRange.value = 0;
     elements.guessNumber.value = "";
@@ -167,7 +167,7 @@ async function getMainListClips() {
     let response = await fetch(`https://api.okayeg.com/guess/clips/${gameSettings.collection}?time=${Date.now()}`, requestOptions);
     let list = await response.json();
     mainList = list.random[0].clips;
-    max = Math.max(...mainList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 1000);
+    max = Math.max(...mainList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 5000);
     elements.guessNumber.max = max;
     elements.guessRange.value = 0;
     elements.guessNumber.value = "";
@@ -315,6 +315,10 @@ async function getRandomStream() {
           let response = await fetch(`https://helper.pepega.workers.dev/twitch/channels/followers?broadcaster_id=${random.userid}`, requestOptions);
           let followers = await response.json();
           random.followers = followers.total;
+          if (random.followers > max) {
+            max = random.followers + Math.floor(Math.random() * 5000);
+            elements.guessNumber.max = max;
+          }
         } catch (error) {
           showToast("Something went wrong while updating the follow count :(", "danger", 3000);
           console.log(error);
@@ -325,6 +329,11 @@ async function getRandomStream() {
       //get a new stream if current one has no category
       if (!stream.data[0].game_name && gameSettings.game == "gamename") {
         return await getRandomStream();
+      }
+
+      if (random.viewers > max) {
+        max = random.viewers + Math.floor(Math.random() * 5000);
+        elements.guessNumber.max = max;
       }
 
       //update stream info
@@ -365,6 +374,7 @@ async function getClipsGuessList() {
     //remove seen clips
     guessList = mainList.filter((n) => !seenClips.includes(n.id));
     max = Math.max(...guessList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 1000);
+    elements.guessNumber.max = max;
     if (guessList.length < 5) {
       showToast("Clips set contains deleted/already seen clips, getting new set...", "info", 2000);
       return await getClipsGuessList();
@@ -403,6 +413,7 @@ async function getClipsFollowerCount() {
     return await getClipsGuessList();
   }
   max = Math.max(...guessList.map((o) => o.followers || 0)) + Math.floor(Math.random() * 1000);
+  elements.guessNumber.max = max;
 } //getClipsFollowerCount
 
 async function nextRound() {
@@ -1061,12 +1072,11 @@ function calculateScore(answer, skipped = false) {
   if (gameSettings.game == "viewers" && gameSettings.controls == "slider") {
     //get max view count of current game
     let roundMax = Math.max(...guessList.slice(0, 5).map((o) => o.viewers || 0));
-    //get scaled decay between 200 and 3000
-    let decay = (guessList[round - 1].viewers / roundMax) * (3000 - 200) + 200;
+    //get scaled decay between 100 and 5000
+    let decay = (guessList[round - 1].viewers / roundMax) * (5000 - 100) + 100;
     diff = Math.abs(answer - guessList[round - 1].viewers);
     points = Math.round(5000 * Math.exp(-diff / decay));
     percent = Math.round((points / 5000) * 100);
-
     result.answer = answer;
     result.correct = guessList[round - 1].viewers;
   }
@@ -1075,12 +1085,11 @@ function calculateScore(answer, skipped = false) {
   if (gameSettings.game == "followers" && gameSettings.controls == "slider") {
     //get max follow count for current game
     let roundMax = Math.max(...guessList.slice(0, 5).map((o) => o.followers || 0));
-    //get scaled decay between 10000 and 300000
-    let decay = (guessList[round - 1].followers / roundMax) * (300000 - 10000) + 10000;
+    //get scaled decay between 1000 and 250000
+    let decay = (guessList[round - 1].followers / roundMax) * (250000 - 1000) + 1000;
     diff = Math.abs(answer - guessList[round - 1].followers);
     points = Math.round(5000 * Math.exp(-diff / decay));
     percent = Math.round((points / 5000) * 100);
-
     result.answer = answer;
     result.correct = guessList[round - 1].viewers;
   }
@@ -1092,7 +1101,6 @@ function calculateScore(answer, skipped = false) {
     } else {
       points = 0;
     }
-
     result.answer = answer;
     result.correct = guessList[round - 1][gameSettings.game];
     diff = Math.abs(answer - guessList[round - 1][gameSettings.game]);
@@ -1107,13 +1115,11 @@ function calculateScore(answer, skipped = false) {
     if (guessList[round - 1][gameSettings.game] < previousNumber) {
       correctAnswer = "lower";
     }
-
     if (skipped || answer === correctAnswer) {
       points = 1;
     } else {
       points = 0;
     }
-
     result.answer = answer;
     result.correct = correctAnswer;
   }
@@ -1121,20 +1127,17 @@ function calculateScore(answer, skipped = false) {
   //get points for game guesser mode
   if (gameSettings.game == "gamename") {
     let correctGuess = false;
-
     if (/\d/.test(guessList[round - 1].game_name_clean)) {
       //if the game name has numbers then compare the exact value
       correctGuess = guessList[round - 1].game_name_clean === answer;
     } else {
       correctGuess = checkSimilarity(answer, guessList[round - 1].game_name_clean);
     }
-
     if (skipped || correctGuess) {
       points = 1;
     } else {
       points = 0;
     }
-
     result.answer = String(elements.gameInput.value);
     result.correct = guessList[round - 1].game_name;
   }
@@ -1143,7 +1146,6 @@ function calculateScore(answer, skipped = false) {
   if (!skipped && answer == -1) {
     points = 0;
     percent = 0;
-
     result.answer = gameSettings.controls == "slider" ? 0 : "⏱️ timed out";
     result.isTimedOut = true;
   }
@@ -1219,7 +1221,7 @@ function showCorrection(correct, answer, diff, points, color) {
   <strong>${correct.toLocaleString()}</strong>
    ${correct == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
   ${
-    points == 5000
+    diff == 0
       ? "You nailed the view count perfectly ✌"
       : `${answer == -1 ? "You did not submit an answer" : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`}`
   }`;
@@ -1230,7 +1232,7 @@ function showCorrection(correct, answer, diff, points, color) {
     The stream has ${SVG} <strong>${correct.toLocaleString()}</strong>
      ${correct == 1 ? "follower" : "followers"}<br>
     ${
-      points == 5000
+      diff == 0
         ? "You nailed the follower count perfectly ✌"
         : `${
             answer == -1
