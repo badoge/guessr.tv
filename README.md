@@ -4,7 +4,7 @@
 
 ## How the site works
 
-Every 30 minutes a bot fetches live channels from the Twitch API to make the channel list. Channels are picked from different view count categories instead of picking completely randomly to increase variety. Channels have a minimum of 30 minute uptime and a maximum of 9 hours uptime.
+Every 30 minutes a bot fetches live channels from the Twitch API to make the channel list. Channels are picked from different view count categories instead of picking completely randomly to increase variety. Channels have a minimum of 10 minutes uptime and a maximum of 9 hours uptime.
 
 The site updates the view count right before starting each game using the Twitch API which does not update as often as the view count on the embedded player, so the view count will be a bit off or the channel might go offline during the time it takes the API to update.
 
