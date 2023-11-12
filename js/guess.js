@@ -1861,6 +1861,8 @@ window.onload = async function () {
   elements.nextRound.onclick = function () {
     localStorage.setItem("seenChannels", JSON.stringify(seenChannels));
     localStorage.setItem("seenClips", JSON.stringify(seenClips));
+    elements.seenChannels.innerHTML = seenChannels.length;
+    elements.seenClips.innerHTML = seenClips.length;
     nextRound();
   };
 
