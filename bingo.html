@@ -41,7 +41,14 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <h5>:)</h5>
+            <h5>
+              <div class="input-group mt-3">
+                <span class="input-group-text">Seen Channels:</span>
+                <span class="input-group-text" id="seenChannels">0</span>
+                <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+              </div>
+              <small>Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>
+            </h5>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -63,12 +70,10 @@
               <div class="card-body">
                 More info <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#readme">here</a><br /><br />
 
-                Every 30 minutes a bot fetches live channels from the Twitch API to make the channel list. The answer is updated using the API just before starting the game but it can still
-                be off because the API is not as accurate view count on the embedded stream. Some channels might also have gone offline during the time it takes the API to update.<br />
-
+                To use the shareable bingo cards: Login in with Twitch -> Edit the board -> Save the board -> share link with viewers :)
                 <br />
-                You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of them you can subscribe to Twitch Turbo or change the video type to clips or
-                get a better Adblocker :)<br />
+                <br />
+                You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of them you can subscribe to Twitch Turbo or get a better Adblocker :)<br />
                 If you have Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. If you use Firefox you will need to
                 <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow cross-site tracking cookies</a>
                 <hr />
@@ -82,8 +87,6 @@
               <div class="card-header">Contact info</div>
               <div class="card-body">
                 Site by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/badoge">badoge</a> :) <br />
-                Idea by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/nymn">nymn</a><br />
-                Inspired by <a target="_blank" rel="noopener noreferrer" href="https://geoguessr.com">GeoGuessr</a><br /><br />
                 <p>
                   If you find any issues or if you have suggestions or questions, you can contact me: <br /><a
                     target="_blank"
@@ -450,6 +453,18 @@
                 <div class="col-2">
                   <button type="button" id="nextStream" onclick="nextStream()" class="btn btn-lg btn-success float-end">
                     <i class="material-icons notranslate">skip_next</i> Next stream
+                  </button>
+                  <button
+                    disabled
+                    type="button"
+                    id="previousStream"
+                    onclick="previousStream()"
+                    class="btn btn-lg btn-secondary float-end me-2"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Previous stream"
+                  >
+                    <i class="material-icons notranslate">skip_previous</i>
                   </button>
                 </div>
               </div>

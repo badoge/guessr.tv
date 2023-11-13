@@ -31,6 +31,9 @@ const suggestions = [
 ];
 
 const elements = {
+  infoTime: document.getElementById("infoTime"),
+  seenChannels: document.getElementById("seenChannels"),
+  resetSeenChannels: document.getElementById("resetSeenChannels"),
   loginExpiredModal: document.getElementById("loginExpiredModal"),
   editModal: document.getElementById("editModal"),
   bingoItems: document.querySelectorAll(".bingo-item"),
@@ -46,6 +49,7 @@ const elements = {
   loginInfoPFP: document.getElementById("loginInfoPFP"),
   bingoLink: document.getElementById("bingoLink"),
   copyButton: document.getElementById("copyButton"),
+  previousStream: document.getElementById("previousStream"),
   nextStream: document.getElementById("nextStream"),
 };
 
@@ -58,6 +62,8 @@ let TWITCH = {
 let loginExpiredModal, editModal;
 let copyButton;
 let mainList = [];
+let seenChannels = [];
+let previousChannels = [];
 let player;
 let retryLimit = 0;
 
@@ -66,17 +72,35 @@ async function getMainList() {
     let response = await fetch(`https://api.okayeg.com/guess`, requestOptions);
     let list = await response.json();
     mainList = list.guess.guess;
+    elements.infoTime.innerHTML = `Channel list updated on ${new Date(list.guess.time)}`;
   } catch (error) {
     console.log(error);
+    showToast("Could not load channel list :(", "danger", "5000");
   }
 } //getMainList
 
 async function nextStream() {
+  let currentChannel = player?.getChannel() || 0;
+  let currentIndex = previousChannels.findIndex((x) => x == currentChannel);
+  if (previousChannels[currentIndex + 1]) {
+    showPreviousStream(currentIndex, true);
+    return;
+  }
+
   elements.nextStream.disabled = true;
   setTimeout(() => {
     elements.nextStream.disabled = false;
   }, 2000);
-  if (mainList.length == 0) {
+
+  if (previousChannels.length > 0) {
+    elements.previousStream.disabled = false;
+  }
+
+  let channel = mainList.pop();
+  while (seenChannels.includes(channel.username)) {
+    channel = mainList.pop();
+  }
+  if (mainList.length == 0 || !channel) {
     showToast("No more channels left on the list, refresh to get a new list", "danger", "3000");
     return;
   }
@@ -84,7 +108,7 @@ async function nextStream() {
     showToast("Too many retries, something might be wrong :(", "danger", "3000");
     return;
   }
-  let channel = mainList.pop();
+
   //update stream info
   try {
     let response = await fetch(`https://helper.pepega.workers.dev/twitch/streams?user_id=${channel.userid}`, requestOptions);
@@ -94,26 +118,45 @@ async function nextStream() {
       retryLimit++;
       return nextStream();
     }
+
+    retryLimit = 0;
+    let options = {
+      width: "100%",
+      height: "100%",
+      channel: channel.username,
+      layout: "video-with-chat",
+      theme: "dark",
+      parent: ["guessr.tv", "127.0.0.1"],
+    };
+    if (!player) {
+      player = new Twitch.Embed("twitchEmbed", options);
+    } else {
+      player.setChannel(channel.username);
+    }
+    previousChannels.push(channel.username);
+    seenChannels.push(channel.username);
+    localStorage.setItem("seenChannels_bingo", JSON.stringify(seenChannels));
+    elements.seenChannels.innerHTML = seenChannels.length;
   } catch (error) {
     console.log(error);
     retryLimit++;
     return nextStream();
   }
-  retryLimit = 0;
-  let options = {
-    width: "100%",
-    height: "100%",
-    channel: channel.username,
-    layout: "video-with-chat",
-    theme: "dark",
-    parent: ["guessr.tv", "127.0.0.1"],
-  };
-  if (!player) {
-    player = new Twitch.Embed("twitchEmbed", options);
-  } else {
-    player.setChannel(channel.username);
-  }
 } //nextStream
+
+function previousStream() {
+  let currentChannel = player.getChannel();
+  let currentIndex = previousChannels.findIndex((x) => x == currentChannel);
+  if (currentIndex == 0) {
+    showToast("Can't go further back", "danger", "3000");
+    return;
+  }
+  showPreviousStream(currentIndex, false);
+} //previousStream
+
+function showPreviousStream(currentIndex, forward) {
+  player.setChannel(previousChannels[(currentIndex += forward ? 1 : -1)]);
+} //showPreviousStream
 
 function dragElement() {
   let pos1 = 0,
@@ -274,6 +317,16 @@ function copyLink() {
 } //copyLink
 
 window.onload = async function () {
+  seenChannels = JSON.parse(localStorage.getItem("seenChannels_bingo")) || [];
+  elements.seenChannels.innerHTML = seenChannels.length;
+
+  elements.resetSeenChannels.onclick = function () {
+    localStorage.setItem("seenChannels_bingo", JSON.stringify([]));
+    elements.seenChannels.innerHTML = 0;
+    seenChannels = [];
+    showToast("Seen channels reset", "success", 2000);
+  };
+
   loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
   editModal = new bootstrap.Modal(elements.editModal);
   copyButton = new bootstrap.Tooltip(elements.copyButton);

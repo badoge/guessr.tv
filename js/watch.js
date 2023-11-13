@@ -117,7 +117,7 @@ function previousStream() {
   let currentChannel = player.getChannel();
   let currentIndex = previousChannels.findIndex((x) => x.username == currentChannel);
   if (currentIndex == 0) {
-    showToast("No more channels left", "danger", "3000");
+    showToast("Can't go further back", "danger", "3000");
     return;
   }
   showPreviousStream(currentIndex, false);
