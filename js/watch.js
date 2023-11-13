@@ -31,19 +31,27 @@ async function getMainList() {
 } //getMainList
 
 async function nextStream() {
+  let currentChannel = player?.getChannel() || 0;
+  let currentIndex = previousChannels.findIndex((x) => x.username == currentChannel);
+  if (previousChannels[currentIndex + 1]) {
+    showPreviousStream(currentIndex, true);
+    return;
+  }
+
   elements.pfp.src = "/pics/guessr.png";
   elements.username.innerHTML = `<span class="placeholder-wave"><span class="placeholder" style="width: 200px"></span></span>`;
   elements.title.innerHTML = `<span class="placeholder-wave"><span class="placeholder" style="width: 500px"></span></span>`;
   elements.tags.innerHTML = `<span class="placeholder-wave"><span class="placeholder" style="width: 500px"></span></span>`;
 
-  if (previousChannels.length > 0) {
-    elements.previousStream.disabled = false;
-  }
-
   elements.nextStream.disabled = true;
   setTimeout(() => {
     elements.nextStream.disabled = false;
   }, 2000);
+
+  if (previousChannels.length > 0) {
+    elements.previousStream.disabled = false;
+  }
+
   let channel = mainList.pop();
   while (seenChannels.includes(channel.username)) {
     channel = mainList.pop();
@@ -71,8 +79,8 @@ async function nextStream() {
     elements.pfp.src = user.data[0].profile_image_url || "/pics/guessr.png";
     let name = stream.data[0].user_name.toLowerCase() == stream.data[0].user_login.toLowerCase() ? stream.data[0].user_name : `${stream.data[0].user_name} (${stream.data[0].user_login})`;
     elements.username.innerHTML = `<a target="_blank" rel="noopener noreferrer" href="https://twitch.tv/${stream.data[0].user_login}">${name}</a>`;
-    elements.title.innerText = stream.data[0].title;
-    elements.tags.innerHTML = stream.data[0].tags.map((tag) => `<span class="badge rounded-pill text-bg-secondary">${tag}</span>`).join(" ");
+    elements.title.innerText = stream.data[0]?.title || "no title";
+    elements.tags.innerHTML = stream.data[0]?.tags.map((tag) => `<span class="badge rounded-pill text-bg-secondary">${tag}</span>`).join(" ") || "no tags";
 
     retryLimit = 0;
     let options = {
@@ -87,6 +95,7 @@ async function nextStream() {
     } else {
       player.setChannel(channel.username);
     }
+
     previousChannels.push({
       username: stream.data[0].user_login,
       displayname: stream.data[0].user_name,
@@ -105,19 +114,24 @@ async function nextStream() {
 } //nextStream
 
 function previousStream() {
-  let channel = previousChannels[previousChannels.length - 2];
-  if (!channel) {
+  let currentChannel = player.getChannel();
+  let currentIndex = previousChannels.findIndex((x) => x.username == currentChannel);
+  if (currentIndex == 0) {
     showToast("No more channels left", "danger", "3000");
     return;
   }
-  previousChannels.pop();
+  showPreviousStream(currentIndex, false);
+} //previousStream
+
+function showPreviousStream(currentIndex, forward) {
+  let channel = previousChannels[(currentIndex += forward ? 1 : -1)];
   elements.pfp.src = channel.pfp || "/pics/guessr.png";
   let name = channel.displayname.toLowerCase() == channel.username.toLowerCase() ? channel.displayname : `${channel.displayname} (${channel.username})`;
   elements.username.innerHTML = `<a target="_blank" rel="noopener noreferrer" href="https://twitch.tv/${channel.username}">${name}</a>`;
   elements.title.innerText = channel.title;
   elements.tags.innerHTML = channel.tags;
   player.setChannel(channel.username);
-} //previousStream
+} //showPreviousStream
 
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels_watch")) || [];
