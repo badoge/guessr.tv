@@ -9,7 +9,6 @@
   box-shadow: 3px 3px 10px #000000;
   z-index: 10;
   scale: 1;
-  overflow: hidden;
 }
 
 .bingo-cell {

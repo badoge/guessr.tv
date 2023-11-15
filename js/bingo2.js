@@ -41,6 +41,7 @@ function loadInfo() {
   elements.loginInfo.style.display = "";
   elements.username.innerText = `Playing as ${TWITCH.channel}`;
   loadPFP();
+  elements.board.classList.remove("blur");
 } //loadInfo
 
 async function loadPFP() {

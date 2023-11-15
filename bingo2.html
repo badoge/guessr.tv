@@ -66,64 +66,70 @@
       </li>
     </ul>
 
-    <div class="text-center">
-      <h1>Twitch Bingo</h1>
-      <h2 class="text-body-secondary mb-5">Playing with <a href="https://twitch.tv/${data.username}" target="_blank">${data.username}</a></h2>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-2"></div>
+        <div class="col text-center">
+          <h1>Twitch Bingo</h1>
+          <h2 class="text-body-secondary mb-5">Playing with <a href="https://twitch.tv/${data.username}" target="_blank">${data.username}</a></h2>
 
-      <a id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable the bingo board" class="btn btn-twitch" href="#" onclick="login()">
-        <span class="twitch-icon"></span> Sign in with Twitch
-      </a>
+          <a id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable the bingo board" class="btn btn-twitch" href="#" onclick="login()">
+            <span class="twitch-icon"></span> Sign in with Twitch
+          </a>
 
-      <div class="input-group" id="loginInfo" style="display: none">
-        <span class="input-group-text" id="username">Loading...</span>
-        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <img id="loginInfoPFP" src="https://guessr.tv/pics/donk.png" alt="profile pic" style="height: 2em" />
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li>
-            <a class="dropdown-item" href="#" onclick="logout()"><i class="material-icons notranslate">logout</i>Logout</a>
-          </li>
-        </ul>
+          <div class="btn-group" role="group" aria-label="Login info" id="loginInfo" style="display: none">
+            <button type="button" class="btn btn-secondary"><img id="loginInfoPFP" src="https://guessr.tv/pics/donk.png" alt="profile pic" style="height: 2em" /></button>
+            <div class="btn-group" role="group">
+              <button id="username" type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Loading...</button>
+              <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="username">
+                <li>
+                  <a class="dropdown-item" onclick="logout()" href="#"><i class="material-icons notranslate">logout</i>Log out</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="container-fluid mt-3 blur" id="board">
+            <div class="row m-0">
+              <div class="col bingo-cell" style="border-top-left-radius: 6px">${board[0]}</div>
+              <div class="col bingo-cell">${board[1]}</div>
+              <div class="col bingo-cell">${board[2]}</div>
+              <div class="col bingo-cell">${board[3]}</div>
+              <div class="col bingo-cell" style="border-top-right-radius: 6px">${board[4]}</div>
+            </div>
+            <div class="row m-0">
+              <div class="col bingo-cell">${board[5]}</div>
+              <div class="col bingo-cell">${board[6]}</div>
+              <div class="col bingo-cell">${board[7]}</div>
+              <div class="col bingo-cell">${board[8]}</div>
+              <div class="col bingo-cell">${board[9]}</div>
+            </div>
+            <div class="row m-0">
+              <div class="col bingo-cell">${board[10]}</div>
+              <div class="col bingo-cell">${board[11]}</div>
+              <div class="col bingo-cell">${board[12]}</div>
+              <div class="col bingo-cell">${board[13]}</div>
+              <div class="col bingo-cell">${board[14]}</div>
+            </div>
+            <div class="row m-0">
+              <div class="col bingo-cell">${board[15]}</div>
+              <div class="col bingo-cell">${board[16]}</div>
+              <div class="col bingo-cell">${board[17]}</div>
+              <div class="col bingo-cell">${board[18]}</div>
+              <div class="col bingo-cell">${board[19]}</div>
+            </div>
+            <div class="row m-0">
+              <div class="col bingo-cell" style="border-bottom-left-radius: 6px">${board[20]}</div>
+              <div class="col bingo-cell">${board[21]}</div>
+              <div class="col bingo-cell">${board[22]}</div>
+              <div class="col bingo-cell">${board[23]}</div>
+              <div class="col bingo-cell" style="border-bottom-right-radius: 6px">${board[24]}</div>
+            </div>
+          </div>
+          <small class="text-body-secondary">Updated on:</small>
+        </div>
+        <div class="col-2"></div>
       </div>
-
-      <div class="container-fluid mt-3" id="board">
-        <div class="row m-0">
-          <div class="col bingo-cell" style="border-top-left-radius: 6px">${board[0]}</div>
-          <div class="col bingo-cell">${board[1]}</div>
-          <div class="col bingo-cell">${board[2]}</div>
-          <div class="col bingo-cell">${board[3]}</div>
-          <div class="col bingo-cell" style="border-top-right-radius: 6px">${board[4]}</div>
-        </div>
-        <div class="row m-0">
-          <div class="col bingo-cell">${board[5]}</div>
-          <div class="col bingo-cell">${board[6]}</div>
-          <div class="col bingo-cell">${board[7]}</div>
-          <div class="col bingo-cell">${board[8]}</div>
-          <div class="col bingo-cell">${board[9]}</div>
-        </div>
-        <div class="row m-0">
-          <div class="col bingo-cell">${board[10]}</div>
-          <div class="col bingo-cell">${board[11]}</div>
-          <div class="col bingo-cell">${board[12]}</div>
-          <div class="col bingo-cell">${board[13]}</div>
-          <div class="col bingo-cell">${board[14]}</div>
-        </div>
-        <div class="row m-0">
-          <div class="col bingo-cell">${board[15]}</div>
-          <div class="col bingo-cell">${board[16]}</div>
-          <div class="col bingo-cell">${board[17]}</div>
-          <div class="col bingo-cell">${board[18]}</div>
-          <div class="col bingo-cell">${board[19]}</div>
-        </div>
-        <div class="row m-0">
-          <div class="col bingo-cell" style="border-bottom-left-radius: 6px">${board[20]}</div>
-          <div class="col bingo-cell">${board[21]}</div>
-          <div class="col bingo-cell">${board[22]}</div>
-          <div class="col bingo-cell">${board[23]}</div>
-          <div class="col bingo-cell" style="border-bottom-right-radius: 6px">${board[24]}</div>
-        </div>
-      </div>
-      <small class="text-body-secondary">Updated on:</small>
     </div>
   </body>
 </html>

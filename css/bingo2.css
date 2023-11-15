@@ -1,7 +1,18 @@
+body {
+  margin-bottom: 300px;
+}
+
+.blur {
+  -webkit-filter: blur(10px);
+  -moz-filter: blur(10px);
+  -o-filter: blur(10px);
+  -ms-filter: blur(10px);
+  filter: blur(10px);
+}
+
 #board {
-  width: 50%;
-  height: 50%;
-  width: fit-content;
+  height: max-content;
+  width: max-content;
   border: 2px solid var(--bs-secondary-border-subtle);
   background-color: var(--bs-tertiary-bg);
   border-radius: 6px;
