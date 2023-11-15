@@ -36,6 +36,7 @@ const elements = {
   resetSeenChannels: document.getElementById("resetSeenChannels"),
   loginExpiredModal: document.getElementById("loginExpiredModal"),
   editModal: document.getElementById("editModal"),
+  allowDiagonals: document.getElementById("allowDiagonals"),
   bingoItems: document.querySelectorAll(".bingo-item"),
   randomize: document.querySelectorAll(".bingo-random"),
   board: document.getElementById("board"),
@@ -66,6 +67,35 @@ let seenChannels = [];
 let previousChannels = [];
 let player;
 let retryLimit = 0;
+
+let board = [
+  { filled: false, value: "1" },
+  { filled: false, value: "2" },
+  { filled: false, value: "3" },
+  { filled: false, value: "4" },
+  { filled: false, value: "5" },
+  { filled: false, value: "6" },
+  { filled: false, value: "7" },
+  { filled: false, value: "8" },
+  { filled: false, value: "9" },
+  { filled: false, value: "10" },
+  { filled: false, value: "11" },
+  { filled: false, value: "12" },
+  { filled: false, value: "13" },
+  { filled: false, value: "14" },
+  { filled: false, value: "15" },
+  { filled: false, value: "16" },
+  { filled: false, value: "17" },
+  { filled: false, value: "18" },
+  { filled: false, value: "19" },
+  { filled: false, value: "20" },
+  { filled: false, value: "21" },
+  { filled: false, value: "22" },
+  { filled: false, value: "23" },
+  { filled: false, value: "24" },
+  { filled: false, value: "25" },
+];
+let won = false;
 
 async function getMainList() {
   try {
@@ -228,7 +258,11 @@ async function bingoSave() {
   for (let index = 0; index < elements.cells.length; index++) {
     elements.cells[index].innerText = itemValues[index];
     elements.cells[index].title = itemValues[index];
+    elements.cells[index].classList.remove("filled");
+    board[index].value = itemValues[index];
+    board[index].filled = false;
   }
+  won = false;
 
   if (TWITCH?.access_token) {
     let body = JSON.stringify({
@@ -237,6 +271,7 @@ async function bingoSave() {
       access_token: TWITCH.access_token,
       time: new Date(),
       board: itemValues,
+      allowDiagonals: elements.allowDiagonals.checked,
     });
     let requestOptions = {
       method: "POST",
@@ -259,6 +294,45 @@ async function bingoSave() {
 
   editModal.hide();
 } //bingoSave
+
+function checkWin() {
+  let winConditions = [
+    [0, 1, 2, 3, 4],
+    [5, 6, 7, 8, 9],
+    [10, 11, 12, 13, 14],
+    [15, 16, 17, 18, 19],
+    [20, 21, 22, 23, 24],
+    [0, 5, 10, 15, 20],
+    [1, 6, 11, 16, 21],
+    [2, 7, 12, 17, 22],
+    [3, 8, 13, 18, 23],
+    [4, 9, 14, 19, 24],
+  ];
+
+  if (elements.allowDiagonals.checked) {
+    winConditions.push([0, 6, 12, 18, 24], [4, 8, 12, 16, 20]);
+  }
+
+  let lines = 0;
+  for (let index = 0; index < winConditions.length; index++) {
+    if (
+      board[winConditions[index][0]].filled &&
+      board[winConditions[index][1]].filled &&
+      board[winConditions[index][2]].filled &&
+      board[winConditions[index][3]].filled &&
+      board[winConditions[index][4]].filled
+    ) {
+      lines++;
+    }
+  }
+  if (lines == 1 && !won) {
+    showConfetti(2);
+    won = true;
+  }
+  if (lines == 0) {
+    won = false;
+  }
+}
 
 function login() {
   elements.loginInfoPFP.src = "/pics/donk.png";
@@ -336,6 +410,9 @@ window.onload = async function () {
   for (let index = 0; index < elements.cells.length; index++) {
     elements.cells[index].onclick = (event) => {
       event.target.classList.toggle("filled");
+      let cellNumber = parseInt(event.target.dataset.id, 10) - 1;
+      board[cellNumber].filled = !board[cellNumber].filled;
+      checkWin();
     };
   }
   for (let index = 0; index < elements.randomize.length; index++) {
