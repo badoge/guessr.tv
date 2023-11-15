@@ -1,6 +1,6 @@
 #board {
   position: fixed;
-  width: fit-content;
+  width: max-content;
   border: 2px solid var(--bs-secondary-border-subtle);
   background-color: var(--bs-tertiary-bg);
   border-radius: 6px;
@@ -9,6 +9,7 @@
   box-shadow: 3px 3px 10px #000000;
   z-index: 10;
   scale: 1;
+  overflow: hidden;
 }
 
 .bingo-cell {

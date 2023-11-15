@@ -159,41 +159,32 @@ function showPreviousStream(currentIndex, forward) {
 } //showPreviousStream
 
 function dragElement() {
-  let pos1 = 0,
-    pos2 = 0,
-    pos3 = 0,
-    pos4 = 0;
-  //MouseUp occurs when the user releases the mouse button
-  const dragMouseUp = () => {
-    document.onmouseup = null;
-    //onmousemove attribute fires when the pointer is moving while it is over an element.
-    document.onmousemove = null;
-    elements.board.classList.remove("drag");
-  };
-  const dragMouseMove = (event) => {
-    event.preventDefault();
-    //clientX property returns the horizontal coordinate of the mouse pointer
-    pos1 = pos3 - event.clientX;
-    //clientY property returns the vertical coordinate of the mouse pointer
-    pos2 = pos4 - event.clientY;
-    pos3 = event.clientX;
-    pos4 = event.clientY;
-    //offsetTop property returns the top position relative to the parent
-    elements.board.style.top = `${elements.board.offsetTop - pos2}px`;
-    elements.board.style.left = `${elements.board.offsetLeft - pos1}px`;
-  };
+  let x = 0;
+  let y = 0;
 
-  elements.board.onmousedown = (event) => {
-    if (event.target.classList.contains("bingo-cell") || event.target.classList.contains("material-icons")) {
+  const mouseDownHandler = function (e) {
+    if (e.target.classList.contains("bingo-cell") && e.button !== 1) {
       return;
     }
-    event.preventDefault();
-    pos3 = event.clientX;
-    pos4 = event.clientY;
-    elements.board.classList.add("drag");
-    document.onmouseup = dragMouseUp;
-    document.onmousemove = dragMouseMove;
+    x = e.clientX;
+    y = e.clientY;
+    document.addEventListener("mousemove", mouseMoveHandler);
+    document.addEventListener("mouseup", mouseUpHandler);
   };
+
+  const mouseMoveHandler = function (e) {
+    elements.board.style.top = elements.board.offsetTop + e.clientY - y + "px";
+    elements.board.style.left = elements.board.offsetLeft + e.clientX - x + "px";
+    x = e.clientX;
+    y = e.clientY;
+  };
+
+  const mouseUpHandler = function () {
+    document.removeEventListener("mousemove", mouseMoveHandler);
+    document.removeEventListener("mouseup", mouseUpHandler);
+  };
+
+  elements.board.addEventListener("mousedown", mouseDownHandler);
 } //dragElement
 
 function randomize(event) {
