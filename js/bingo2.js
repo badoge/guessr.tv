@@ -5,6 +5,7 @@ const elements = {
   username: document.getElementById("username"),
   loginInfoPFP: document.getElementById("loginInfoPFP"),
   cells: document.querySelectorAll(".bingo-cell"),
+  board: document.getElementById("board"),
 };
 
 let TWITCH = {
