@@ -28,9 +28,31 @@
     <link rel="stylesheet" href="https://guessr.tv/css/bingo2.min.css" />
 
     <script src="https://guessr.tv/js/bootstrap.bundle.min.js" defer></script>
+    <script src="https://guessr.tv/js/functions.min.js" defer></script>
     <script src="https://guessr.tv/js/bingo2.min.js" defer></script>
   </head>
   <body>
+    <div class="modal" id="loginExpiredModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Login expired</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row justify-content-center">
+              Renew login:<br />
+              <button type="button" data-bs-dismiss="modal" onclick="login()" class="btn btn-twitch"><span class="twitch-icon"></span>Sign in with Twitch</button>
+              <br /><small class="text-body-secondary">Logins expire after 2 months.<br />Or after you change your password.</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="logout()"><i class="material-icons notranslate">logout</i>Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <ul class="nav nav-underline flex-column position-fixed">
       <li class="nav-item">
         <a class="nav-link site-link" target="_blank" rel="noopener noreferrer" href="https://guessr.tv/">
@@ -48,7 +70,23 @@
       <h1>Twitch Bingo</h1>
       <h2 class="text-body-secondary mb-5">Playing with <a href="https://twitch.tv/${data.username}" target="_blank">${data.username}</a></h2>
 
-      <div class="container-fluid" id="board">
+      <a id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable the bingo board" class="btn btn-twitch" href="#" onclick="login()">
+        <span class="twitch-icon"></span> Sign in with Twitch
+      </a>
+
+      <div class="input-group" id="loginInfo" style="display: none">
+        <span class="input-group-text" id="username">Loading...</span>
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <img id="loginInfoPFP" src="https://guessr.tv/pics/donk.png" alt="profile pic" style="height: 2em" />
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li>
+            <a class="dropdown-item" href="#" onclick="logout()"><i class="material-icons notranslate">logout</i>Logout</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="container-fluid mt-3" id="board">
         <div class="row m-0">
           <div class="col bingo-cell" style="border-top-left-radius: 6px">${board[0]}</div>
           <div class="col bingo-cell">${board[1]}</div>
