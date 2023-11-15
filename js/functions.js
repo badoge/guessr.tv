@@ -131,7 +131,7 @@ async function get7TVPFP(userID) {
   }
   return new Promise(async function (resolve, reject) {
     try {
-      let response = await fetch(`https://7tv.io/v3/users/twitch/${userID}`, GETrequestOptions);
+      let response = await fetch(`https://7tv.io/v3/users/twitch/${userID}`, requestOptions);
       if (response.status !== 200) {
         resolve("/pics/donk.png");
       }
