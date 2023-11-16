@@ -530,7 +530,7 @@ window.onload = async function () {
 
   customBadges = await getCustomBadges();
 
-  // await getMainList();
-  // shuffleArray(mainList);
-  // nextStream();
+  await getMainList();
+  shuffleArray(mainList);
+  nextStream();
 }; //onload
