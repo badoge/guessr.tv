@@ -68,7 +68,11 @@
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-2"></div>
+        <div class="col-2">
+          <div aria-live="polite" aria-atomic="true" class="position-relative">
+            <div id="toastContainer" class="toast-container"></div>
+          </div>
+        </div>
         <div class="col text-center">
           <h1>Twitch Bingo</h1>
           <h2 class="text-body-secondary mb-5">Playing with <a href="https://twitch.tv/${data.username}" target="_blank">${data.username}</a></h2>

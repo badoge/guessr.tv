@@ -1,4 +1,5 @@
 const elements = {
+  toastContainer: document.getElementById("toastContainer"),
   loginExpiredModal: document.getElementById("loginExpiredModal"),
   loginButton: document.getElementById("loginButton"),
   loginInfo: document.getElementById("loginInfo"),
