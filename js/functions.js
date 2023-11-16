@@ -213,26 +213,36 @@ function shuffleArray(array) {
   return array;
 } //shuffleArray
 
-function shuffleArraySeed(array, seed) {
-  let currentIndex = array.length,
-    temporaryValue,
-    randomIndex;
-  seed = parseInt(seed, 36) || 1;
-  let random = function () {
-    var x = Math.sin(seed++) * 10000;
-    return x - Math.floor(x);
+// creates a random number generator function.
+function createRandomGenerator(seed) {
+  const a = 5486230734; // some big numbers
+  const b = 6908969830;
+  const m = 9853205067;
+  let x = seed;
+  // returns a random value 0 <= num < 1
+  return function (seed = x) {
+    // seed is optional. If supplied sets a new seed
+    x = (seed * a + b) % m;
+    return x / m;
   };
-  // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
-    // Pick a remaining element...
-    randomIndex = Math.floor(random() * currentIndex);
-    currentIndex -= 1;
-    // And swap it with the current element.
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
+}
+// function creates a 32bit hash of a string
+function stringTo32BitHash(str) {
+  let v = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    v += str.charCodeAt(i) << i % 24;
   }
-  return array;
+  return v % 0xffffffff;
+}
+// shuffle array using the str as a key.
+function shuffleArraySeed(array, seed) {
+  let shuffled = [];
+  let random = createRandomGenerator(stringTo32BitHash(seed));
+  while (array.length > 1) {
+    shuffled.push(array.splice(Math.floor(random() * array.length), 1)[0]);
+  }
+  shuffled.push(array[0]);
+  return shuffled;
 } //shuffleArraySeed
 
 function checkSimilarity(guess, answer) {
