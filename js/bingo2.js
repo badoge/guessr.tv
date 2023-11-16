@@ -48,7 +48,7 @@ function loadInfo() {
   join();
   let shuffled = shuffleArraySeed(
     [...elements.cells].map((x) => x.innerText),
-    TWITCH.channel
+    TWITCH.userID
   );
   for (let index = 0; index < shuffled.length; index++) {
     elements.cells[index].innerText = shuffled.pop();
