@@ -21,6 +21,12 @@ iframe {
   border-radius: 6px;
 }
 
+.chat-badge {
+  height: 1.3rem;
+  margin-right: 0.2rem;
+  vertical-align: middle;
+}
+
 .twitch-icon {
   display: inline-block;
   width: 22px;

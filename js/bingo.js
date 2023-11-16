@@ -32,6 +32,7 @@ const suggestions = [
 
 const elements = {
   refreshLeaderboard: document.getElementById("refreshLeaderboard"),
+  leaderboardCount: document.getElementById("leaderboardCount"),
   leaderboard: document.getElementById("leaderboard"),
   infoTime: document.getElementById("infoTime"),
   seenChannels: document.getElementById("seenChannels"),
@@ -41,6 +42,7 @@ const elements = {
   allowDiagonals: document.getElementById("allowDiagonals"),
   bingoItems: document.querySelectorAll(".bingo-item"),
   randomize: document.querySelectorAll(".bingo-random"),
+  bingoSave: document.getElementById("bingoSave"),
   board: document.getElementById("board"),
   cells: document.querySelectorAll(".bingo-cell"),
   toastContainer: document.getElementById("toastContainer"),
@@ -69,6 +71,7 @@ let seenChannels = [];
 let previousChannels = [];
 let player;
 let retryLimit = 0;
+let customBadges = [];
 
 let board = [
   { filled: false, value: "1" },
@@ -246,6 +249,7 @@ function clearAll() {
 } //clearAll
 
 async function bingoSave() {
+  elements.bingoSave.innerHTML = spinner;
   let itemValues = [];
   if (TWITCH?.userID) {
     itemValues = shuffleArraySeed(
@@ -258,10 +262,12 @@ async function bingoSave() {
 
   if (itemValues.includes("")) {
     showToast("Board must be full", "warning", 2000);
+    elements.bingoSave.innerHTML = `<i class="material-icons notranslate">save</i> Save`;
     return;
   }
   if (hasDuplicates(itemValues)) {
     showToast("Board must not have duplicates", "warning", 2000);
+    elements.bingoSave.innerHTML = `<i class="material-icons notranslate">save</i> Save`;
     return;
   }
 
@@ -303,6 +309,7 @@ async function bingoSave() {
   }
 
   editModal.hide();
+  elements.bingoSave.innerHTML = `<i class="material-icons notranslate">save</i> Save`;
 } //bingoSave
 
 function checkWin() {
@@ -427,36 +434,32 @@ function copyLink() {
 async function refreshLeaderboard() {
   elements.refreshLeaderboard.innerHTML = spinner;
   elements.leaderboard.innerHTML = "";
+  elements.leaderboardCount.innerHTML = "";
   try {
     let response = await fetch(`https://bingo.guessr.tv/${TWITCH.channel}/list`, requestOptions);
     let result = await response.json();
     let itemValues = [...elements.bingoItems].map((x) => x.value.trim());
 
     for (let index = 0; index < result.length; index++) {
-      for (const key in result[index]) {
-        if (result[index][key].hasOwnProperty("allowDiagonals")) {
-          //skip the streamer's object
-          continue;
-        }
-        result[index][key].board = shuffleArraySeed(structuredClone(itemValues), result[index][key].userid).map((x) => ({ value: x, filled: false }));
-        for (let j = 0; j < board.length; j++) {
-          const i = result[index][key].board.findIndex((x) => x.value == board[j].value);
-          result[index][key].board[i].filled = board[j].filled;
-        }
-        result[index][key].lines = checkWinLeaderboard(result[index][key].board);
+      result[index].board = shuffleArraySeed(structuredClone(itemValues), result[index].userid).map((x) => ({ value: x, filled: false }));
+      for (let j = 0; j < board.length; j++) {
+        const i = result[index].board.findIndex((x) => x.value == board[j].value);
+        result[index].board[i].filled = board[j].filled;
       }
+      result[index].lines = checkWinLeaderboard(result[index].board);
     }
 
-    result.sort((a, b) => (a.lines < b.lines ? 1 : -1));
+    result.sort((a, b) => a.lines - b.lines);
 
+    elements.leaderboardCount.innerHTML = result.length;
     for (let index = 0; index < result.length; index++) {
-      for (const key in result[index]) {
-        if (result[index][key].hasOwnProperty("allowDiagonals")) {
-          //skip the streamer's object
-          continue;
-        }
-        elements.leaderboard.insertAdjacentHTML("afterbegin", `${result[index][key].username}: ${result[index][key].lines}<br>`);
-      }
+      elements.leaderboard.insertAdjacentHTML(
+        "afterbegin",
+        `<li class="list-group-item">
+        ${addBadges([], result[index].userid)} ${result[index].username}: ${result[index].lines} 
+        <i class="material-icons notranslate float-end cursor-pointer" title="Show ${result[index].username}'s bingo board - not working yet :)">preview</i>
+        </li>`
+      );
     }
   } catch (error) {
     showToast("Could not refresh leaderboard", "danger", 3000);
@@ -525,7 +528,9 @@ window.onload = async function () {
   dragElement();
   enableTooltips();
 
-  await getMainList();
-  shuffleArray(mainList);
-  nextStream();
+  customBadges = await getCustomBadges();
+
+  // await getMainList();
+  // shuffleArray(mainList);
+  // nextStream();
 }; //onload
