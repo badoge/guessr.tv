@@ -6,6 +6,7 @@ const elements = {
   loginInfoPFP: document.getElementById("loginInfoPFP"),
   cells: document.querySelectorAll(".bingo-cell"),
   board: document.getElementById("board"),
+  channel: document.getElementById("channel"),
 };
 
 let TWITCH = {
@@ -43,6 +44,7 @@ function loadInfo() {
   elements.username.innerText = `Playing as ${TWITCH.channel}`;
   loadPFP();
   elements.board.classList.remove("blur");
+  join();
 } //loadInfo
 
 async function loadPFP() {
@@ -52,6 +54,32 @@ async function loadPFP() {
   }
   elements.loginInfoPFP.src = pfpURL;
 } //loadPFP
+
+async function join() {
+  let body = JSON.stringify({
+    userid: TWITCH.userID,
+    username: TWITCH.channel,
+    access_token: TWITCH.access_token,
+    channel: elements.channel.innerText,
+  });
+  let requestOptions = {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: body,
+    redirect: "follow",
+  };
+  try {
+    let response = await fetch(`https://bingo.guessr.tv/join`, requestOptions);
+    let result = await response.json();
+    showToast(result.message, "info", 3000);
+  } catch (error) {
+    showToast("Could not join game", "danger", 3000);
+    console.log("join error", error);
+  }
+} //join
 
 window.onload = async function () {
   loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
