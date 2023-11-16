@@ -51,7 +51,7 @@ function loadInfo() {
     TWITCH.userID
   );
   for (let index = 0; index < shuffled.length; index++) {
-    elements.cells[index].innerText = shuffled.pop();
+    elements.cells[index].innerText = shuffled[index];
   }
 } //loadInfo
 
