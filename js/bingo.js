@@ -31,6 +31,8 @@ const suggestions = [
 ];
 
 const elements = {
+  refreshLeaderboard: document.getElementById("refreshLeaderboard"),
+  leaderboard: document.getElementById("leaderboard"),
   infoTime: document.getElementById("infoTime"),
   seenChannels: document.getElementById("seenChannels"),
   resetSeenChannels: document.getElementById("resetSeenChannels"),
@@ -244,7 +246,15 @@ function clearAll() {
 } //clearAll
 
 async function bingoSave() {
-  const itemValues = shuffleArray([...elements.bingoItems].map((x) => x.value.trim()));
+  let itemValues = [];
+  if (TWITCH?.userID) {
+    itemValues = shuffleArraySeed(
+      [...elements.bingoItems].map((x) => x.value.trim()),
+      TWITCH.userID
+    );
+  } else {
+    itemValues = shuffleArray([...elements.bingoItems].map((x) => x.value.trim()));
+  }
 
   if (itemValues.includes("")) {
     showToast("Board must be full", "warning", 2000);
@@ -270,7 +280,7 @@ async function bingoSave() {
       username: TWITCH.channel,
       access_token: TWITCH.access_token,
       time: new Date(),
-      board: itemValues,
+      board: [...elements.bingoItems].map((x) => x.value.trim()),
       allowDiagonals: elements.allowDiagonals.checked,
     });
     let requestOptions = {
@@ -332,7 +342,40 @@ function checkWin() {
   if (lines == 0) {
     won = false;
   }
-}
+} //checkWin
+
+function checkWinLeaderboard(board) {
+  let winConditions = [
+    [0, 1, 2, 3, 4],
+    [5, 6, 7, 8, 9],
+    [10, 11, 12, 13, 14],
+    [15, 16, 17, 18, 19],
+    [20, 21, 22, 23, 24],
+    [0, 5, 10, 15, 20],
+    [1, 6, 11, 16, 21],
+    [2, 7, 12, 17, 22],
+    [3, 8, 13, 18, 23],
+    [4, 9, 14, 19, 24],
+  ];
+
+  if (elements.allowDiagonals.checked) {
+    winConditions.push([0, 6, 12, 18, 24], [4, 8, 12, 16, 20]);
+  }
+
+  let lines = 0;
+  for (let index = 0; index < winConditions.length; index++) {
+    if (
+      board[winConditions[index][0]].filled &&
+      board[winConditions[index][1]].filled &&
+      board[winConditions[index][2]].filled &&
+      board[winConditions[index][3]].filled &&
+      board[winConditions[index][4]].filled
+    ) {
+      lines++;
+    }
+  }
+  return lines;
+} //checkWinLeaderboard
 
 function login() {
   elements.loginInfoPFP.src = "/pics/donk.png";
@@ -380,6 +423,48 @@ function copyLink() {
     copyButton.hide();
   }, 1000);
 } //copyLink
+
+async function refreshLeaderboard() {
+  elements.refreshLeaderboard.innerHTML = spinner;
+  elements.leaderboard.innerHTML = "";
+  try {
+    let response = await fetch(`https://bingo.guessr.tv/${TWITCH.channel}/list`, requestOptions);
+    let result = await response.json();
+    let itemValues = [...elements.bingoItems].map((x) => x.value.trim());
+
+    for (let index = 0; index < result.length; index++) {
+      for (const key in result[index]) {
+        if (result[index][key].hasOwnProperty("allowDiagonals")) {
+          //skip the streamer's object
+          continue;
+        }
+        result[index][key].board = shuffleArraySeed(structuredClone(itemValues), result[index][key].userid).map((x) => ({ value: x, filled: false }));
+        for (let j = 0; j < board.length; j++) {
+          const i = result[index][key].board.findIndex((x) => x.value == board[j].value);
+          result[index][key].board[i].filled = board[j].filled;
+        }
+        result[index][key].lines = checkWinLeaderboard(result[index][key].board);
+      }
+    }
+
+    result.sort((a, b) => (a.lines < b.lines ? 1 : -1));
+
+    for (let index = 0; index < result.length; index++) {
+      for (const key in result[index]) {
+        if (result[index][key].hasOwnProperty("allowDiagonals")) {
+          //skip the streamer's object
+          continue;
+        }
+        elements.leaderboard.insertAdjacentHTML("afterbegin", `${result[index][key].username}: ${result[index][key].lines}<br>`);
+      }
+    }
+  } catch (error) {
+    showToast("Could not refresh leaderboard", "danger", 3000);
+    console.log("refreshLeaderboard error", error);
+  }
+
+  elements.refreshLeaderboard.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
+} //refreshLeaderboard
 
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels_bingo")) || [];

@@ -46,6 +46,13 @@ function loadInfo() {
   loadPFP();
   elements.board.classList.remove("blur");
   join();
+  let shuffled = shuffleArraySeed(
+    [...elements.cells].map((x) => x.innerText),
+    TWITCH.channel
+  );
+  for (let index = 0; index < shuffled.length; index++) {
+    elements.cells[index].innerText = shuffled.pop();
+  }
 } //loadInfo
 
 async function loadPFP() {

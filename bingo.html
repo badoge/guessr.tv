@@ -330,11 +330,15 @@
 
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasLeaderboard" aria-labelledby="offcanvasLeaderboardLabel">
       <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasLeaderboardLabel">Leaderboard</h5>
+        <h5 class="offcanvas-title" id="offcanvasLeaderboardLabel">lidlboard :)</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-        <p>Not working yet :)</p>
+        <div class="input-group mb-3">
+          <span class="input-group-text">Refresh leaderboard</span>
+          <button class="btn btn-outline-secondary" type="button" id="refreshLeaderboard" onclick="refreshLeaderboard()"><i class="material-icons notranslate">refresh</i></button>
+        </div>
+        <div id="leaderboard"></div>
       </div>
     </div>
 
