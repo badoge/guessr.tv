@@ -44,7 +44,10 @@ const elements = {
   randomize: document.querySelectorAll(".bingo-random"),
   bingoSave: document.getElementById("bingoSave"),
   board: document.getElementById("board"),
+  previewBoard: document.getElementById("previewBoard"),
+  previewUsername: document.getElementById("previewUsername"),
   cells: document.querySelectorAll(".bingo-cell"),
+  previewCells: document.querySelectorAll(".bingo-cell-preview"),
   toastContainer: document.getElementById("toastContainer"),
   twitchEmbed: document.getElementById("twitchEmbed"),
   boardSize: document.getElementById("boardSize"),
@@ -457,7 +460,7 @@ async function refreshLeaderboard() {
         "afterbegin",
         `<li class="list-group-item">
         ${addBadges([], result[index].userid)} ${result[index].username}: ${result[index].lines} 
-        <i class="material-icons notranslate float-end cursor-pointer" title="Show ${result[index].username}'s bingo board - not working yet :)">preview</i>
+        <i class="material-icons notranslate float-end cursor-pointer" onmouseout="hidePreview()" onmouseover="showPreview('${result[index].username}','${result[index].userid}')">preview</i>
         </li>`
       );
     }
@@ -468,6 +471,32 @@ async function refreshLeaderboard() {
 
   elements.refreshLeaderboard.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
 } //refreshLeaderboard
+
+function showPreview(username, userid) {
+  elements.previewUsername.innerText = `${username}'s bingo board`;
+  let itemValues = [...elements.bingoItems].map((x) => x.value.trim());
+  let preview = shuffleArraySeed(structuredClone(itemValues), userid).map((x) => ({ value: x, filled: false }));
+
+  for (let j = 0; j < board.length; j++) {
+    const i = preview.findIndex((x) => x.value == board[j].value);
+    preview[i].filled = board[j].filled;
+    elements.previewCells[j].classList.remove("filled");
+  }
+
+  for (let index = 0; index < elements.previewCells.length; index++) {
+    elements.previewCells[index].innerText = preview[index].value;
+    elements.previewCells[index].title = preview[index].value;
+    if (preview[index].filled) {
+      elements.previewCells[index].classList.add("filled");
+    }
+  }
+
+  elements.previewBoard.style.display = "";
+} //showPreview
+
+function hidePreview() {
+  elements.previewBoard.style.display = "none";
+} //hidePreview
 
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels_bingo")) || [];
