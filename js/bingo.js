@@ -31,7 +31,6 @@ const suggestions = [
 ];
 
 const elements = {
-  refreshLeaderboard: document.getElementById("refreshLeaderboard"),
   leaderboardCount: document.getElementById("leaderboardCount"),
   leaderboard: document.getElementById("leaderboard"),
   infoTime: document.getElementById("infoTime"),
@@ -75,6 +74,7 @@ let previousChannels = [];
 let player;
 let retryLimit = 0;
 let customBadges = [];
+let refreshCooldown;
 
 let board = [
   { filled: false, value: "1" },
@@ -435,7 +435,6 @@ function copyLink() {
 } //copyLink
 
 async function refreshLeaderboard() {
-  elements.refreshLeaderboard.innerHTML = spinner;
   elements.leaderboard.innerHTML = "";
   elements.leaderboardCount.innerHTML = "";
   try {
@@ -468,8 +467,6 @@ async function refreshLeaderboard() {
     showToast("Could not refresh leaderboard", "danger", 3000);
     console.log("refreshLeaderboard error", error);
   }
-
-  elements.refreshLeaderboard.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
 } //refreshLeaderboard
 
 function showPreview(username, userid) {
@@ -526,10 +523,16 @@ window.onload = async function () {
 
   for (let index = 0; index < elements.cells.length; index++) {
     elements.cells[index].onclick = (event) => {
+      clearTimeout(refreshCooldown);
       event.target.classList.toggle("filled");
       let cellNumber = parseInt(event.target.dataset.id, 10) - 1;
       board[cellNumber].filled = !board[cellNumber].filled;
       checkWin();
+      if (TWITCH?.channel) {
+        refreshCooldown = setTimeout(() => {
+          refreshLeaderboard();
+        }, 3000);
+      }
     };
   }
   for (let index = 0; index < elements.randomize.length; index++) {
