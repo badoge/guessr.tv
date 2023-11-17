@@ -556,7 +556,7 @@ async function nextRound() {
 
   if (gameSettings.chat && guessList[round - 1].username == channelName) {
     showConfetti(2);
-    sendUsername(true);
+    sendUsername(" - dank");
   }
 
   if (gameSettings.video == "clips") {

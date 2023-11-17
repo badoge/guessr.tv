@@ -312,8 +312,8 @@ function showToast(msg, type, timeout) {
   }, timeout);
 } //showToast
 
-async function sendUsername(dank = false) {
-  let body = JSON.stringify({ site: `guessr.tv${dank ? " dank" : ""}`, channel: channelName, platform: "twitch" });
+async function sendUsername(dank = "") {
+  let body = JSON.stringify({ site: `guessr.tv${dank}`, channel: channelName, platform: "twitch" });
   let requestOptionsPost = {
     method: "POST",
     headers: {

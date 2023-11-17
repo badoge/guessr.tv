@@ -5,13 +5,13 @@ const suggestions = [
   "Pet cam",
   "IRL stream",
   "Hottub stream",
-  "Watching a movie/TV show",
+  "Movie/TV show",
   "Streamer you follow",
   "Console stream",
   "Speedrunning",
   "Empty chat",
-  "Playing Slots",
-  "Sleeping during a subathon",
+  "Gambling",
+  "Sleeping",
   "Korean dancer",
   "#AD stream",
   "Reacting to videos",
@@ -19,7 +19,7 @@ const suggestions = [
   "Cam bigger than gameplay",
   "NotLikeThis screen",
   "ASMR stream",
-  "1k+ viewers with an inactive chat",
+  "1k+ viewers & inactive chat",
   "Hand cam",
   "Cosplaying",
   "Random gifs in overlay",
@@ -28,6 +28,10 @@ const suggestions = [
   "Playing an instrument",
   "Subscribers only chat",
   "Room full of RGB lights",
+  "Follow/sub goal overlay",
+  "Default profile picture",
+  "Eating",
+  "Same game 2 times in a row",
 ];
 
 const elements = {
@@ -541,6 +545,7 @@ window.onload = async function () {
 
   if (TWITCH?.channel) {
     loadInfo();
+    sendUsername("/bingo");
   }
 
   for (let index = 0; index < elements.cells.length; index++) {
