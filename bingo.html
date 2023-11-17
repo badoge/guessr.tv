@@ -339,7 +339,7 @@
       </div>
     </div>
 
-    <div class="container-fluid" id="board" style="top: 4%; left: 10%">
+    <div class="container-fluid" id="board" style="top: 4%; left: 10%; display: none">
       <div class="row m-0">
         <div data-id="1" class="col bingo-cell" style="border-top-left-radius: 6px">1</div>
         <div data-id="2" class="col bingo-cell">2</div>
@@ -424,7 +424,29 @@
           </div>
         </div>
         <div class="col-11 position-relative">
-          <div id="twitchEmbed"></div>
+          <div id="welcomeCard">
+            <div class="card">
+              <div class="card-header text-center">Twitch bingo</div>
+              <div class="card-body text-start">
+                <h5 class="card-title">How to play:</h5>
+                <ul class="list-unstyled">
+                  <li>
+                    <ul>
+                      <li>Login with Twitch (Optional. Allows viewers to play along)</li>
+                      <li>Create your board by clicking <i class="material-icons notranslate">edit</i>Edit board</li>
+                      <li><i class="material-icons notranslate">save</i> Save your board</li>
+                      <li>Share your bingo link with viewers if you logged in with Twitch</li>
+                      <li>
+                        <button type="button" class="btn btn-lg btn-success" onclick="start()" id="start"><i class="material-icons notranslate">celebration</i> Start!</button>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div id="twitchEmbed" style="display: none"></div>
         </div>
       </div>
       <div class="row mb-3 mt-2" id="bottomRow">

@@ -81,16 +81,17 @@
             <span class="twitch-icon"></span> Sign in with Twitch
           </a>
 
-          <div class="btn-group" role="group" aria-label="Login info" id="loginInfo" style="display: none">
-            <button type="button" class="btn btn-secondary"><img id="loginInfoPFP" src="https://guessr.tv/pics/donk.png" alt="profile pic" style="height: 2em" /></button>
-            <div class="btn-group" role="group">
-              <button id="username" type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Loading...</button>
-              <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="username">
-                <li>
-                  <a class="dropdown-item" onclick="logout()" href="#"><i class="material-icons notranslate">logout</i>Log out</a>
-                </li>
-              </ul>
-            </div>
+          <div class="btn-group" id="loginInfo" style="display: none">
+            <button type="button" class="btn btn-secondary pointer-events-none" id="username">Loading...</button>
+            <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+              <img id="loginInfoPFP" src="https://guessr.tv/pics/donk.png" alt="profile pic" style="height: 2em" />
+              <span class="visually-hidden">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" onclick="logout()" href="#"><i class="material-icons notranslate">logout</i>Log out</a>
+              </li>
+            </ul>
           </div>
 
           <div class="container-fluid mt-3 blur" id="board">

@@ -50,9 +50,14 @@ body {
   padding: 5px;
 }
 
+.pointer-events-none {
+  pointer-events: none;
+}
+
 .filled {
   background-color: var(--bs-green);
 }
+
 .nav-link {
   cursor: pointer;
 }

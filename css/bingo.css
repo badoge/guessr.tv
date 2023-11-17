@@ -79,3 +79,13 @@
   height: 20px;
   width: 20px;
 }
+
+#welcomeCard {
+  height: 85vh;
+}
+
+#welcomeCard > .card {
+  top: 25%;
+  left: 25%;
+  width: 50%;
+}

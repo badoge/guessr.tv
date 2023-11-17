@@ -48,6 +48,8 @@ const elements = {
   cells: document.querySelectorAll(".bingo-cell"),
   previewCells: document.querySelectorAll(".bingo-cell-preview"),
   toastContainer: document.getElementById("toastContainer"),
+  welcomeCard: document.getElementById("welcomeCard"),
+  start: document.getElementById("start"),
   twitchEmbed: document.getElementById("twitchEmbed"),
   boardSize: document.getElementById("boardSize"),
   boardOpacity: document.getElementById("boardOpacity"),
@@ -104,6 +106,7 @@ let board = [
   { filled: false, value: "25" },
 ];
 let won = false;
+let boardCreated = false;
 
 async function getMainList() {
   try {
@@ -251,6 +254,24 @@ function clearAll() {
   }
 } //clearAll
 
+async function start() {
+  if (!boardCreated) {
+    showToast("You need to create and save your board first", "warning", 3000);
+    editModal.show();
+    return;
+  }
+
+  elements.start.innerHTML = spinner;
+
+  await getMainList();
+  shuffleArray(mainList);
+  nextStream();
+
+  elements.welcomeCard.style.display = "none";
+  elements.twitchEmbed.style.display = "";
+  elements.board.style.display = "";
+} //start
+
 async function bingoSave() {
   elements.bingoSave.innerHTML = spinner;
   let itemValues = [];
@@ -311,6 +332,7 @@ async function bingoSave() {
     }
   }
 
+  boardCreated = true;
   editModal.hide();
   elements.bingoSave.innerHTML = `<i class="material-icons notranslate">save</i> Save`;
 } //bingoSave
@@ -561,8 +583,4 @@ window.onload = async function () {
   enableTooltips();
 
   customBadges = await getCustomBadges();
-
-  await getMainList();
-  shuffleArray(mainList);
-  nextStream();
 }; //onload
