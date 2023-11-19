@@ -61,7 +61,7 @@ iframe {
 
 ::-webkit-scrollbar-thumb {
   background: var(--bs-tertiary-color);
-  border-radius: 5px;
+  border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -70,6 +70,7 @@ iframe {
 
 ::-webkit-scrollbar-track {
   background: var(--bs-dark-bg-subtle);
+  border-radius: 6px;
 }
 
 .cursor-pointer {
