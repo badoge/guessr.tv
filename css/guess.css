@@ -138,6 +138,8 @@
   margin-left: -17px;
   margin-right: -17px;
   margin-top: -17px;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
 }
 
 .gameover-card {
