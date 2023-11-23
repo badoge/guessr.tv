@@ -314,7 +314,7 @@ async function bingoSave() {
       username: TWITCH.channel,
       access_token: TWITCH.access_token,
       time: new Date(),
-      board: [...elements.bingoItems].map((x) => x.value.trim()),
+      board: board,
       allowDiagonals: elements.allowDiagonals.checked,
     });
     let requestOptions = {
@@ -460,11 +460,30 @@ function copyLink() {
   }, 1000);
 } //copyLink
 
-async function refreshLeaderboard() {
+async function updateLeaderboard() {
   elements.leaderboard.innerHTML = "";
   elements.leaderboardCount.innerHTML = "";
+
+  let body = JSON.stringify({
+    userid: TWITCH.userID,
+    username: TWITCH.channel,
+    access_token: TWITCH.access_token,
+    time: new Date(),
+    board: board,
+    allowDiagonals: elements.allowDiagonals.checked,
+  });
+  let requestOptions = {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: body,
+    redirect: "follow",
+  };
+
   try {
-    let response = await fetch(`https://bingo.guessr.tv/${TWITCH.channel}/list`, requestOptions);
+    let response = await fetch(`https://bingo.guessr.tv/update`, requestOptions);
     let result = await response.json();
     let itemValues = [...elements.bingoItems].map((x) => x.value.trim());
 
@@ -491,9 +510,9 @@ async function refreshLeaderboard() {
     }
   } catch (error) {
     showToast("Could not refresh leaderboard", "danger", 3000);
-    console.log("refreshLeaderboard error", error);
+    console.log("updateLeaderboard error", error);
   }
-} //refreshLeaderboard
+} //updateLeaderboard
 
 function showPreview(username, userid) {
   elements.previewUsername.innerText = `${username}'s bingo board`;
@@ -557,7 +576,7 @@ window.onload = async function () {
       checkWin();
       if (TWITCH?.channel) {
         refreshCooldown = setTimeout(() => {
-          refreshLeaderboard();
+          updateLeaderboard();
         }, 3000);
       }
     };

@@ -4,6 +4,7 @@ const elements = {
   loginButton: document.getElementById("loginButton"),
   loginInfo: document.getElementById("loginInfo"),
   username: document.getElementById("username"),
+  refresh: document.getElementById("refresh"),
   loginInfoPFP: document.getElementById("loginInfoPFP"),
   cells: document.querySelectorAll(".bingo-cell"),
   board: document.getElementById("board"),
@@ -54,6 +55,29 @@ function loadInfo() {
     elements.cells[index].innerText = shuffled[index];
   }
 } //loadInfo
+
+async function refresh() {
+  elements.refresh.innerHTML = spinner;
+  let requestOptions = {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    redirect: "follow",
+  };
+  try {
+    let response = await fetch(`https://bingo.guessr.tv/${elements.channel.innerText}/refresh`, requestOptions);
+    let result = await response.json();
+    console.log(result);
+    showToast(result.message, "info", 3000);
+    elements.refresh.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
+  } catch (error) {
+    showToast("Could not refresh board", "danger", 3000);
+    console.log("refresh error", error);
+    elements.refresh.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
+  }
+} //refresh
 
 async function loadPFP() {
   let pfpURL = await get7TVPFP(TWITCH.userID);
