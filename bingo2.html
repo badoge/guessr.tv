@@ -29,7 +29,7 @@
 
     <script src="https://guessr.tv/js/bootstrap.bundle.min.js" defer></script>
     <script src="https://guessr.tv/js/functions.min.js" defer></script>
-    <script src="/js/bingo2.min.js" defer></script>
+    <script src="/js/bingo2.js" defer></script>
   </head>
   <body>
     <div class="modal" id="loginExpiredModal" tabindex="-1" aria-hidden="true">
@@ -142,7 +142,7 @@
               <div class="col bingo-cell" style="border-bottom-right-radius: 6px">${board[24]}</div>
             </div>
           </div>
-          <small class="text-body-secondary">Updated on:</small>
+          <small class="text-body-secondary" id="time">Updated on:</small>
         </div>
         <div class="col-2"></div>
       </div>

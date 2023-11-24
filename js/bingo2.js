@@ -9,6 +9,7 @@ const elements = {
   cells: document.querySelectorAll(".bingo-cell"),
   board: document.getElementById("board"),
   channel: document.getElementById("channel"),
+  time: document.getElementById("time"),
 };
 
 let TWITCH = {
@@ -47,17 +48,27 @@ function loadInfo() {
   loadPFP();
   elements.board.classList.remove("blur");
   join();
-  let shuffled = shuffleArraySeed(
-    [...elements.cells].map((x) => x.innerText),
-    TWITCH.userID
-  );
-  for (let index = 0; index < shuffled.length; index++) {
-    elements.cells[index].innerText = shuffled[index];
-  }
+
+  let board = [...elements.cells].map((x) => {
+    return { value: x.innerText, filled: x.classList.contains("filled") };
+  });
+
+  loadBoard(board);
 } //loadInfo
+
+function loadBoard(board) {
+  let shuffled = shuffleArraySeed(board, TWITCH.userID);
+
+  for (let index = 0; index < shuffled.length; index++) {
+    elements.cells[index].innerText = shuffled[index].value;
+    shuffled[index].filled ? elements.cells[index].classList.add("filled") : elements.cells[index].classList.remove("filled");
+  }
+} //loadBoard
 
 async function refresh() {
   elements.refresh.innerHTML = spinner;
+  elements.refresh.disabled = true;
+
   let requestOptions = {
     method: "GET",
     headers: {
@@ -70,12 +81,20 @@ async function refresh() {
     let response = await fetch(`https://bingo.guessr.tv/${elements.channel.innerText}/refresh`, requestOptions);
     let result = await response.json();
     console.log(result);
-    showToast(result.message, "info", 3000);
+    loadBoard(result.board);
+    elements.time.innerHTML = `Updated on: ${new Date(result.time)}`;
+    showToast("Board refreshed", "info", 3000);
     elements.refresh.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
+    setTimeout(() => {
+      elements.refresh.disabled = false;
+    }, 30000);
   } catch (error) {
     showToast("Could not refresh board", "danger", 3000);
     console.log("refresh error", error);
     elements.refresh.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
+    setTimeout(() => {
+      elements.refresh.disabled = false;
+    }, 30000);
   }
 } //refresh
 
@@ -127,10 +146,5 @@ window.onload = async function () {
     loadInfo();
   }
 
-  for (let index = 0; index < elements.cells.length; index++) {
-    elements.cells[index].onclick = (event) => {
-      event.target.classList.toggle("filled");
-    };
-  }
   enableTooltips();
 }; //onload

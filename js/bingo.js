@@ -81,6 +81,7 @@ let player;
 let retryLimit = 0;
 let customBadges = [];
 let refreshCooldown;
+let channelName;
 
 let board = [
   { filled: false, value: "1" },
@@ -485,26 +486,23 @@ async function updateLeaderboard() {
   try {
     let response = await fetch(`https://bingo.guessr.tv/update`, requestOptions);
     let result = await response.json();
-    let itemValues = [...elements.bingoItems].map((x) => x.value.trim());
+    console.log(result);
+    let users = result.users;
 
-    for (let index = 0; index < result.length; index++) {
-      result[index].board = shuffleArraySeed(structuredClone(itemValues), result[index].userid).map((x) => ({ value: x, filled: false }));
-      for (let j = 0; j < board.length; j++) {
-        const i = result[index].board.findIndex((x) => x.value == board[j].value);
-        result[index].board[i].filled = board[j].filled;
-      }
-      result[index].lines = checkWinLeaderboard(result[index].board);
+    for (let index = 0; index < users.length; index++) {
+      users[index].board = shuffleArraySeed(structuredClone(board), users[index].userid);
+      users[index].lines = checkWinLeaderboard(users[index].board);
     }
 
-    result.sort((a, b) => a.lines - b.lines);
+    users.sort((a, b) => a.lines - b.lines);
 
-    elements.leaderboardCount.innerHTML = result.length;
-    for (let index = 0; index < result.length; index++) {
+    elements.leaderboardCount.innerHTML = users.length;
+    for (let index = 0; index < users.length; index++) {
       elements.leaderboard.insertAdjacentHTML(
         "afterbegin",
         `<li class="list-group-item">
-        ${addBadges([], result[index].userid)} ${result[index].username}: ${result[index].lines} 
-        <i class="material-icons notranslate float-end cursor-pointer" onmouseout="hidePreview()" onmouseover="showPreview('${result[index].username}','${result[index].userid}')">preview</i>
+        ${addBadges([], users[index].userid)} ${users[index].username}: ${users[index].lines} 
+        <i class="material-icons notranslate float-end cursor-pointer" onmouseout="hidePreview()" onmouseover="showPreview('${users[index].username}','${users[index].userid}')">preview</i>
         </li>`
       );
     }
@@ -516,12 +514,9 @@ async function updateLeaderboard() {
 
 function showPreview(username, userid) {
   elements.previewUsername.innerText = `${username}'s bingo board`;
-  let itemValues = [...elements.bingoItems].map((x) => x.value.trim());
-  let preview = shuffleArraySeed(structuredClone(itemValues), userid).map((x) => ({ value: x, filled: false }));
+  let preview = shuffleArraySeed(structuredClone(board), userid);
 
   for (let j = 0; j < board.length; j++) {
-    const i = preview.findIndex((x) => x.value == board[j].value);
-    preview[i].filled = board[j].filled;
     elements.previewCells[j].classList.remove("filled");
   }
 
@@ -563,6 +558,7 @@ window.onload = async function () {
   }
 
   if (TWITCH?.channel) {
+    channelName = TWITCH.channel;
     loadInfo();
     sendUsername("/bingo");
   }
