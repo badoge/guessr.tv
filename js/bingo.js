@@ -429,7 +429,8 @@ function resetLoginButton() {
 function logout() {
   TWITCH = { channel: "", access_token: "", userID: "" };
   localStorage.setItem("TWITCH", JSON.stringify(TWITCH));
-  elements.loginButton.style.display = "";
+  elements.loginButton.disabled = false;
+  elements.loginButton.innerHTML = `<span class="twitch-icon"></span> Sign in with Twitch`;
   elements.loginInfo.style.display = "none";
   elements.loginInfoPFP.src = "/pics/donk.png";
   elements.bingoLink.value = `https://bingo.guessr.tv`;
@@ -445,7 +446,8 @@ async function loadPFP() {
 
 function loadInfo() {
   TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
-  elements.loginButton.style.display = "none";
+  elements.loginButton.disabled = true;
+  elements.loginButton.innerHTML = `<span class="twitch-icon"></span><i class="material-icons notranslate">done</i>Logged in`;
   elements.loginInfo.style.display = "";
   elements.bingoLink.value = `https://bingo.guessr.tv/${TWITCH.channel}`;
   loadPFP();
@@ -488,9 +490,13 @@ async function updateLeaderboard() {
     let result = await response.json();
     console.log(result);
     let users = result.users;
-
     for (let index = 0; index < users.length; index++) {
-      users[index].board = shuffleArraySeed(structuredClone(board), users[index].userid);
+      if (users[index].userid == TWITCH.userID) {
+        //dont shuffle board for streamer
+        users[index].board = structuredClone(board);
+      } else {
+        users[index].board = shuffleArraySeed(structuredClone(board), users[index].userid);
+      }
       users[index].lines = checkWinLeaderboard(users[index].board);
     }
 
@@ -501,7 +507,7 @@ async function updateLeaderboard() {
       elements.leaderboard.insertAdjacentHTML(
         "afterbegin",
         `<li class="list-group-item">
-        ${addBadges([], users[index].userid)} ${users[index].username}: ${users[index].lines} 
+        ${addBadges(users[index].userid == TWITCH.userID ? "streamer" : [], users[index].userid)} ${users[index].username}: ${users[index].lines} 
         <i class="material-icons notranslate float-end cursor-pointer" onmouseout="hidePreview()" onmouseover="showPreview('${users[index].username}','${users[index].userid}')">preview</i>
         </li>`
       );
@@ -514,7 +520,14 @@ async function updateLeaderboard() {
 
 function showPreview(username, userid) {
   elements.previewUsername.innerText = `${username}'s bingo board`;
-  let preview = shuffleArraySeed(structuredClone(board), userid);
+  let preview = [];
+
+  if (userid == TWITCH.userID) {
+    //dont shuffle board for streamer
+    preview = structuredClone(board);
+  } else {
+    preview = shuffleArraySeed(structuredClone(board), userid);
+  }
 
   for (let j = 0; j < board.length; j++) {
     elements.previewCells[j].classList.remove("filled");

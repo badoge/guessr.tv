@@ -439,19 +439,21 @@
               <div class="card-header text-center">Twitch bingo</div>
               <div class="card-body text-start">
                 <h5 class="card-title">How to play:</h5>
-                <ul class="list-unstyled">
-                  <li>
-                    <ul>
-                      <li>Login with Twitch (Optional. Allows viewers to play along)</li>
-                      <li>Create your board by clicking <i class="material-icons notranslate">edit</i>Edit board</li>
-                      <li><i class="material-icons notranslate">save</i> Save your board</li>
-                      <li>Share your bingo link with viewers if you logged in with Twitch</li>
-                      <li>
-                        <button type="button" class="btn btn-lg btn-success" onclick="start()" id="start"><i class="material-icons notranslate">celebration</i> Start!</button>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
+
+                <button id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable sharing with viewers" class="btn btn-twitch" onclick="login()">
+                  <span class="twitch-icon"></span> Sign in with Twitch
+                </button>
+                Login with Twitch <small class="text-body-secondary">Optional. Allows viewers to play along</small>
+
+                <br />
+                <br />
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal"><i class="material-icons notranslate">edit</i>Edit board</button>
+                Create and save your board
+                <br />
+                <br />
+                <button type="button" class="btn btn-success" onclick="start()" id="start"><i class="material-icons notranslate">celebration</i> Start!</button>
+                <br />
+                <small class="text-body-secondary"> Don't forget to share your bingo link with viewers if you logged in with Twitch :)</small>
               </div>
             </div>
           </div>
@@ -466,10 +468,6 @@
             <div class="card-body container-fluid">
               <div id="sliderDiv" class="row">
                 <div class="col-6">
-                  <button type="button" class="btn btn-lg btn-primary float-start" data-bs-toggle="modal" data-bs-target="#editModal">
-                    <i class="material-icons notranslate">edit</i>Edit board
-                  </button>
-
                   <div class="vstack">
                     <div>
                       <label for="boardSize" class="form-label"><i class="material-icons notranslate">zoom_in</i>Board size</label>
@@ -490,18 +488,6 @@
                   </div>
                 </div>
                 <div class="col-4">
-                  <a
-                    id="loginButton"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    data-bs-title="Sign in to enable sharing with viewers"
-                    class="btn btn-twitch"
-                    href="#"
-                    onclick="login()"
-                  >
-                    <span class="twitch-icon"></span> Sign in with Twitch
-                  </a>
-
                   <div class="input-group" id="loginInfo" style="display: none">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                       <img id="loginInfoPFP" src="/pics/donk.png" alt="profile pic" style="height: 2em" />
@@ -531,7 +517,7 @@
                 </div>
 
                 <div class="col-2">
-                  <button type="button" id="nextStream" onclick="nextStream()" class="btn btn-lg btn-success float-end">
+                  <button disabled type="button" id="nextStream" onclick="nextStream()" class="btn btn-lg btn-success float-end">
                     <i class="material-icons notranslate">skip_next</i> Next stream
                   </button>
                   <button
