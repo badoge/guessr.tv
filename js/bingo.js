@@ -342,8 +342,8 @@ async function bingoSave() {
   elements.bingoSave.innerHTML = `<i class="material-icons notranslate">save</i> Save`;
 } //bingoSave
 
-function checkWin() {
-  let winConditions = [
+function checkWin(board, streamer = false) {
+  let fives = [
     [0, 1, 2, 3, 4],
     [5, 6, 7, 8, 9],
     [10, 11, 12, 13, 14],
@@ -356,63 +356,134 @@ function checkWin() {
     [4, 9, 14, 19, 24],
   ];
 
+  let fours = [
+    [0, 1, 2, 3],
+    [1, 2, 3, 4],
+    [5, 6, 7, 8],
+    [6, 7, 8, 9],
+    [10, 11, 12, 13],
+    [11, 12, 13, 14],
+    [15, 16, 17, 18],
+    [16, 17, 18, 19],
+    [20, 21, 22, 23],
+    [21, 22, 23, 24],
+    [0, 5, 10, 15],
+    [5, 10, 15, 20],
+    [1, 6, 11, 16],
+    [6, 11, 16, 21],
+    [2, 7, 12, 17],
+    [7, 12, 17, 22],
+    [3, 8, 13, 18],
+    [8, 13, 18, 23],
+    [4, 9, 14, 19],
+    [9, 14, 19, 24],
+    [0, 2, 3, 4],
+    [0, 1, 3, 4],
+    [0, 1, 2, 4],
+    [5, 7, 8, 9],
+    [5, 6, 8, 9],
+    [5, 6, 7, 9],
+    [10, 12, 13, 14],
+    [10, 11, 13, 14],
+    [10, 11, 12, 14],
+    [15, 17, 18, 19],
+    [15, 16, 18, 19],
+    [15, 16, 17, 19],
+    [20, 22, 23, 24],
+    [20, 21, 23, 24],
+    [20, 21, 22, 24],
+    [0, 10, 15, 20],
+    [0, 5, 15, 20],
+    [0, 5, 10, 20],
+    [1, 11, 16, 21],
+    [1, 6, 16, 21],
+    [1, 6, 11, 21],
+    [2, 12, 17, 22],
+    [2, 7, 17, 22],
+    [2, 7, 12, 22],
+    [3, 13, 18, 23],
+    [3, 8, 18, 23],
+    [3, 8, 13, 23],
+    [4, 14, 19, 24],
+    [4, 9, 19, 24],
+    [4, 9, 14, 24],
+  ];
+
+  let threes = [
+    [0, 1, 2],
+    [1, 2, 3],
+    [2, 3, 4],
+    [5, 6, 7],
+    [6, 7, 8],
+    [7, 8, 9],
+    [10, 11, 12],
+    [11, 12, 13],
+    [12, 13, 14],
+    [15, 16, 17],
+    [16, 17, 18],
+    [17, 18, 19],
+    [20, 21, 22],
+    [21, 22, 23],
+    [22, 23, 24],
+    [0, 5, 10],
+    [5, 10, 15],
+    [10, 15, 20],
+    [1, 6, 11],
+    [6, 11, 16],
+    [11, 16, 21],
+    [2, 7, 12],
+    [7, 12, 17],
+    [12, 17, 22],
+    [3, 8, 13],
+    [8, 13, 18],
+    [13, 18, 23],
+    [4, 9, 14],
+    [9, 14, 19],
+    [14, 19, 24],
+  ];
+
   if (elements.allowDiagonals.checked) {
-    winConditions.push([0, 6, 12, 18, 24], [4, 8, 12, 16, 20]);
+    fives.push([0, 6, 12, 18, 24], [4, 8, 12, 16, 20]);
+    fours.push([0, 6, 12, 18], [4, 8, 12, 16], [6, 12, 18, 24], [8, 12, 16, 20], [0, 12, 18, 24], [0, 6, 18, 24], [0, 6, 12, 24], [4, 12, 16, 20], [4, 8, 16, 20], [4, 8, 12, 20]);
+    threes.push([0, 6, 12], [6, 12, 18], [12, 18, 24], [4, 8, 12], [8, 12, 16], [12, 16, 20]);
   }
 
-  let lines = 0;
-  for (let index = 0; index < winConditions.length; index++) {
-    if (
-      board[winConditions[index][0]].filled &&
-      board[winConditions[index][1]].filled &&
-      board[winConditions[index][2]].filled &&
-      board[winConditions[index][3]].filled &&
-      board[winConditions[index][4]].filled
-    ) {
-      lines++;
+  let result = {
+    five: 0,
+    four: 0,
+    three: 0,
+    score: 0,
+  };
+
+  for (let index = 0; index < fives.length; index++) {
+    if (board[fives[index][0]].filled && board[fives[index][1]].filled && board[fives[index][2]].filled && board[fives[index][3]].filled && board[fives[index][4]].filled) {
+      result.five++;
     }
   }
-  if (lines == 1 && !won) {
+
+  for (let index = 0; index < fours.length; index++) {
+    if (board[fours[index][0]].filled && board[fours[index][1]].filled && board[fours[index][2]].filled && board[fours[index][3]].filled) {
+      result.four++;
+    }
+  }
+  for (let index = 0; index < threes.length; index++) {
+    if (board[threes[index][0]].filled && board[threes[index][1]].filled && board[threes[index][2]].filled) {
+      result.three++;
+    }
+  }
+  result.score = result.three + result.four * 10 + result.five * 110;
+
+  console.log(result);
+
+  if (streamer && result.five > 0 && !won) {
     showConfetti(2);
     won = true;
   }
-  if (lines == 0) {
+  if (streamer && result.five == 0) {
     won = false;
   }
+  return result;
 } //checkWin
-
-function checkWinLeaderboard(board) {
-  let winConditions = [
-    [0, 1, 2, 3, 4],
-    [5, 6, 7, 8, 9],
-    [10, 11, 12, 13, 14],
-    [15, 16, 17, 18, 19],
-    [20, 21, 22, 23, 24],
-    [0, 5, 10, 15, 20],
-    [1, 6, 11, 16, 21],
-    [2, 7, 12, 17, 22],
-    [3, 8, 13, 18, 23],
-    [4, 9, 14, 19, 24],
-  ];
-
-  if (elements.allowDiagonals.checked) {
-    winConditions.push([0, 6, 12, 18, 24], [4, 8, 12, 16, 20]);
-  }
-
-  let lines = 0;
-  for (let index = 0; index < winConditions.length; index++) {
-    if (
-      board[winConditions[index][0]].filled &&
-      board[winConditions[index][1]].filled &&
-      board[winConditions[index][2]].filled &&
-      board[winConditions[index][3]].filled &&
-      board[winConditions[index][4]].filled
-    ) {
-      lines++;
-    }
-  }
-  return lines;
-} //checkWinLeaderboard
 
 function login() {
   elements.loginInfoPFP.src = "/pics/donk.png";
@@ -497,17 +568,19 @@ async function updateLeaderboard() {
       } else {
         users[index].board = shuffleArraySeed(structuredClone(board), users[index].userid);
       }
-      users[index].lines = checkWinLeaderboard(users[index].board);
+      users[index].result = checkWin(users[index].board);
     }
 
-    users.sort((a, b) => a.lines - b.lines);
+    users.sort((a, b) => a.result.score - b.result.score);
 
     elements.leaderboardCount.innerHTML = users.length;
     for (let index = 0; index < users.length; index++) {
       elements.leaderboard.insertAdjacentHTML(
         "afterbegin",
         `<li class="list-group-item">
-        ${addBadges(users[index].userid == TWITCH.userID ? "streamer" : [], users[index].userid)} ${users[index].username}: ${users[index].lines} 
+        ${addBadges(users[index].userid == TWITCH.userID ? "streamer" : [], users[index].userid)} ${users[index].username}: ${users[index].result.score} ${
+          users[index].result.score == 1 ? "point" : "points"
+        } ${users[index].result.five > 5 ? `(${users[index].result.five} ${users[index].result.five == 1 ? "BINGO" : "BINGOs"})` : ""}
         <i class="material-icons notranslate float-end cursor-pointer" onmouseout="hidePreview()" onmouseover="showPreview('${users[index].username}','${users[index].userid}')">preview</i>
         </li>`
       );
@@ -582,7 +655,7 @@ window.onload = async function () {
       event.target.classList.toggle("filled");
       let cellNumber = parseInt(event.target.dataset.id, 10) - 1;
       board[cellNumber].filled = !board[cellNumber].filled;
-      checkWin();
+      checkWin(board, true);
       if (TWITCH?.channel) {
         refreshCooldown = setTimeout(() => {
           updateLeaderboard();
