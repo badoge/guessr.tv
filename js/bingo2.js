@@ -63,7 +63,7 @@ function loadBoard(board) {
     elements.cells[index].innerText = shuffled[index].value;
     shuffled[index].filled ? elements.cells[index].classList.add("filled") : elements.cells[index].classList.remove("filled");
   }
-  let result = checkWin(board, true);
+  let result = checkWin(shuffled, true);
   elements.score.innerText = `Score: ${result.score} ${result.score == 1 ? "point" : "points"} ${result.five > 5 ? `(${result.five} ${result.five == 1 ? "BINGO" : "BINGOs"})` : ""}`;
 } //loadBoard
 

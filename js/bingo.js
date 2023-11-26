@@ -473,8 +473,6 @@ function checkWin(board, streamer = false) {
   }
   result.score = result.three + result.four * 10 + result.five * 110;
 
-  console.log(result);
-
   if (streamer && result.five > 0 && !won) {
     showConfetti(2);
     won = true;
