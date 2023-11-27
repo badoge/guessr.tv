@@ -324,7 +324,7 @@ async function sendUsername(dank = "") {
     redirect: "follow",
   };
   try {
-    let response = await fetch(`https://helper.pepega.workers.dev/log/username`, requestOptionsPost);
+    let response = await fetch(`https://helper.donk.workers.dev/log/username`, requestOptionsPost);
     console.log("sendUsername response", response.status);
     usernameSent = true;
   } catch (error) {
@@ -335,7 +335,7 @@ async function sendUsername(dank = "") {
 async function getCustomBadges() {
   return new Promise(async function (resolve, reject) {
     try {
-      let response = await fetch(`https://badges.pepega.workers.dev`, requestOptions);
+      let response = await fetch(`https://badges.donk.workers.dev`, requestOptions);
       let result = await response.json();
       if (!result || result.length == 0) {
         resolve([]);
@@ -351,7 +351,7 @@ async function getCustomBadges() {
 async function getChannelId() {
   return new Promise(async function (resolve, reject) {
     try {
-      let response = await fetch(`https://helper.pepega.workers.dev/twitch/users?login=${channelName}`, requestOptions);
+      let response = await fetch(`https://helper.donk.workers.dev/twitch/users?login=${channelName}`, requestOptions);
       let result = await response.json();
       resolve(result?.data[0]?.id || "");
     } catch (error) {
@@ -364,7 +364,7 @@ async function getChannelId() {
 async function getStreamerColor() {
   return new Promise(async function (resolve, reject) {
     try {
-      let response = await fetch(`https://helper.pepega.workers.dev/twitch/chat/color?user_id=${channelId}`, requestOptions);
+      let response = await fetch(`https://helper.donk.workers.dev/twitch/chat/color?user_id=${channelId}`, requestOptions);
       let result = await response.json();
       resolve(result?.data[0]?.color || "#FFFFFF");
     } catch (error) {

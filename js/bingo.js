@@ -157,7 +157,7 @@ async function nextStream() {
 
   //update stream info
   try {
-    let response = await fetch(`https://helper.pepega.workers.dev/twitch/streams?user_id=${channel.userid}`, requestOptions);
+    let response = await fetch(`https://helper.donk.workers.dev/twitch/streams?user_id=${channel.userid}`, requestOptions);
     let stream = await response.json();
     if (!stream.data[0]) {
       showToast("Channel is offline, getting new channel", "info", 1500);

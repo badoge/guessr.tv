@@ -305,14 +305,14 @@ async function getRandomStream() {
 
   //update stream info
   try {
-    let response = await fetch(`https://helper.pepega.workers.dev/twitch/streams?user_id=${random.userid}`, requestOptions);
+    let response = await fetch(`https://helper.donk.workers.dev/twitch/streams?user_id=${random.userid}`, requestOptions);
     let stream = await response.json();
 
     if (stream.data[0]) {
       //get follower count if game mode is followers
       if (gameSettings.game == "followers") {
         try {
-          let response = await fetch(`https://helper.pepega.workers.dev/twitch/channels/followers?broadcaster_id=${random.userid}`, requestOptions);
+          let response = await fetch(`https://helper.donk.workers.dev/twitch/channels/followers?broadcaster_id=${random.userid}`, requestOptions);
           let followers = await response.json();
           random.followers = followers.total;
           if (random.followers > max) {
@@ -358,7 +358,7 @@ async function getClipsGuessList() {
   await getMainListClips(); // needs to be fetched before each game bcz list has 5 clips only
   let ids = mainList.map((e) => e.id);
   try {
-    let response = await fetch(`https://helper.pepega.workers.dev/twitch/clips?id=${ids.join(",")}`, requestOptions);
+    let response = await fetch(`https://helper.donk.workers.dev/twitch/clips?id=${ids.join(",")}`, requestOptions);
     if (response.status != 200) {
       showToast("Something went wrong while updating clip view counts :(", "danger", 3000);
       // await getClipsGuessList();
@@ -394,7 +394,7 @@ async function getClipsFollowerCount() {
   let fetched = 0;
   for (let index = 0; index < 5; index++) {
     try {
-      let response = await fetch(`https://helper.pepega.workers.dev/twitch/channels/followers?broadcaster_id=${guessList[index].userid}`, requestOptions);
+      let response = await fetch(`https://helper.donk.workers.dev/twitch/channels/followers?broadcaster_id=${guessList[index].userid}`, requestOptions);
       if (response.status != 200) {
         showToast("Something went wrong while updating the follow counts :(", "danger", 3000);
         return;
@@ -644,7 +644,7 @@ async function generateEmoteChoices(userid) {
     random.push({ emote: emote, id: randomChannel._id });
   }
   try {
-    let response = await fetch(`https://helper.pepega.workers.dev/twitch/chat/emotes?broadcaster_id=${userid}`, requestOptions);
+    let response = await fetch(`https://helper.donk.workers.dev/twitch/chat/emotes?broadcaster_id=${userid}`, requestOptions);
     let emotes = await response.json();
     if (emotes?.data?.length > 0) {
       let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
