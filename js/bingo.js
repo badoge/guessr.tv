@@ -38,6 +38,7 @@ const elements = {
   leaderboardCount: document.getElementById("leaderboardCount"),
   leaderboard: document.getElementById("leaderboard"),
   infoTime: document.getElementById("infoTime"),
+  skipSexual: document.getElementById("skipSexual"),
   seenChannels: document.getElementById("seenChannels"),
   resetSeenChannels: document.getElementById("resetSeenChannels"),
   loginExpiredModal: document.getElementById("loginExpiredModal"),
@@ -82,6 +83,7 @@ let retryLimit = 0;
 let customBadges = [];
 let refreshCooldown;
 let channelName;
+let skipSexual = true;
 
 let board = [
   { filled: false, value: "1" },
@@ -143,7 +145,8 @@ async function nextStream() {
   }
 
   let channel = mainList.pop();
-  while (seenChannels.includes(channel.username)) {
+  //reroll if channel already seen or if it has the sexual label and the skip sexual option is checked
+  while (seenChannels.includes(channel.username) || (channel.sexual && skipSexual)) {
     channel = mainList.pop();
   }
   if (mainList.length == 0 || !channel) {
@@ -623,6 +626,9 @@ window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels_bingo")) || [];
   elements.seenChannels.innerHTML = seenChannels.length;
 
+  skipSexual = (localStorage.getItem("skipSexual") || "true") === "true";
+  elements.skipSexual.checked = skipSexual;
+
   elements.resetSeenChannels.onclick = function () {
     localStorage.setItem("seenChannels_bingo", JSON.stringify([]));
     elements.seenChannels.innerHTML = 0;
@@ -667,6 +673,11 @@ window.onload = async function () {
     };
   }
 
+  elements.skipSexual.onchange = function () {
+    skipSexual = this.checked;
+    localStorage.setItem("skipSexual", skipSexual);
+  };
+
   elements.boardSize.oninput = function () {
     elements.board.style.scale = this.value;
   };
@@ -678,9 +689,15 @@ window.onload = async function () {
   elements.board.addEventListener("mousewheel", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    let scale = parseFloat(getComputedStyle(elements.board).getPropertyValue("scale"));
-    elements.board.style.scale = event.wheelDelta > 0 ? Math.min(scale + 0.07, 2) : Math.max(scale - 0.07, 0.1);
-    elements.boardSize.value = event.wheelDelta > 0 ? scale + 0.07 : scale - 0.07;
+    if (event.ctrlKey) {
+      let opacity = parseFloat(getComputedStyle(elements.board).getPropertyValue("opacity"));
+      elements.board.style.opacity = event.wheelDelta > 0 ? Math.min(opacity + 0.07, 1) : Math.max(opacity - 0.07, 0);
+      elements.boardOpacity.value = event.wheelDelta > 0 ? opacity + 0.07 : opacity - 0.07;
+    } else {
+      let scale = parseFloat(getComputedStyle(elements.board).getPropertyValue("scale"));
+      elements.board.style.scale = event.wheelDelta > 0 ? Math.min(scale + 0.07, 2) : Math.max(scale - 0.07, 0.1);
+      elements.boardSize.value = event.wheelDelta > 0 ? scale + 0.07 : scale - 0.07;
+    }
   });
 
   dragElement();

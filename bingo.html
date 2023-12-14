@@ -41,14 +41,18 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <h5>
-              <div class="input-group mt-3">
-                <span class="input-group-text">Seen Channels:</span>
-                <span class="input-group-text" id="seenChannels">0</span>
-                <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><i class="material-icons notranslate">restart_alt</i>Reset</button>
-              </div>
-              <small>Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>
-            </h5>
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" role="switch" id="skipSexual" checked />
+              <label class="form-check-label" for="skipSexual">
+                <i class="material-icons notranslate">18_up_rating</i><i class="material-icons notranslate">skip_next</i>Skip streams with the "Sexual Themes" Content Classification Label
+              </label>
+            </div>
+            <div class="input-group mt-3">
+              <span class="input-group-text">Seen Channels:</span>
+              <span class="input-group-text" id="seenChannels">0</span>
+              <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+            </div>
+            <small>Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -202,6 +206,12 @@
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
+                  <div class="input-group mb-1">
+                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #25" data-item-id="25" aria-label="Bingo item #25" />
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="25" type="button" title="Fill with random item">
+                      <i class="material-icons notranslate pointer-events-none">casino</i>
+                    </button>
+                  </div>
                 </div>
                 <div class="col">
                   <div class="input-group mb-1">
@@ -277,13 +287,6 @@
                     </button>
                   </div>
                 </div>
-              </div>
-
-              <div class="input-group mb-1">
-                <input type="text" class="form-control bingo-item" placeholder="Bingo item #25" data-item-id="25" aria-label="Bingo item #25" />
-                <button class="btn btn-outline-secondary bingo-random" data-item-id="25" type="button" title="Fill with random item">
-                  <i class="material-icons notranslate pointer-events-none">casino</i>
-                </button>
               </div>
             </div>
           </div>
@@ -475,10 +478,16 @@
                         class="material-icons notranslate text-info"
                         data-bs-toggle="tooltip"
                         data-bs-placement="top"
-                        data-bs-title="Hover over the board and scroll to quickly adjust the size :) You can also move the board by dragging with the middle mouse button"
+                        data-bs-html="true"
+                        data-bs-title="
+                        <strong>Board adjustment shortcuts</strong><br>
+                        scroll: resize board<br>
+                        CTRL+scroll: change board opacity<br>
+                        scroll wheel click+drag: move board"
                       >
                         lightbulb
                       </i>
+
                       <input type="range" class="form-range align-middle" id="boardSize" value="1" min="0.1" max="2" step="0.01" />
                     </div>
                     <div>
