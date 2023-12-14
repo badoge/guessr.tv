@@ -48,6 +48,7 @@ const elements = {
   streamCover: document.getElementById("streamCover"),
   clipCover: document.getElementById("clipCover"),
 
+  skipSexual: document.getElementById("skipSexual"),
   viewersHS: document.getElementById("viewersHS"),
   followersHS: document.getElementById("followersHS"),
   viewersStreak: document.getElementById("viewersStreak"),
@@ -129,6 +130,7 @@ let powerups = {
   pSkip: 0,
 };
 
+let skipSexual = true;
 let highscores = {
   viewersHS: 0,
   followersHS: 0,
@@ -300,6 +302,11 @@ async function getRandomStream() {
 
   //check if channel is already seen
   if (seenChannels.some((e) => e === random.username)) {
+    return await getRandomStream();
+  }
+
+  //get a new stream if skip sexual is checked
+  if (random.sexual && skipSexual) {
     return await getRandomStream();
   }
 
@@ -1768,6 +1775,8 @@ window.onload = async function () {
   elements.seenChannels.innerHTML = seenChannels.length;
   seenClips = JSON.parse(localStorage.getItem("seenClips")) || [];
   elements.seenClips.innerHTML = seenClips.length;
+  skipSexual = (localStorage.getItem("skipSexual") || "true") === "true";
+  elements.skipSexual.checked = skipSexual;
   highscores.viewersHS = parseInt(localStorage.getItem("viewersHS"), 10) || 0;
   highscores.followersHS = parseInt(localStorage.getItem("followersHS"), 10) || 0;
   highscores.viewersStreak = parseInt(localStorage.getItem("viewersStreak"), 10) || 0;
@@ -1798,6 +1807,11 @@ window.onload = async function () {
 
   totalTab = new bootstrap.Tab(elements.totalTab);
   roundTab = new bootstrap.Tab(elements.roundTab);
+
+  elements.skipSexual.onchange = function () {
+    skipSexual = this.checked;
+    localStorage.setItem("skipSexual", skipSexual);
+  };
 
   elements.streamsVideoType.onchange = function () {
     if (this.checked) {
