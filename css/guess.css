@@ -75,6 +75,10 @@
   margin-right: 30px;
 }
 
+.multiChoice-btn:disabled > img {
+  filter: grayscale(90%);
+}
+
 .mp-icon {
   font-size: 1.5em;
   color: #aeb5bd;

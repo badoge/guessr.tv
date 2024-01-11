@@ -333,6 +333,31 @@ async function getRandomStream() {
         }
       } //followers
 
+      //get 1 channel emote if mode is emote
+      if (gameSettings.game == "emote") {
+        let tries = 0;
+        try {
+          let response = await fetch(`https://helper.donk.workers.dev/twitch/chat/emotes?broadcaster_id=${random.userid}`, requestOptions);
+          let emotes = await response.json();
+          if (emotes?.data?.length > 0) {
+            let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
+            while (!(await checkEmote(emote))) {
+              if (++tries > 3) {
+                showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
+                console.log(error);
+                return await getRandomStream();
+              }
+              emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
+            }
+            random.emote = emote;
+          }
+        } catch (error) {
+          showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
+          console.log(error);
+          return await getRandomStream();
+        }
+      } //emote
+
       //get a new stream if current one has no category
       if (!stream.data[0].game_name && gameSettings.game == "gamename") {
         return await getRandomStream();
@@ -386,9 +411,14 @@ async function getClipsGuessList() {
       showToast("Clips set contains deleted/already seen clips, getting new set...", "info", 2000);
       return await getClipsGuessList();
     }
-    //get follower counts now if the video type is clips - if the video type is streams the follower count will be fetched in getRandomStream()
+    //get follow counts now if the video type is clips - if the video type is streams the follower count will be fetched in getRandomStream()
     if (gameSettings.game == "followers") {
       await getClipsFollowerCount();
+    }
+
+    //get an emote for each channel
+    if (gameSettings.game == "emote") {
+      await getClipsEmotes();
     }
   } catch (error) {
     showToast("Something went wrong while updating clip view counts :(", "danger", 3000);
@@ -422,6 +452,45 @@ async function getClipsFollowerCount() {
   max = Math.max(...guessList.map((o) => o.followers || 0)) + Math.floor(Math.random() * 1000);
   elements.guessNumber.max = max;
 } //getClipsFollowerCount
+
+async function getClipsEmotes() {
+  let fetched = 0;
+  for (let index = 0; index < 5; index++) {
+    let tries = 0;
+    try {
+      let response = await fetch(`https://helper.donk.workers.dev/twitch/chat/emotes?broadcaster_id=${guessList[index].userid}`, requestOptions);
+      if (response.status != 200) {
+        showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
+        return;
+      }
+      let emotes = await response.json();
+      if (emotes?.data?.length > 0) {
+        let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
+        while (!(await checkEmote(emote))) {
+          if (++tries > 3) {
+            showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
+            console.log(error);
+            return await getClipsGuessList();
+          }
+          emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
+        }
+        guessList[index].emote = emote;
+        fetched++;
+      } else {
+        showToast("Channel has no emotes, getting new channel...", "info", 3000);
+        return await getClipsGuessList();
+      }
+    } catch (error) {
+      showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
+      console.log(error);
+    }
+  }
+  if (fetched < 5) {
+    guessList = [];
+    showToast("Clips set contains deleted/already seen clips, getting new set...", "info", 2000);
+    return await getClipsGuessList();
+  }
+} //getClipsEmotes
 
 async function nextRound() {
   elements.nextRound.disabled = true;
@@ -650,33 +719,19 @@ async function generateEmoteChoices(userid) {
     picked.push(randomChannel._id);
     random.push({ emote: emote, id: randomChannel._id });
   }
-  try {
-    let response = await fetch(`https://helper.donk.workers.dev/twitch/chat/emotes?broadcaster_id=${userid}`, requestOptions);
-    let emotes = await response.json();
-    if (emotes?.data?.length > 0) {
-      let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
-      await checkEmote(emote);
-      random.push({ emote: emote, id: userid });
-      guessList[round - 1].emote = emote;
-    } else {
-      showToast("Channel has no emotes :) added TriHard as a temporary emote till I fix this :)", "info", 3000);
-      random.push({ emote: "120232", id: userid }); //channel has no emotes so add TriHard
-      guessList[round - 1].emote = "120232";
-    }
-    shuffleArray(random);
-    for (let index = 0; index < random.length; index++) {
-      const mcIndex = `multiChoice${index + 1}`;
-      elements[mcIndex].disabled = false;
-      elements[mcIndex].classList.add("btn-outline-success");
-      elements[mcIndex].classList.remove("btn-outline-secondary");
-      elements[mcIndex].dataset.answer = random[index].id;
-      elements[mcIndex].dataset.emote = random[index].emote;
-      elements[mcIndex].innerHTML = `${gameSettings.chat ? Object.keys(emoteChoices).find((e) => emoteChoices[e] === index + 1) : ""} <img src="https://static-cdn.jtvnw.net/emoticons/v2/${
-        random[index].emote
-      }/default/dark/3.0" alt="emote #${index + 1}">`;
-    }
-  } catch (error) {
-    console.log("generateEmoteChoices error", error);
+
+  random.push({ emote: guessList[round - 1].emote, id: userid });
+  shuffleArray(random);
+  for (let index = 0; index < random.length; index++) {
+    const mcIndex = `multiChoice${index + 1}`;
+    elements[mcIndex].disabled = false;
+    elements[mcIndex].classList.add("btn-outline-success");
+    elements[mcIndex].classList.remove("btn-outline-secondary");
+    elements[mcIndex].dataset.answer = random[index].id;
+    elements[mcIndex].dataset.emote = random[index].emote;
+    elements[mcIndex].innerHTML = `
+    ${gameSettings.chat ? Object.keys(emoteChoices).find((e) => emoteChoices[e] === index + 1) : ""} 
+    <img src="https://static-cdn.jtvnw.net/emoticons/v2/${random[index].emote}/default/dark/3.0" alt="emote #${index + 1}">`;
   }
   elements.multiChoiceDiv.style.display = "";
 } //generateEmoteChoices
@@ -1376,9 +1431,6 @@ async function showSettings(game) {
       break;
     case "gamename":
       elements.disclaimer.innerHTML = "Some streamers could forget to update their category or set it incorrectly, expect to be Jebaited :)";
-      break;
-    case "emote":
-      elements.disclaimer.innerHTML = `Some channels might not have any emotes, in that case <img src="https://static-cdn.jtvnw.net/emoticons/v2/120232/default/dark/3.0" alt="TriHard" title="TriHard" width=28> will be added as a placeholder `;
       break;
     default:
       elements.disclaimer.style.display = "none";
