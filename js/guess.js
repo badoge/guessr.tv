@@ -350,6 +350,9 @@ async function getRandomStream() {
               emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
             }
             random.emote = emote;
+          } else {
+            showToast("Channel has no emotes, getting new channel...", "info", 3000);
+            return await getRandomStream();
           }
         } catch (error) {
           showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
