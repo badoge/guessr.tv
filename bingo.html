@@ -72,14 +72,20 @@
             <div class="card border mb-3">
               <div class="card-header">About the site</div>
               <div class="card-body">
-                More info <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#readme">here</a><br /><br />
-
-                To use the shareable bingo cards: Login in with Twitch -> Edit the board -> Save the board -> share link with viewers :)
+                <span class="text-info">
+                  To use the shareable bingo cards: Login in with Twitch -> Edit the board -> Save the board -> share link with viewers :)
+                  <br />
+                  <br />
+                  The streamer will fill in the viewers' boards, viewers just need to login using the shared bingo board link
+                </span>
                 <br />
                 <br />
                 You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of them you can subscribe to Twitch Turbo or get a better Adblocker :)<br />
                 If you have Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. If you use Firefox you will need to
                 <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow cross-site tracking cookies</a>
+                <br />
+                <br />
+                More info <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#readme">here</a>
                 <hr />
                 If you want to optout from being picked for the guess list you can use the <kbd>=optout guessr</kbd> command in
                 <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
@@ -467,7 +473,7 @@
       <div class="row mb-3 mt-2" id="bottomRow">
         <div class="col-1"></div>
         <div class="col-11">
-          <div class="card" id="mainCard">
+          <div class="card" id="mainCard" style="display: none">
             <div class="card-body container-fluid">
               <div id="sliderDiv" class="row">
                 <div class="col-6">
@@ -475,7 +481,7 @@
                     <div>
                       <label for="boardSize" class="form-label"><i class="material-icons notranslate">zoom_in</i>Board size</label>
                       <i
-                        class="material-icons notranslate text-info"
+                        class="material-icons notranslate text-info mb-2"
                         data-bs-toggle="tooltip"
                         data-bs-placement="top"
                         data-bs-html="true"
@@ -520,7 +526,10 @@
                       <i class="material-icons notranslate">content_copy</i>
                     </button>
                     <button class="btn btn-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLeaderboard" aria-controls="offcanvasLeaderboard">
-                      <i class="material-icons notranslate" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Chat leaderboard">leaderboard</i>
+                      <i class="material-icons notranslate" id="bingoPopover" data-bs-toggle="popover" data-bs-placement="top" data-bs-title="BINGO!" data-bs-content="A viewer got a BINGO!">
+                        leaderboard
+                      </i>
+                      Chat leaderboard
                     </button>
                   </div>
                 </div>

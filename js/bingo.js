@@ -6,7 +6,7 @@ const suggestions = [
   "IRL stream",
   "Hottub stream",
   "Movie/TV show",
-  "Streamer you follow",
+  "Streamer you recognize",
   "Console stream",
   "Speedrunning",
   "Empty chat",
@@ -14,8 +14,10 @@ const suggestions = [
   "Sleeping",
   "Korean dancer",
   "#AD stream",
+  "Sponsors overlay",
   "Reacting to videos",
   "Low quality cam",
+  "Low quality mic",
   "Cam bigger than gameplay",
   "NotLikeThis screen",
   "ASMR stream",
@@ -32,6 +34,10 @@ const suggestions = [
   "Default profile picture",
   "Eating",
   "Same game 2 times in a row",
+  "Top gifter 100+ gifts",
+  "Top cheerer 10k+ bits",
+  "Only mods & VIPs in chat",
+  "Game older than 20 years",
 ];
 
 const elements = {
@@ -55,6 +61,7 @@ const elements = {
   toastContainer: document.getElementById("toastContainer"),
   welcomeCard: document.getElementById("welcomeCard"),
   start: document.getElementById("start"),
+  mainCard: document.getElementById("mainCard"),
   twitchEmbed: document.getElementById("twitchEmbed"),
   boardSize: document.getElementById("boardSize"),
   boardOpacity: document.getElementById("boardOpacity"),
@@ -64,6 +71,7 @@ const elements = {
   bingoLink: document.getElementById("bingoLink"),
   copyButton: document.getElementById("copyButton"),
   previousStream: document.getElementById("previousStream"),
+  bingoPopover: document.getElementById("bingoPopover"),
   nextStream: document.getElementById("nextStream"),
 };
 
@@ -84,6 +92,7 @@ let customBadges = [];
 let refreshCooldown;
 let channelName;
 let skipSexual = true;
+let bingoPopover;
 
 let board = [
   { filled: false, value: "1" },
@@ -278,6 +287,7 @@ async function start() {
   elements.welcomeCard.style.display = "none";
   elements.twitchEmbed.style.display = "";
   elements.board.style.display = "";
+  elements.mainCard.style.display = "";
 } //start
 
 async function bingoSave() {
@@ -535,6 +545,7 @@ function copyLink() {
   }, 1000);
 } //copyLink
 
+let chatWinner = false;
 async function updateLeaderboard() {
   elements.leaderboard.innerHTML = "";
   elements.leaderboardCount.innerHTML = "";
@@ -576,6 +587,13 @@ async function updateLeaderboard() {
 
     elements.leaderboardCount.innerHTML = users.length;
     for (let index = 0; index < users.length; index++) {
+      if (!chatWinner && users[index].result.five > 0) {
+        chatWinner = true;
+        bingoPopover.show();
+        setTimeout(() => {
+          bingoPopover.hide();
+        }, 3000);
+      }
       elements.leaderboard.insertAdjacentHTML(
         "afterbegin",
         `<li class="list-group-item">
@@ -639,6 +657,7 @@ window.onload = async function () {
   loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
   editModal = new bootstrap.Modal(elements.editModal);
   copyButton = new bootstrap.Tooltip(elements.copyButton);
+  bingoPopover = new bootstrap.Popover(elements.bingoPopover);
 
   TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
   if (TWITCH?.access_token && !(await checkToken(TWITCH.access_token))) {
