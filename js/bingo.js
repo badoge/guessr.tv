@@ -656,7 +656,9 @@ window.onload = async function () {
 
   loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
   editModal = new bootstrap.Modal(elements.editModal);
-  copyButton = new bootstrap.Tooltip(elements.copyButton);
+  copyButton = new bootstrap.Tooltip(elements.copyButton, {
+    trigger: "hover",
+  });
   bingoPopover = new bootstrap.Popover(elements.bingoPopover);
 
   TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
