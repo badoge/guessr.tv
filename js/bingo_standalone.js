@@ -3,6 +3,7 @@ const elements = {
   leaderboard: document.getElementById("leaderboard"),
   loginExpiredModal: document.getElementById("loginExpiredModal"),
   editModal: document.getElementById("editModal"),
+  bingoTitle: document.getElementById("bingoTitle"),
   allowDiagonals: document.getElementById("allowDiagonals"),
   bingoItems: document.querySelectorAll(".bingo-item"),
   randomize: document.querySelectorAll(".bingo-random"),
@@ -69,6 +70,35 @@ let board = [
 ];
 let won = false;
 let boardCreated = false;
+
+function dragElement() {
+  let x = 0;
+  let y = 0;
+
+  const mouseDownHandler = function (e) {
+    if (e.target.classList.contains("bingo-cell") && e.button !== 1) {
+      return;
+    }
+    x = e.clientX;
+    y = e.clientY;
+    document.addEventListener("mousemove", mouseMoveHandler);
+    document.addEventListener("mouseup", mouseUpHandler);
+  };
+
+  const mouseMoveHandler = function (e) {
+    elements.board.style.top = elements.board.offsetTop + e.clientY - y + "px";
+    elements.board.style.left = elements.board.offsetLeft + e.clientX - x + "px";
+    x = e.clientX;
+    y = e.clientY;
+  };
+
+  const mouseUpHandler = function () {
+    document.removeEventListener("mousemove", mouseMoveHandler);
+    document.removeEventListener("mouseup", mouseUpHandler);
+  };
+
+  elements.board.addEventListener("mousedown", mouseDownHandler);
+} //dragElement
 
 function randomize(event) {
   const id = event.target.dataset.itemId;
@@ -149,6 +179,7 @@ async function bingoSave() {
       access_token: TWITCH.access_token,
       time: new Date(),
       board: board,
+      title: elements.bingoTitle.value || "Not Twitch bingo",
       allowDiagonals: elements.allowDiagonals.checked,
     });
     let requestOptions = {
@@ -523,6 +554,7 @@ window.onload = async function () {
     }
   });
 
+  dragElement();
   enableTooltips();
 
   customBadges = await getCustomBadges();

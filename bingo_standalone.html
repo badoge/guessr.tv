@@ -101,13 +101,21 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <div class="form-check form-switch mb-3">
+            <div class="input-group">
+              <span class="input-group-text">Bingo title</span>
+              <input type="text" class="form-control" id="bingoTitle" placeholder="Not Twitch bingo" />
+            </div>
+            <small class="text-body-secondary">The name of the bingo you will be playing with your viewers. Example: Snapchat bingo - YouTube bingo</small>
+
+            <div class="form-check form-switch mb-3 mt-3">
               <input class="form-check-input" type="checkbox" role="switch" id="allowDiagonals" />
               <label class="form-check-label" for="allowDiagonals"><i class="material-icons notranslate">north_east</i>Allow diagonals</label>
               <br /><small class="text-body-secondary">Count diagonals when checking for winning patterns</small>
             </div>
 
-            <button type="button" class="btn btn-warning mb-3" onclick="randomizeAll()"><i class="material-icons notranslate pointer-events-none">casino</i> Randomize all</button>
+            <button style="display: none" type="button" class="btn btn-warning mb-3" onclick="randomizeAll()">
+              <i class="material-icons notranslate pointer-events-none">casino</i> Randomize all
+            </button>
             <button type="button" class="btn btn-danger mb-3" onclick="clearAll()"><i class="material-icons notranslate pointer-events-none">delete_forever</i> Clear all</button>
 
             <div class="container-fluid" style="height: 60vh; overflow: auto">
@@ -115,82 +123,82 @@
                 <div class="col">
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #1" data-item-id="1" aria-label="Bingo item #1" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="1" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="1" type="button" title="Fill with random item" style="display: none" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #3" data-item-id="3" aria-label="Bingo item #3" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="3" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="3" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #5" data-item-id="5" aria-label="Bingo item #5" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="5" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="5" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #7" data-item-id="7" aria-label="Bingo item #7" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="7" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="7" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #9" data-item-id="9" aria-label="Bingo item #9" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="9" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="9" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #11" data-item-id="11" aria-label="Bingo item #11" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="11" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="11" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
 
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #13" data-item-id="13" aria-label="Bingo item #13" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="13" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="13" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
 
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #15" data-item-id="15" aria-label="Bingo item #15" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="15" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="15" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
 
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #17" data-item-id="17" aria-label="Bingo item #17" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="17" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="17" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #19" data-item-id="19" aria-label="Bingo item #19" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="19" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="19" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #21" data-item-id="21" aria-label="Bingo item #21" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="21" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="21" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #23" data-item-id="23" aria-label="Bingo item #23" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="23" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="23" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #25" data-item-id="25" aria-label="Bingo item #25" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="25" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="25" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
@@ -198,73 +206,73 @@
                 <div class="col">
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #2" data-item-id="2" aria-label="Bingo item #2" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="2" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="2" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #4" data-item-id="4" aria-label="Bingo item #4" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="4" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="4" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #6" data-item-id="6" aria-label="Bingo item #6" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="6" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="6" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #8" data-item-id="8" aria-label="Bingo item #8" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="8" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="8" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #10" data-item-id="10" aria-label="Bingo item #10" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="10" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="10" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #12" data-item-id="12" aria-label="Bingo item #12" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="12" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="12" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #14" data-item-id="14" aria-label="Bingo item #14" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="14" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="14" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #16" data-item-id="16" aria-label="Bingo item #16" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="16" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="16" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #18" data-item-id="18" aria-label="Bingo item #18" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="18" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="18" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #20" data-item-id="20" aria-label="Bingo item #20" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="20" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="20" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #22" data-item-id="22" aria-label="Bingo item #22" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="22" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="22" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
                   <div class="input-group mb-1">
                     <input type="text" class="form-control bingo-item" placeholder="Bingo item #24" data-item-id="24" aria-label="Bingo item #24" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="24" type="button" title="Fill with random item">
+                    <button class="btn btn-outline-secondary bingo-random" data-item-id="24" type="button" title="Fill with random item" style="display: none">
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
                   </div>
@@ -512,13 +520,9 @@
     </div>
 
     <script src="/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/twitchembed.min.js"></script>
-    <script src="/js/easytimer.min.js"></script>
     <script src="/js/confetti.min.js"></script>
-    <script src="/js/anime.min.js"></script>
-    <script src="/js/tmi.min.js"></script>
     <script src="/js/functions.js"></script>
-    <script src="/js/bingo.js"></script>
+    <script src="/js/bingo_standalone.js"></script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RMN1GV8B4J"></script>
     <script>
