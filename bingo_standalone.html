@@ -2,17 +2,17 @@
 <html lang="en" prefix="og: https://ogp.me/ns#" data-bs-theme="dark">
   <head>
     <meta charset="utf-8" />
-    <title>Guessr.tv Bingo</title>
+    <title>Guessr.tv Standalone Bingo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="Twitch bingo" />
+    <meta name="description" content="Standalone Twitch Bingo" />
     <meta name="keywords" content="guessr.tv, Twitch" />
-    <meta property="og:title" content="Guessr.tv Bingo" />
-    <meta property="og:site_name" content="Guessr.tv Bingo" />
+    <meta property="og:title" content="Guessr.tv Standalone Bingo" />
+    <meta property="og:site_name" content="Guessr.tv Standalone Bingo" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://guessr.tv/bingo" />
     <meta property="og:image" content="https://guessr.tv/pics/guessr.png" />
     <meta property="og:locale" content="en_US" />
-    <meta property="og:description" content="Twitch bingo" />
+    <meta property="og:description" content="Standalone Twitch Bingo" />
 
     <link rel="apple-touch-icon" sizes="180x180" href="/pics/icon/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/pics/icon/favicon-32x32.png" />
@@ -33,34 +33,6 @@
   <body>
     <noscript><div class="alert alert-danger" role="alert">WARNING! JavaScript is disabled. This site will not work properly without it.</div></noscript>
 
-    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="settingsLabel">Settings</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div class="form-check form-switch mb-3">
-              <input class="form-check-input" type="checkbox" role="switch" id="skipSexual" checked />
-              <label class="form-check-label" for="skipSexual">
-                <i class="material-icons notranslate">18_up_rating</i><i class="material-icons notranslate">skip_next</i>Skip streams with the "Sexual Themes" Content Classification Label
-              </label>
-            </div>
-            <div class="input-group mt-3">
-              <span class="input-group-text">Seen Channels:</span>
-              <span class="input-group-text" id="seenChannels">0</span>
-              <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><i class="material-icons notranslate">restart_alt</i>Reset</button>
-            </div>
-            <small>Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -72,6 +44,12 @@
             <div class="card border mb-3">
               <div class="card-header">About the site</div>
               <div class="card-body">
+                <span class="text-success">
+                  This page is just like <a href="https://guessr.tv/bingo.html">Twitch bingo</a> but without the random streams, so you can just use it as a shared bingo board with Twitch
+                  integration
+                </span>
+                <br />
+                <br />
                 <span class="text-info">
                   To use the shareable bingo cards: Login in with Twitch -> Edit the board -> Save the board -> share link with viewers :)
                   <br />
@@ -89,8 +67,6 @@
                 <hr />
                 If you want to optout from being picked for the guess list you can use the <kbd>=optout guessr</kbd> command in
                 <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
-                <hr />
-                <span id="infoTime">Channel list updated on [updates when game starts]</span><br />
               </div>
             </div>
             <div class="card border">
@@ -333,14 +309,11 @@
       </li>
       <li class="nav-item">
         <a class="nav-link active site-link" aria-current="page" target="_self" rel="noopener noreferrer" href="/bingo.html"
-          ><i class="material-icons notranslate">casino</i> Bingo<br />beta :)</a
+          ><i class="material-icons notranslate">casino</i> Standalone<br />Bingo<br />beta :)</a
         >
       </li>
       <li class="nav-item">
         <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/watch.html"><i class="material-icons notranslate">live_tv</i> Watch</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="material-icons notranslate">settings</i> Settings</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" data-bs-toggle="modal" data-bs-target="#aboutModal"><i class="material-icons notranslate">help_outline</i> About</a>
@@ -445,7 +418,7 @@
         <div class="col-11 position-relative">
           <div id="welcomeCard">
             <div class="card">
-              <div class="card-header text-center">Twitch bingo</div>
+              <div class="card-header text-center">Standalone Twitch integration bingo</div>
               <div class="card-body text-start">
                 <h5 class="card-title">How to play:</h5>
 
@@ -463,13 +436,9 @@
                 <br />
                 <small class="text-body-secondary"> Don't forget to share your bingo link with viewers if you logged in with Twitch :)</small>
               </div>
-              <div class="card-footer text-body-secondary">
-                A <a href="/bingo_standalone.html">standalone shared bingo</a> is also available if you want to play some other flavor of bingo :)
-              </div>
+              <div class="card-footer text-body-secondary">This page is a standalone version of <a href="/bingo.html">Twitch bingo</a> that can be used for anything :)</div>
             </div>
           </div>
-
-          <div id="twitchEmbed" style="display: none"></div>
         </div>
       </div>
       <div class="row mb-3 mt-2" id="bottomRow">
@@ -534,24 +503,6 @@
                       Chat leaderboard
                     </button>
                   </div>
-                </div>
-
-                <div class="col-2">
-                  <button disabled type="button" id="nextStream" onclick="nextStream()" class="btn btn-lg btn-success float-end">
-                    <i class="material-icons notranslate">skip_next</i> Next stream
-                  </button>
-                  <button
-                    disabled
-                    type="button"
-                    id="previousStream"
-                    onclick="previousStream()"
-                    class="btn btn-lg btn-secondary float-end me-2"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    data-bs-title="Previous stream"
-                  >
-                    <i class="material-icons notranslate">skip_previous</i>
-                  </button>
                 </div>
               </div>
             </div>
