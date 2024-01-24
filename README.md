@@ -1,4 +1,6 @@
-# <img src="https://github.com/badoge/guessr.tv/assets/18620902/9f3b6cda-1f2f-4d29-9ddb-ad91c5ceb22c" width="56"> [guessr.tv](https://guessr.tv/)
+# [<img src="https://github.com/badoge/guessr.tv/assets/18620902/9f3b6cda-1f2f-4d29-9ddb-ad91c5ceb22c" width="56">](https://guessr.tv/) [guessr.tv](https://guessr.tv/)
+
+Twitch stream view count guessing game
 
 :) incomplete readme
 
