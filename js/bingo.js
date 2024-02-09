@@ -195,6 +195,11 @@ async function nextStream() {
     seenChannels.push(channel.username);
     localStorage.setItem("seenChannels_bingo", JSON.stringify(seenChannels));
     elements.seenChannels.innerHTML = seenChannels.length;
+
+    if (channel.username == channelName) {
+      showConfetti(2);
+      sendUsername(" - dank ⚠️ ⚠️ ⚠️");
+    }
   } catch (error) {
     console.log(error);
     retryLimit++;
