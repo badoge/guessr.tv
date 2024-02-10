@@ -398,8 +398,8 @@ function copyLink() {
 
 let chatWinner = false;
 async function updateLeaderboard() {
-  elements.leaderboard.innerHTML = "";
-  elements.leaderboardCount.innerHTML = "";
+  elements.leaderboard.innerHTML = spinner;
+  elements.leaderboardCount.innerHTML = "Loading...";
 
   let body = JSON.stringify({
     userid: TWITCH.userID,
@@ -437,6 +437,7 @@ async function updateLeaderboard() {
     users.sort((a, b) => a.result.score - b.result.score);
 
     elements.leaderboardCount.innerHTML = users.length;
+    elements.leaderboard.innerHTML = "";
     for (let index = 0; index < users.length; index++) {
       if (!chatWinner && users[index].result.five > 0) {
         chatWinner = true;
@@ -447,7 +448,7 @@ async function updateLeaderboard() {
       }
       elements.leaderboard.insertAdjacentHTML(
         "afterbegin",
-        `<li class="list-group-item">
+        `<li class="list-group-item ${users[index].userid == TWITCH.userID ? "active" : ""}">
         ${addBadges(users[index].userid == TWITCH.userID ? "streamer" : [], users[index].userid)} ${users[index].username}: ${users[index].result.score} ${
           users[index].result.score == 1 ? "point" : "points"
         } ${users[index].result.five > 0 ? `(${users[index].result.five} ${users[index].result.five == 1 ? "BINGO" : "BINGOs"})` : ""}

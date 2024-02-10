@@ -25,7 +25,8 @@
 
     <link rel="stylesheet" href="https://guessr.tv/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://guessr.tv/css/icons.css" />
-    <link rel="stylesheet" href="https://guessr.tv/css/bingo2.min.css" />
+    <link rel="stylesheet" href="https://guessr.tv/css/common.min.css" />
+    <link rel="stylesheet" href="/css/bingo2.min.css" />
 
     <script src="https://guessr.tv/js/bootstrap.bundle.min.js" defer></script>
     <script src="https://guessr.tv/js/confetti.min.js" defer></script>
@@ -67,6 +68,56 @@
       </li>
     </ul>
 
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasLeaderboard" aria-labelledby="offcanvasLeaderboardLabel">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasLeaderboardLabel">lidlboard :) <small class="text-body-secondary">Click the green refresh button to update the leaderboard</small></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <h4>Total players: <span id="leaderboardCount">0</span></h4>
+        <ul class="list-group" id="leaderboard"></ul>
+      </div>
+    </div>
+
+    <div class="container-fluid" id="previewBoard" style="top: 5%; left: 30%; display: none">
+      <h4 id="previewUsername" class="text-center"></h4>
+      <div class="row m-0">
+        <div data-id="1" class="col bingo-cell-preview" style="border-top-left-radius: 6px">1</div>
+        <div data-id="2" class="col bingo-cell-preview">2</div>
+        <div data-id="3" class="col bingo-cell-preview">3</div>
+        <div data-id="4" class="col bingo-cell-preview">4</div>
+        <div data-id="5" class="col bingo-cell-preview" style="border-top-right-radius: 6px">5</div>
+      </div>
+      <div class="row m-0">
+        <div data-id="6" class="col bingo-cell-preview">6</div>
+        <div data-id="7" class="col bingo-cell-preview">7</div>
+        <div data-id="8" class="col bingo-cell-preview">8</div>
+        <div data-id="9" class="col bingo-cell-preview">9</div>
+        <div data-id="10" class="col bingo-cell-preview">10</div>
+      </div>
+      <div class="row m-0">
+        <div data-id="11" class="col bingo-cell-preview">11</div>
+        <div data-id="12" class="col bingo-cell-preview">12</div>
+        <div data-id="13" class="col bingo-cell-preview">13</div>
+        <div data-id="14" class="col bingo-cell-preview">14</div>
+        <div data-id="15" class="col bingo-cell-preview">15</div>
+      </div>
+      <div class="row m-0">
+        <div data-id="16" class="col bingo-cell-preview">16</div>
+        <div data-id="17" class="col bingo-cell-preview">17</div>
+        <div data-id="18" class="col bingo-cell-preview">18</div>
+        <div data-id="19" class="col bingo-cell-preview">19</div>
+        <div data-id="20" class="col bingo-cell-preview">20</div>
+      </div>
+      <div class="row m-0">
+        <div data-id="21" class="col bingo-cell-preview" style="border-bottom-left-radius: 6px">21</div>
+        <div data-id="22" class="col bingo-cell-preview">22</div>
+        <div data-id="23" class="col bingo-cell-preview">23</div>
+        <div data-id="24" class="col bingo-cell-preview">24</div>
+        <div data-id="25" class="col bingo-cell-preview" style="border-bottom-right-radius: 6px">25</div>
+      </div>
+    </div>
+
     <div class="container-fluid">
       <div class="row">
         <div class="col-2">
@@ -85,6 +136,10 @@
           <div class="btn-group" id="loginInfo" style="display: none">
             <button type="button" class="btn btn-success" id="refresh" onclick="refresh()" title="Refresh the board - 30s cooldown - temporary scuffed solution 🤙">
               <i class="material-icons notranslate">refresh</i>
+            </button>
+            <button class="btn btn-info" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLeaderboard" aria-controls="offcanvasLeaderboard">
+              <i class="material-icons notranslate">leaderboard</i>
+              Chat leaderboard
             </button>
             <button type="button" class="btn btn-secondary pointer-events-none" id="username">Loading...</button>
             <button type="button" class="btn btn-secondary pointer-events-none" id="score">Loading...</button>

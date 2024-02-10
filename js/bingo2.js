@@ -1,4 +1,6 @@
 const elements = {
+  leaderboardCount: document.getElementById("leaderboardCount"),
+  leaderboard: document.getElementById("leaderboard"),
   toastContainer: document.getElementById("toastContainer"),
   loginExpiredModal: document.getElementById("loginExpiredModal"),
   loginButton: document.getElementById("loginButton"),
@@ -9,6 +11,9 @@ const elements = {
   loginInfoPFP: document.getElementById("loginInfoPFP"),
   cells: document.querySelectorAll(".bingo-cell"),
   board: document.getElementById("board"),
+  previewBoard: document.getElementById("previewBoard"),
+  previewUsername: document.getElementById("previewUsername"),
+  previewCells: document.querySelectorAll(".bingo-cell-preview"),
   channel: document.getElementById("channel"),
   time: document.getElementById("time"),
 };
@@ -19,8 +24,38 @@ let TWITCH = {
   userID: "",
 };
 
+let board = [
+  { filled: false, value: "1" },
+  { filled: false, value: "2" },
+  { filled: false, value: "3" },
+  { filled: false, value: "4" },
+  { filled: false, value: "5" },
+  { filled: false, value: "6" },
+  { filled: false, value: "7" },
+  { filled: false, value: "8" },
+  { filled: false, value: "9" },
+  { filled: false, value: "10" },
+  { filled: false, value: "11" },
+  { filled: false, value: "12" },
+  { filled: false, value: "13" },
+  { filled: false, value: "14" },
+  { filled: false, value: "15" },
+  { filled: false, value: "16" },
+  { filled: false, value: "17" },
+  { filled: false, value: "18" },
+  { filled: false, value: "19" },
+  { filled: false, value: "20" },
+  { filled: false, value: "21" },
+  { filled: false, value: "22" },
+  { filled: false, value: "23" },
+  { filled: false, value: "24" },
+  { filled: false, value: "25" },
+];
+let won = false;
 let loginExpiredModal;
 let allowDiagonals = false;
+let customBadges = [];
+let streamerID;
 
 function login() {
   elements.loginInfoPFP.src = "https://guessr.tv/pics/donk.png";
@@ -49,16 +84,10 @@ async function loadInfo() {
   elements.loginInfo.style.display = "";
   elements.username.innerText = `Playing as ${TWITCH.channel}`;
   loadPFP();
-  elements.board.classList.remove("blur");
-  await join();
-  let board = [...elements.cells].map((x) => {
-    return { value: x.innerText, filled: x.classList.contains("filled") };
-  });
-  loadBoard(board);
 } //loadInfo
 
-function loadBoard(board) {
-  let shuffled = shuffleArraySeed(board, TWITCH.userID);
+function loadBoard() {
+  let shuffled = shuffleArraySeed(structuredClone(board), TWITCH.userID);
   for (let index = 0; index < shuffled.length; index++) {
     elements.cells[index].innerText = shuffled[index].value;
     shuffled[index].filled ? elements.cells[index].classList.add("filled") : elements.cells[index].classList.remove("filled");
@@ -67,9 +96,39 @@ function loadBoard(board) {
   elements.score.innerText = `Score: ${result.score} ${result.score == 1 ? "point" : "points"} ${result.five > 0 ? `(${result.five} ${result.five == 1 ? "BINGO" : "BINGOs"})` : ""}`;
 } //loadBoard
 
+async function updateLeaderboard(users) {
+  for (let index = 0; index < users.length; index++) {
+    if (users[index].userid == streamerID) {
+      //dont shuffle board for streamer
+      users[index].board = structuredClone(board);
+    } else {
+      users[index].board = shuffleArraySeed(structuredClone(board), users[index].userid);
+    }
+    users[index].result = checkWin(users[index].board);
+  }
+
+  users.sort((a, b) => a.result.score - b.result.score);
+
+  elements.leaderboardCount.innerHTML = users.length;
+  elements.leaderboard.innerHTML = "";
+  for (let index = 0; index < users.length; index++) {
+    elements.leaderboard.insertAdjacentHTML(
+      "afterbegin",
+      `<li class="list-group-item ${users[index].userid == TWITCH.userID ? "active" : ""}">
+      ${addBadges(users[index].userid == streamerID ? "streamer" : [], users[index].userid)} ${users[index].username}:
+       ${users[index].result.score} ${users[index].result.score == 1 ? "point" : "points"} 
+       ${users[index].result.five > 0 ? `(${users[index].result.five} ${users[index].result.five == 1 ? "BINGO" : "BINGOs"})` : ""}
+       <i class="material-icons notranslate float-end cursor-pointer" onmouseout="hidePreview()" onmouseover="showPreview('${users[index].username}','${users[index].userid}')">preview</i>
+       </li>`
+    );
+  }
+} //updateLeaderboard
+
 async function refresh() {
   elements.refresh.innerHTML = spinner;
   elements.refresh.disabled = true;
+  elements.leaderboard.innerHTML = spinner;
+  elements.leaderboardCount.innerHTML = "Loading...";
 
   let requestOptions = {
     method: "GET",
@@ -83,10 +142,19 @@ async function refresh() {
     let response = await fetch(`https://bingo.guessr.tv/${elements.channel.innerText}/refresh`, requestOptions);
     let result = await response.json();
     console.log(result);
-    allowDiagonals = result.allowDiagonals ?? false;
-    loadBoard(result.board);
-    elements.time.innerHTML = `Updated on: ${new Date(result.time)}`;
-    showToast("Board refreshed", "info", 3000);
+
+    allowDiagonals = result.data.allowDiagonals ?? false;
+    elements.time.innerHTML = `Updated on: ${new Date(result.data.time)}`;
+    streamerID = result.data.userid;
+
+    for (let index = 0; index < result.data.board.length; index++) {
+      board[index].value = result.data.board[index].value;
+      board[index].filled = result.data.board[index].filled;
+    }
+    loadBoard();
+    updateLeaderboard(result.users);
+
+    showToast("Board & leaderboard refreshed", "info", 3000);
     elements.refresh.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
     setTimeout(() => {
       elements.refresh.disabled = false;
@@ -275,6 +343,36 @@ async function join() {
   }
 } //join
 
+function showPreview(username, userid) {
+  elements.previewUsername.innerText = `${username}'s bingo board`;
+  let preview = [];
+
+  if (userid == streamerID) {
+    //dont shuffle board for streamer
+    preview = structuredClone(board);
+  } else {
+    preview = shuffleArraySeed(structuredClone(board), userid);
+  }
+
+  for (let j = 0; j < board.length; j++) {
+    elements.previewCells[j].classList.remove("filled");
+  }
+
+  for (let index = 0; index < elements.previewCells.length; index++) {
+    elements.previewCells[index].innerText = preview[index].value;
+    elements.previewCells[index].title = preview[index].value;
+    if (preview[index].filled) {
+      elements.previewCells[index].classList.add("filled");
+    }
+  }
+
+  elements.previewBoard.style.display = "";
+} //showPreview
+
+function hidePreview() {
+  elements.previewBoard.style.display = "none";
+} //hidePreview
+
 window.onload = async function () {
   loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
 
@@ -287,7 +385,17 @@ window.onload = async function () {
 
   if (TWITCH?.channel) {
     loadInfo();
+
+    await join();
+
+    elements.board.classList.remove("blur");
+    board = [...elements.cells].map((x) => {
+      return { value: x.innerText, filled: x.classList.contains("filled") };
+    });
+
+    loadBoard();
   }
 
   enableTooltips();
+  customBadges = await getCustomBadges();
 }; //onload
