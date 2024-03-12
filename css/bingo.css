@@ -5,10 +5,15 @@
   background-color: var(--bs-tertiary-bg);
   border-radius: 6px;
   padding: 20px;
-  cursor: move;
+  cursor: grab;
   box-shadow: 3px 3px 10px #000000;
   z-index: 10;
   scale: 1;
+  user-select: none;
+}
+
+#board:active {
+  cursor: grabbing;
 }
 
 #previewBoard {
