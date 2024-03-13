@@ -12,7 +12,7 @@ const suggestions = [
   "Empty chat",
   "Gambling",
   "Sleeping",
-  "Korean dancer",
+  "Dancing",
   "#AD stream",
   "Sponsors overlay",
   "Reacting to videos",
@@ -38,6 +38,10 @@ const suggestions = [
   "Top cheerer 10k+ bits",
   "Only mods & VIPs in chat",
   "Game older than 20 years",
+  "24/7 music stream",
+  "Kid streaming",
+  "Activate Windows watermark",
+  "Singing",
 ];
 
 const elements = {
@@ -48,25 +52,30 @@ const elements = {
   seenChannels: document.getElementById("seenChannels"),
   resetSeenChannels: document.getElementById("resetSeenChannels"),
   loginExpiredModal: document.getElementById("loginExpiredModal"),
-  editModal: document.getElementById("editModal"),
   allowDiagonals: document.getElementById("allowDiagonals"),
-  bingoItems: document.querySelectorAll(".bingo-item"),
-  randomize: document.querySelectorAll(".bingo-random"),
-  bingoSave: document.getElementById("bingoSave"),
+  twitchBingo: document.getElementById("twitchBingo"),
+  customBingo: document.getElementById("customBingo"),
+  bingoTypeDescription: document.getElementById("bingoTypeDescription"),
+  customBingoName: document.getElementById("customBingoName"),
+  bingoSize: document.getElementById("bingoSize"),
+  bingoSizeLabel: document.getElementById("bingoSizeLabel"),
+  oddInputs: document.getElementById("oddInputs"),
+  evenInputs: document.getElementById("evenInputs"),
   board: document.getElementById("board"),
+  previewDiv: document.getElementById("previewDiv"),
   previewBoard: document.getElementById("previewBoard"),
   previewUsername: document.getElementById("previewUsername"),
-  cells: document.querySelectorAll(".bingo-cell"),
-  previewCells: document.querySelectorAll(".bingo-cell-preview"),
   toastContainer: document.getElementById("toastContainer"),
-  welcomeCard: document.getElementById("welcomeCard"),
+  settingsCard: document.getElementById("settingsCard"),
   start: document.getElementById("start"),
   mainCard: document.getElementById("mainCard"),
+  twitchEmbedDiv: document.getElementById("twitchEmbedDiv"),
   twitchEmbed: document.getElementById("twitchEmbed"),
   boardSize: document.getElementById("boardSize"),
   boardOpacity: document.getElementById("boardOpacity"),
   loginButton: document.getElementById("loginButton"),
   loginInfo: document.getElementById("loginInfo"),
+  loginDescription: document.getElementById("loginDescription"),
   loginInfoPFP: document.getElementById("loginInfoPFP"),
   bingoLink: document.getElementById("bingoLink"),
   copyButton: document.getElementById("copyButton"),
@@ -81,7 +90,7 @@ let TWITCH = {
   userID: "",
 };
 
-let loginExpiredModal, editModal;
+let loginExpiredModal;
 let copyButton;
 let mainList = [];
 let seenChannels = [];
@@ -93,34 +102,10 @@ let refreshCooldown;
 let channelName;
 let skipSexual = true;
 let bingoPopover;
+let bingoType = "twitch";
+let bingoSize = 5;
 
-let board = [
-  { filled: false, value: "1" },
-  { filled: false, value: "2" },
-  { filled: false, value: "3" },
-  { filled: false, value: "4" },
-  { filled: false, value: "5" },
-  { filled: false, value: "6" },
-  { filled: false, value: "7" },
-  { filled: false, value: "8" },
-  { filled: false, value: "9" },
-  { filled: false, value: "10" },
-  { filled: false, value: "11" },
-  { filled: false, value: "12" },
-  { filled: false, value: "13" },
-  { filled: false, value: "14" },
-  { filled: false, value: "15" },
-  { filled: false, value: "16" },
-  { filled: false, value: "17" },
-  { filled: false, value: "18" },
-  { filled: false, value: "19" },
-  { filled: false, value: "20" },
-  { filled: false, value: "21" },
-  { filled: false, value: "22" },
-  { filled: false, value: "23" },
-  { filled: false, value: "24" },
-  { filled: false, value: "25" },
-];
+let board = [];
 let won = false;
 let boardCreated = false;
 
@@ -250,82 +235,127 @@ function dragElement() {
   elements.board.addEventListener("mousedown", mouseDownHandler);
 } //dragElement
 
+function fillCell(event) {
+  if (!boardCreated) {
+    return;
+  }
+  clearTimeout(refreshCooldown);
+  event.target.classList.toggle("filled");
+  let cellNumber = parseInt(event.target.dataset.id, 10) - 1;
+  board[cellNumber].filled = !board[cellNumber].filled;
+  checkWin(board, true);
+  if (TWITCH?.channel) {
+    refreshCooldown = setTimeout(() => {
+      updateLeaderboard();
+    }, 3000);
+  }
+} //fillCell
+
 function randomize(event) {
   const id = event.target.dataset.itemId;
   const input = document.querySelector(`[data-item-id="${id}"]`);
-  const taken = [...elements.bingoItems].map((x) => x.value);
+  const bingoItems = document.querySelectorAll(".bingo-item");
+  const taken = [...bingoItems].map((x) => x.value).filter(Boolean);
   let random = suggestions[Math.floor(Math.random() * suggestions.length)];
-
+  if (taken.length >= suggestions.length) {
+    showToast("No more presets left", "danger", 3000);
+    return;
+  }
   while (taken.includes(random)) {
     random = suggestions[Math.floor(Math.random() * suggestions.length)];
   }
 
   input.value = random;
+  loadItems();
 } //randomize
 
 function randomizeAll() {
+  const bingoItems = document.querySelectorAll(".bingo-item");
   let options = shuffleArray(structuredClone(suggestions));
-  for (let index = 0; index < elements.bingoItems.length; index++) {
-    elements.bingoItems[index].value = options.pop();
+  for (let index = 0; index < bingoItems.length; index++) {
+    let option = options.pop();
+    if (!option) {
+      showToast("No more presets left", "danger", 3000);
+      break;
+    }
+    bingoItems[index].value = option;
   }
+  loadItems();
 } //randomizeAll
 
 function clearAll() {
-  for (let index = 0; index < elements.bingoItems.length; index++) {
-    elements.bingoItems[index].value = "";
+  const bingoItems = document.querySelectorAll(".bingo-item");
+  for (let index = 0; index < bingoItems.length; index++) {
+    bingoItems[index].value = "";
   }
 } //clearAll
 
 async function start() {
+  elements.start.innerHTML = spinner;
+
+  await uploadBoard();
   if (!boardCreated) {
-    showToast("You need to create and save your board first", "warning", 3000);
-    editModal.show();
+    elements.start.innerHTML = `<i class="material-icons notranslate">celebration</i> Start!`;
     return;
   }
 
-  elements.start.innerHTML = spinner;
+  if (bingoType == "twitch") {
+    await getMainList();
+    shuffleArray(mainList);
+    nextStream();
+    elements.twitchEmbedDiv.style.display = "";
+  }
 
-  await getMainList();
-  shuffleArray(mainList);
-  nextStream();
-
-  elements.welcomeCard.style.display = "none";
-  elements.twitchEmbed.style.display = "";
+  elements.settingsCard.style.display = "none";
   elements.board.style.display = "";
   elements.mainCard.style.display = "";
 } //start
 
-async function bingoSave() {
-  elements.bingoSave.innerHTML = spinner;
+function loadItems() {
   let itemValues = [];
+  const bingoItems = document.querySelectorAll(".bingo-item");
+  const cells = document.querySelectorAll(".bingo-cell");
+
+  itemValues = [...bingoItems].map((x) => x.value.trim());
+
+  for (let index = 0; index < cells.length; index++) {
+    cells[index].innerText = itemValues[index];
+    cells[index].title = itemValues[index];
+    cells[index].classList.remove("filled");
+    board[index].value = itemValues[index];
+    board[index].filled = false;
+  }
+} //loadItems
+
+async function uploadBoard() {
+  let itemValues = [];
+  const bingoItems = document.querySelectorAll(".bingo-item");
+  const cells = document.querySelectorAll(".bingo-cell");
   if (TWITCH?.userID) {
     itemValues = shuffleArraySeed(
-      [...elements.bingoItems].map((x) => x.value.trim()),
+      [...bingoItems].map((x) => x.value.trim()),
       TWITCH.userID
     );
   } else {
-    itemValues = shuffleArray([...elements.bingoItems].map((x) => x.value.trim()));
+    itemValues = shuffleArray([...bingoItems].map((x) => x.value.trim()));
   }
 
   if (itemValues.includes("")) {
     showToast("Board must be full", "warning", 2000);
-    elements.bingoSave.innerHTML = `<i class="material-icons notranslate">save</i> Save`;
     return;
   }
   if (hasDuplicates(itemValues)) {
     showToast("Board must not have duplicates", "warning", 2000);
-    elements.bingoSave.innerHTML = `<i class="material-icons notranslate">save</i> Save`;
     return;
   }
 
-  for (let index = 0; index < elements.cells.length; index++) {
-    elements.cells[index].innerText = itemValues[index];
-    elements.cells[index].title = itemValues[index];
-    elements.cells[index].classList.remove("filled");
+  for (let index = 0; index < cells.length; index++) {
+    cells[index].innerText = itemValues[index];
+    cells[index].title = itemValues[index];
+    cells[index].classList.remove("filled");
     board[index].value = itemValues[index];
     board[index].filled = false;
   }
-  won = false;
 
   if (TWITCH?.access_token) {
     let body = JSON.stringify({
@@ -334,6 +364,7 @@ async function bingoSave() {
       access_token: TWITCH.access_token,
       time: new Date(),
       board: board,
+      title: bingoType == "twitch" ? "Twitch Bingo" : elements.customBingoName.value || "Custom Bingo",
       allowDiagonals: elements.allowDiagonals.checked,
     });
     let requestOptions = {
@@ -348,154 +379,106 @@ async function bingoSave() {
     try {
       let response = await fetch(`https://bingo.guessr.tv/save`, requestOptions);
       let result = await response.json();
+      if (response.status == 200) {
+        boardCreated = true;
+      }
       showToast(result.message, "info", 3000);
     } catch (error) {
       showToast("Could not upload board", "danger", 3000);
       console.log("save error", error);
     }
+  } else {
+    boardCreated = true;
   }
-
-  boardCreated = true;
-  editModal.hide();
-  elements.bingoSave.innerHTML = `<i class="material-icons notranslate">save</i> Save`;
-} //bingoSave
+} //uploadBoard
 
 function checkWin(board, streamer = false) {
-  let fives = [
-    [0, 1, 2, 3, 4],
-    [5, 6, 7, 8, 9],
-    [10, 11, 12, 13, 14],
-    [15, 16, 17, 18, 19],
-    [20, 21, 22, 23, 24],
-    [0, 5, 10, 15, 20],
-    [1, 6, 11, 16, 21],
-    [2, 7, 12, 17, 22],
-    [3, 8, 13, 18, 23],
-    [4, 9, 14, 19, 24],
-  ];
+  let rows = [];
+  let columns = [];
+  let diagonals = [[], []];
+  let size = Math.sqrt(board.length);
 
-  let fours = [
-    [0, 1, 2, 3],
-    [1, 2, 3, 4],
-    [5, 6, 7, 8],
-    [6, 7, 8, 9],
-    [10, 11, 12, 13],
-    [11, 12, 13, 14],
-    [15, 16, 17, 18],
-    [16, 17, 18, 19],
-    [20, 21, 22, 23],
-    [21, 22, 23, 24],
-    [0, 5, 10, 15],
-    [5, 10, 15, 20],
-    [1, 6, 11, 16],
-    [6, 11, 16, 21],
-    [2, 7, 12, 17],
-    [7, 12, 17, 22],
-    [3, 8, 13, 18],
-    [8, 13, 18, 23],
-    [4, 9, 14, 19],
-    [9, 14, 19, 24],
-    [0, 2, 3, 4],
-    [0, 1, 3, 4],
-    [0, 1, 2, 4],
-    [5, 7, 8, 9],
-    [5, 6, 8, 9],
-    [5, 6, 7, 9],
-    [10, 12, 13, 14],
-    [10, 11, 13, 14],
-    [10, 11, 12, 14],
-    [15, 17, 18, 19],
-    [15, 16, 18, 19],
-    [15, 16, 17, 19],
-    [20, 22, 23, 24],
-    [20, 21, 23, 24],
-    [20, 21, 22, 24],
-    [0, 10, 15, 20],
-    [0, 5, 15, 20],
-    [0, 5, 10, 20],
-    [1, 11, 16, 21],
-    [1, 6, 16, 21],
-    [1, 6, 11, 21],
-    [2, 12, 17, 22],
-    [2, 7, 17, 22],
-    [2, 7, 12, 22],
-    [3, 13, 18, 23],
-    [3, 8, 18, 23],
-    [3, 8, 13, 23],
-    [4, 14, 19, 24],
-    [4, 9, 19, 24],
-    [4, 9, 14, 24],
-  ];
+  for (let index = 0; index < size; index++) {
+    let currentRow = [];
+    for (let index2 = 0; index2 < size; index2++) {
+      currentRow.push(board[index2 + index * size]);
+    }
+    rows.push(currentRow);
+  }
 
-  let threes = [
-    [0, 1, 2],
-    [1, 2, 3],
-    [2, 3, 4],
-    [5, 6, 7],
-    [6, 7, 8],
-    [7, 8, 9],
-    [10, 11, 12],
-    [11, 12, 13],
-    [12, 13, 14],
-    [15, 16, 17],
-    [16, 17, 18],
-    [17, 18, 19],
-    [20, 21, 22],
-    [21, 22, 23],
-    [22, 23, 24],
-    [0, 5, 10],
-    [5, 10, 15],
-    [10, 15, 20],
-    [1, 6, 11],
-    [6, 11, 16],
-    [11, 16, 21],
-    [2, 7, 12],
-    [7, 12, 17],
-    [12, 17, 22],
-    [3, 8, 13],
-    [8, 13, 18],
-    [13, 18, 23],
-    [4, 9, 14],
-    [9, 14, 19],
-    [14, 19, 24],
-  ];
+  for (let index = 0; index < rows.length; index++) {
+    let currentColumn = [];
+    for (let index2 = 0; index2 < rows[index].length; index2++) {
+      currentColumn.push(rows[index2][index]);
+    }
+    columns.push(currentColumn);
+  }
 
-  if (elements.allowDiagonals.checked) {
-    fives.push([0, 6, 12, 18, 24], [4, 8, 12, 16, 20]);
-    fours.push([0, 6, 12, 18], [4, 8, 12, 16], [6, 12, 18, 24], [8, 12, 16, 20], [0, 12, 18, 24], [0, 6, 18, 24], [0, 6, 12, 24], [4, 12, 16, 20], [4, 8, 16, 20], [4, 8, 12, 20]);
-    threes.push([0, 6, 12], [6, 12, 18], [12, 18, 24], [4, 8, 12], [8, 12, 16], [12, 16, 20]);
+  for (let index = 0; index < size; index++) {
+    diagonals[0].push(rows[index][index]);
+  }
+  for (let index = 0; index < size; index++) {
+    diagonals[1].push(rows[index][size - index - 1]);
   }
 
   let result = {
-    five: 0,
-    four: 0,
-    three: 0,
+    bingos: 0,
     score: 0,
   };
 
-  for (let index = 0; index < fives.length; index++) {
-    if (board[fives[index][0]].filled && board[fives[index][1]].filled && board[fives[index][2]].filled && board[fives[index][3]].filled && board[fives[index][4]].filled) {
-      result.five++;
+  let scoring = {
+    0: 0,
+    1: 0,
+    2: 1,
+    3: 10,
+    4: 50,
+    5: 100,
+    6: 200,
+    7: 300,
+    8: 400,
+    9: 500,
+    10: 1000,
+  };
+
+  for (let index = 0; index < size; index++) {
+    let currentRow = rows[index];
+    let currentColumn = columns[index];
+    let currentRowScore = currentRow.reduce((score, cell) => score + cell.filled, 0);
+    let currentColumnScore = currentColumn.reduce((score, cell) => score + cell.filled, 0);
+
+    result.score += scoring[currentRowScore];
+    result.score += scoring[currentColumnScore];
+
+    if (currentRow.every((e) => e.filled)) {
+      result.bingos++;
+    }
+
+    if (currentColumn.every((e) => e.filled)) {
+      result.bingos++;
     }
   }
 
-  for (let index = 0; index < fours.length; index++) {
-    if (board[fours[index][0]].filled && board[fours[index][1]].filled && board[fours[index][2]].filled && board[fours[index][3]].filled) {
-      result.four++;
-    }
-  }
-  for (let index = 0; index < threes.length; index++) {
-    if (board[threes[index][0]].filled && board[threes[index][1]].filled && board[threes[index][2]].filled) {
-      result.three++;
-    }
-  }
-  result.score = result.three + result.four * 10 + result.five * 110;
+  if (elements.allowDiagonals.checked) {
+    let diagonalScore1 = diagonals[0].reduce((score, cell) => score + cell.filled, 0);
+    let diagonalScore2 = diagonals[1].reduce((score, cell) => score + cell.filled, 0);
+    result.score += scoring[diagonalScore1];
+    result.score += scoring[diagonalScore2];
 
-  if (streamer && result.five > 0 && !won) {
+    if (diagonals[0].every((e) => e.filled)) {
+      result.bingos++;
+    }
+    if (diagonals[1].every((e) => e.filled)) {
+      result.bingos++;
+    }
+  }
+
+  result.score += result.bingos * 1000;
+
+  if (streamer && result.bingos > 0 && !won) {
     showConfetti(2);
     won = true;
   }
-  if (streamer && result.five == 0) {
+  if (streamer && result.bingos == 0) {
     won = false;
   }
   return result;
@@ -511,6 +494,7 @@ function login() {
 
 function resetLoginButton() {
   elements.loginButton.innerHTML = `<span class="twitch-icon"></span> Sign in with Twitch`;
+  elements.loginDescription.style.display = "";
 } //resetLoginButton
 
 function logout() {
@@ -518,6 +502,7 @@ function logout() {
   localStorage.setItem("TWITCH", JSON.stringify(TWITCH));
   elements.loginButton.disabled = false;
   elements.loginButton.innerHTML = `<span class="twitch-icon"></span> Sign in with Twitch`;
+  elements.loginDescription.style.display = "";
   elements.loginInfo.style.display = "none";
   elements.loginInfoPFP.src = "/pics/donk.png";
   elements.bingoLink.value = `https://bingo.guessr.tv`;
@@ -534,8 +519,9 @@ async function loadPFP() {
 function loadInfo() {
   TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
   elements.loginButton.disabled = true;
-  elements.loginButton.innerHTML = `<span class="twitch-icon"></span><i class="material-icons notranslate">done</i>Logged in`;
+  elements.loginButton.innerHTML = `<span class="twitch-icon"></span><i class="material-icons notranslate">done</i>Logged in as <strong>${TWITCH.channel}</strong>`;
   elements.loginInfo.style.display = "";
+  elements.loginDescription.style.display = "none";
   elements.bingoLink.value = `https://bingo.guessr.tv/${TWITCH.channel}`;
   loadPFP();
 } //loadInfo
@@ -593,7 +579,7 @@ async function updateLeaderboard() {
     elements.leaderboardCount.innerHTML = users.length;
     elements.leaderboard.innerHTML = "";
     for (let index = 0; index < users.length; index++) {
-      if (!chatWinner && users[index].result.five > 0) {
+      if (!chatWinner && users[index].result.bingos > 0) {
         chatWinner = true;
         bingoPopover.show();
         setTimeout(() => {
@@ -603,10 +589,13 @@ async function updateLeaderboard() {
       elements.leaderboard.insertAdjacentHTML(
         "afterbegin",
         `<li class="list-group-item ${users[index].userid == TWITCH.userID ? "active" : ""}">
-        ${addBadges(users[index].userid == TWITCH.userID ? "streamer" : [], users[index].userid)} ${users[index].username}: ${users[index].result.score} ${
+        ${addBadges(users[index].userid == TWITCH.userID ? "streamer" : [], users[index].userid)} ${users[index].username}: ${users[index].result.score.toLocaleString()} ${
           users[index].result.score == 1 ? "point" : "points"
-        } ${users[index].result.five > 0 ? `(${users[index].result.five} ${users[index].result.five == 1 ? "BINGO" : "BINGOs"})` : ""}
-        <i class="material-icons notranslate float-end cursor-pointer" onmouseout="hidePreview()" onmouseover="showPreview('${users[index].username}','${users[index].userid}')">preview</i>
+        } ${users[index].result.bingos > 0 ? `(${users[index].result.bingos} ${users[index].result.bingos == 1 ? "BINGO" : "BINGOs"})` : ""}
+        <i class="material-icons notranslate float-end cursor-pointer" 
+        onmouseout="hidePreview()" onmouseover="showPreview('${users[index].username}','${users[index].userid}',${users[index].result.score},${users[index].result.bingos})">
+        preview
+        </i>
         </li>`
       );
     }
@@ -616,8 +605,9 @@ async function updateLeaderboard() {
   }
 } //updateLeaderboard
 
-function showPreview(username, userid) {
-  elements.previewUsername.innerText = `${username}'s bingo board`;
+function showPreview(username, userid, score, bingos) {
+  elements.previewUsername.innerHTML = `
+  ${encodeHTML(username)}'s bingo board<br>Score: ${score.toLocaleString()} ${score == 1 ? "point" : "points"} ${bingos > 0 ? `(${bingos} ${bingos == 1 ? "BINGO" : "BINGOs"})` : ""}`;
   let preview = [];
 
   if (userid == TWITCH.userID) {
@@ -627,24 +617,104 @@ function showPreview(username, userid) {
     preview = shuffleArraySeed(structuredClone(board), userid);
   }
 
+  const previewCells = document.querySelectorAll(".bingo-cell-preview");
+
   for (let j = 0; j < board.length; j++) {
-    elements.previewCells[j].classList.remove("filled");
+    previewCells[j].classList.remove("filled");
   }
 
-  for (let index = 0; index < elements.previewCells.length; index++) {
-    elements.previewCells[index].innerText = preview[index].value;
-    elements.previewCells[index].title = preview[index].value;
+  for (let index = 0; index < previewCells.length; index++) {
+    previewCells[index].innerText = preview[index].value;
+    previewCells[index].title = preview[index].value;
     if (preview[index].filled) {
-      elements.previewCells[index].classList.add("filled");
+      previewCells[index].classList.add("filled");
     }
   }
 
-  elements.previewBoard.style.display = "";
+  elements.previewDiv.style.display = "";
 } //showPreview
 
 function hidePreview() {
-  elements.previewBoard.style.display = "none";
+  elements.previewDiv.style.display = "none";
 } //hidePreview
+
+function loadInputs() {
+  elements.oddInputs.innerHTML = "";
+  elements.evenInputs.innerHTML = "";
+  board = [];
+  let size = bingoSize * bingoSize || 25;
+  for (let index = 0; index < size; index++) {
+    board.push({ filled: false, value: `${index + 1}` });
+
+    elements[`${(index + 1) % 2 == 0 ? "even" : "odd"}Inputs`].insertAdjacentHTML(
+      "beforeend",
+      `<div class="input-group mb-1">
+        <input type="text" class="form-control bingo-item" oninput="loadItems()" placeholder="Bingo item #${index + 1}" data-item-id="${index + 1}" aria-label="Bingo item #${index + 1}" />
+        <button class="btn btn-outline-secondary" onclick="randomize(event)" data-item-id="${index + 1}" type="button" title="Fill with random item">
+          <i class="material-icons notranslate pointer-events-none">casino</i>
+        </button>
+      </div>`
+    );
+  }
+} //loadInputs
+
+function loadBoard() {
+  elements.board.innerHTML = "";
+  elements.previewBoard.innerHTML = "";
+  elements.board.style.top = "6%";
+  elements.board.style.left = "6%";
+  elements.board.style.scale = 1;
+
+  let size = bingoSize || 5;
+  let order = 0;
+  for (let index = 0; index < size; index++) {
+    let row = "";
+    let romPreview = "";
+    for (let index2 = 0; index2 < size; index2++) {
+      order++;
+      let extraStyle = "";
+      // :)
+      if (index == 0 && index2 == 0) {
+        extraStyle = `style="border-top-left-radius: 6px"`;
+      }
+      if (index == 0 && index2 == size - 1) {
+        extraStyle = `style="border-top-right-radius: 6px"`;
+      }
+      if (index == size - 1 && index2 == 0) {
+        extraStyle = `style="border-bottom-left-radius: 6px"`;
+      }
+      if (index == size - 1 && index2 == size - 1) {
+        extraStyle = `style="border-bottom-right-radius: 6px"`;
+      }
+      if (size == 1) {
+        extraStyle = `style="border-radius: 6px"`;
+      }
+
+      row += `
+      <div onclick="fillCell(event)" data-id="${order}" class="col bingo-cell" ${extraStyle}>
+      ${order}
+      </div>`;
+      romPreview += `
+      <div data-id="${order}" class="col bingo-cell-preview" ${extraStyle}>
+      ${order}
+      </div>`;
+    }
+
+    elements.board.insertAdjacentHTML(
+      "beforeend",
+      `<div class="row m-0">
+      ${row}
+      </div>`
+    );
+
+    elements.previewBoard.insertAdjacentHTML(
+      "beforeend",
+      `<div class="row m-0">
+      ${romPreview}
+      </div>`
+    );
+  }
+} //loadBoard
 
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels_bingo")) || [];
@@ -661,7 +731,6 @@ window.onload = async function () {
   };
 
   loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
-  editModal = new bootstrap.Modal(elements.editModal);
   copyButton = new bootstrap.Tooltip(elements.copyButton, {
     trigger: "hover",
   });
@@ -680,25 +749,28 @@ window.onload = async function () {
     sendUsername("/bingo");
   }
 
-  for (let index = 0; index < elements.cells.length; index++) {
-    elements.cells[index].onclick = (event) => {
-      clearTimeout(refreshCooldown);
-      event.target.classList.toggle("filled");
-      let cellNumber = parseInt(event.target.dataset.id, 10) - 1;
-      board[cellNumber].filled = !board[cellNumber].filled;
-      checkWin(board, true);
-      if (TWITCH?.channel) {
-        refreshCooldown = setTimeout(() => {
-          updateLeaderboard();
-        }, 3000);
-      }
-    };
-  }
-  for (let index = 0; index < elements.randomize.length; index++) {
-    elements.randomize[index].onclick = (event) => {
-      randomize(event);
-    };
-  }
+  elements.twitchBingo.onchange = function () {
+    if (this.checked) {
+      bingoType = "twitch";
+      elements.bingoTypeDescription.innerHTML = "Random Twitch streams will be shown";
+      elements.customBingoName.style.display = "none";
+    }
+  };
+
+  elements.customBingo.onchange = function () {
+    if (this.checked) {
+      bingoType = "custom";
+      elements.bingoTypeDescription.innerHTML = "A custom bingo board that can be used to play with your viewers";
+      elements.customBingoName.style.display = "";
+    }
+  };
+
+  elements.bingoSize.oninput = function () {
+    bingoSize = parseInt(this.value, 10);
+    elements.bingoSizeLabel.innerHTML = `Board size: ${bingoSize}x${bingoSize} (${bingoSize * bingoSize} ${bingoSize == 1 ? "item" : "items"})`;
+    loadInputs();
+    loadBoard();
+  };
 
   elements.skipSexual.onchange = function () {
     skipSexual = this.checked;
@@ -729,6 +801,7 @@ window.onload = async function () {
 
   dragElement();
   enableTooltips();
-
+  loadInputs();
+  loadBoard();
   customBadges = await getCustomBadges();
 }; //onload

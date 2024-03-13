@@ -16,14 +16,28 @@
   cursor: grabbing;
 }
 
-#previewBoard {
+#previewDiv {
   position: fixed;
-  width: max-content;
-  border: 2px solid var(--bs-tertiary-bg);
-  background-color: var(--bs-secondary-border-subtle);
-  border-radius: 6px;
-  padding: 20px;
+  z-index: 4000;
+  scale: 1;
+  pointer-events: none;
   box-shadow: 3px 3px 10px #000000;
+  border-radius: 6px;
+}
+
+#previewDiv > .card > .card-body {
+  background-color: var(--bs-secondary-border-subtle);
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  align-self: center;
+}
+
+#previewBoard {
+  width: max-content;
+  background-color: var(--bs-secondary-border-subtle);
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  padding: 20px;
   z-index: 4000;
   scale: 1;
   pointer-events: none;
@@ -75,17 +89,42 @@
   max-width: 300px;
 }
 
-#twitchEmbed {
+#twitchEmbedDiv {
   height: 85vh;
   z-index: 1;
 }
 
-#welcomeCard {
-  height: 85vh;
+#twitchEmbed {
+  height: 100%;
 }
 
-#welcomeCard > .card {
-  top: 25%;
-  left: 25%;
-  width: 50%;
+#settingsCard > .card-body {
+  height: 90vh;
+  overflow: auto;
+}
+
+@keyframes card-easein {
+  from {
+    opacity: 0;
+    top: -10px;
+  }
+  to {
+    opacity: 1;
+    top: 0px;
+  }
+}
+
+#customBingoName {
+  animation: card-easein 0.1s ease-in;
+}
+
+.item-input-placeholder > * {
+  height: 38px;
+  border-radius: 6px;
+}
+
+.board-placeholder {
+  width: 572px;
+  height: 572px;
+  border-radius: 6px;
 }

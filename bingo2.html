@@ -30,10 +30,12 @@
 
     <script src="https://guessr.tv/js/bootstrap.bundle.min.js" defer></script>
     <script src="https://guessr.tv/js/confetti.min.js" defer></script>
-    <script src="https://guessr.tv/js/functions.min.js" defer></script>
+    <script src="/js/functions.min.js" defer></script>
     <script src="/js/bingo2.js" defer></script>
   </head>
   <body>
+    <noscript><div class="alert alert-danger" role="alert">WARNING! JavaScript is disabled. This site will not work properly without it.</div></noscript>
+
     <div class="modal" id="loginExpiredModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -63,7 +65,7 @@
       </li>
       <li class="nav-item">
         <a class="nav-link active site-link" aria-current="page" target="_blank" rel="noopener noreferrer" href="https://guessr.tv/bingo.html">
-          <i class="material-icons notranslate">casino</i> Bingo<br />beta :)
+          <i class="material-icons notranslate">grid_on</i> Bingo
         </a>
       </li>
     </ul>
@@ -79,54 +81,25 @@
       </div>
     </div>
 
-    <div class="container-fluid" id="previewBoard" style="top: 5%; left: 30%; display: none">
-      <h4 id="previewUsername" class="text-center"></h4>
-      <div class="row m-0">
-        <div data-id="1" class="col bingo-cell-preview" style="border-top-left-radius: 6px">1</div>
-        <div data-id="2" class="col bingo-cell-preview">2</div>
-        <div data-id="3" class="col bingo-cell-preview">3</div>
-        <div data-id="4" class="col bingo-cell-preview">4</div>
-        <div data-id="5" class="col bingo-cell-preview" style="border-top-right-radius: 6px">5</div>
+    <div id="previewDiv" style="top: 5%; right: 30%; display: none">
+      <div class="card">
+        <div class="card-header">
+          <h4 id="previewUsername" class="text-center"></h4>
+        </div>
+        <div class="card-body p-0">
+          <div id="previewBoard"></div>
+        </div>
       </div>
-      <div class="row m-0">
-        <div data-id="6" class="col bingo-cell-preview">6</div>
-        <div data-id="7" class="col bingo-cell-preview">7</div>
-        <div data-id="8" class="col bingo-cell-preview">8</div>
-        <div data-id="9" class="col bingo-cell-preview">9</div>
-        <div data-id="10" class="col bingo-cell-preview">10</div>
-      </div>
-      <div class="row m-0">
-        <div data-id="11" class="col bingo-cell-preview">11</div>
-        <div data-id="12" class="col bingo-cell-preview">12</div>
-        <div data-id="13" class="col bingo-cell-preview">13</div>
-        <div data-id="14" class="col bingo-cell-preview">14</div>
-        <div data-id="15" class="col bingo-cell-preview">15</div>
-      </div>
-      <div class="row m-0">
-        <div data-id="16" class="col bingo-cell-preview">16</div>
-        <div data-id="17" class="col bingo-cell-preview">17</div>
-        <div data-id="18" class="col bingo-cell-preview">18</div>
-        <div data-id="19" class="col bingo-cell-preview">19</div>
-        <div data-id="20" class="col bingo-cell-preview">20</div>
-      </div>
-      <div class="row m-0">
-        <div data-id="21" class="col bingo-cell-preview" style="border-bottom-left-radius: 6px">21</div>
-        <div data-id="22" class="col bingo-cell-preview">22</div>
-        <div data-id="23" class="col bingo-cell-preview">23</div>
-        <div data-id="24" class="col bingo-cell-preview">24</div>
-        <div data-id="25" class="col bingo-cell-preview" style="border-bottom-right-radius: 6px">25</div>
-      </div>
+    </div>
+
+    <div aria-live="polite" aria-atomic="true" class="position-relative">
+      <div id="toastContainer" class="toast-container"></div>
     </div>
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-2">
-          <div aria-live="polite" aria-atomic="true" class="position-relative">
-            <div id="toastContainer" class="toast-container"></div>
-          </div>
-        </div>
         <div class="col text-center">
-          <h1>Twitch Bingo</h1>
+          <h1>${data.title}</h1>
           <h2 class="text-body-secondary mb-5">Playing with <a href="https://twitch.tv/${data.username}" target="_blank" id="channel">${data.username}</a></h2>
 
           <a id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable the bingo board" class="btn btn-twitch" href="#" onclick="login()">
@@ -154,46 +127,13 @@
             </ul>
           </div>
 
-          <div class="container-fluid mt-3 blur" id="board">
-            <div class="row m-0">
-              <div class="col bingo-cell" style="border-top-left-radius: 6px">${board[0]}</div>
-              <div class="col bingo-cell">${board[1]}</div>
-              <div class="col bingo-cell">${board[2]}</div>
-              <div class="col bingo-cell">${board[3]}</div>
-              <div class="col bingo-cell" style="border-top-right-radius: 6px">${board[4]}</div>
-            </div>
-            <div class="row m-0">
-              <div class="col bingo-cell">${board[5]}</div>
-              <div class="col bingo-cell">${board[6]}</div>
-              <div class="col bingo-cell">${board[7]}</div>
-              <div class="col bingo-cell">${board[8]}</div>
-              <div class="col bingo-cell">${board[9]}</div>
-            </div>
-            <div class="row m-0">
-              <div class="col bingo-cell">${board[10]}</div>
-              <div class="col bingo-cell">${board[11]}</div>
-              <div class="col bingo-cell">${board[12]}</div>
-              <div class="col bingo-cell">${board[13]}</div>
-              <div class="col bingo-cell">${board[14]}</div>
-            </div>
-            <div class="row m-0">
-              <div class="col bingo-cell">${board[15]}</div>
-              <div class="col bingo-cell">${board[16]}</div>
-              <div class="col bingo-cell">${board[17]}</div>
-              <div class="col bingo-cell">${board[18]}</div>
-              <div class="col bingo-cell">${board[19]}</div>
-            </div>
-            <div class="row m-0">
-              <div class="col bingo-cell" style="border-bottom-left-radius: 6px">${board[20]}</div>
-              <div class="col bingo-cell">${board[21]}</div>
-              <div class="col bingo-cell">${board[22]}</div>
-              <div class="col bingo-cell">${board[23]}</div>
-              <div class="col bingo-cell" style="border-bottom-right-radius: 6px">${board[24]}</div>
+          <div class="container-fluid mt-3" id="board" style="top: 6%; left: 6%">
+            <div class="placeholder-glow">
+              <span class="placeholder board-placeholder"></span>
             </div>
           </div>
-          <small class="text-body-secondary" id="time">Updated on:</small>
+          <small class="text-body-secondary" id="time">Updated on: Loading...</small>
         </div>
-        <div class="col-2"></div>
       </div>
     </div>
   </body>

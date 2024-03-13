@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Guessr.tv Bingo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="Twitch bingo" />
+    <meta name="description" content="Guessr.tv Bingo" />
     <meta name="keywords" content="guessr.tv, Twitch" />
     <meta property="og:title" content="Guessr.tv Bingo" />
     <meta property="og:site_name" content="Guessr.tv Bingo" />
@@ -12,7 +12,7 @@
     <meta property="og:url" content="https://guessr.tv/bingo" />
     <meta property="og:image" content="https://guessr.tv/pics/guessr.png" />
     <meta property="og:locale" content="en_US" />
-    <meta property="og:description" content="Twitch bingo" />
+    <meta property="og:description" content="Guessr.tv Bingo" />
 
     <link rel="apple-touch-icon" sizes="180x180" href="/pics/icon/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/pics/icon/favicon-32x32.png" />
@@ -117,193 +117,6 @@
       </div>
     </div>
 
-    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="editModalLabel">Edit</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div class="form-check form-switch mb-3">
-              <input class="form-check-input" type="checkbox" role="switch" id="allowDiagonals" />
-              <label class="form-check-label" for="allowDiagonals"><i class="material-icons notranslate">north_east</i>Allow diagonals</label>
-              <br /><small class="text-body-secondary">Count diagonals when checking for winning patterns</small>
-            </div>
-
-            <button type="button" class="btn btn-warning mb-3" onclick="randomizeAll()"><i class="material-icons notranslate pointer-events-none">casino</i> Randomize all</button>
-            <button type="button" class="btn btn-danger mb-3" onclick="clearAll()"><i class="material-icons notranslate pointer-events-none">delete_forever</i> Clear all</button>
-
-            <div class="container-fluid" style="height: 60vh; overflow: auto">
-              <div class="row">
-                <div class="col">
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #1" data-item-id="1" aria-label="Bingo item #1" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="1" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #3" data-item-id="3" aria-label="Bingo item #3" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="3" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #5" data-item-id="5" aria-label="Bingo item #5" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="5" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #7" data-item-id="7" aria-label="Bingo item #7" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="7" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #9" data-item-id="9" aria-label="Bingo item #9" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="9" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #11" data-item-id="11" aria-label="Bingo item #11" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="11" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #13" data-item-id="13" aria-label="Bingo item #13" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="13" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #15" data-item-id="15" aria-label="Bingo item #15" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="15" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #17" data-item-id="17" aria-label="Bingo item #17" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="17" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #19" data-item-id="19" aria-label="Bingo item #19" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="19" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #21" data-item-id="21" aria-label="Bingo item #21" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="21" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #23" data-item-id="23" aria-label="Bingo item #23" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="23" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #25" data-item-id="25" aria-label="Bingo item #25" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="25" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #2" data-item-id="2" aria-label="Bingo item #2" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="2" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #4" data-item-id="4" aria-label="Bingo item #4" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="4" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #6" data-item-id="6" aria-label="Bingo item #6" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="6" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #8" data-item-id="8" aria-label="Bingo item #8" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="8" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #10" data-item-id="10" aria-label="Bingo item #10" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="10" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #12" data-item-id="12" aria-label="Bingo item #12" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="12" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #14" data-item-id="14" aria-label="Bingo item #14" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="14" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #16" data-item-id="16" aria-label="Bingo item #16" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="16" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #18" data-item-id="18" aria-label="Bingo item #18" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="18" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #20" data-item-id="20" aria-label="Bingo item #20" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="20" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #22" data-item-id="22" aria-label="Bingo item #22" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="22" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                  <div class="input-group mb-1">
-                    <input type="text" class="form-control bingo-item" placeholder="Bingo item #24" data-item-id="24" aria-label="Bingo item #24" />
-                    <button class="btn btn-outline-secondary bingo-random" data-item-id="24" type="button" title="Fill with random item">
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-success" onclick="bingoSave()" id="bingoSave"><i class="material-icons notranslate">save</i> Save</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="modal" id="loginExpiredModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -325,6 +138,30 @@
       </div>
     </div>
 
+    <div class="modal fade" id="howToPlayModal" tabindex="-1" aria-labelledby="howToPlayModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="howToPlayModalLabel">How to play</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            1. Sign in with <span class="twitch-icon"></span>Twitch <small class="text-body-secondary">Optional. Allows viewers to play along</small> <br />
+            2. Set the board size and fill it up. If you are playing Twitch bingo you can get random suggestions using the
+            <i class="material-icons notranslate pointer-events-none">casino</i> buttons<br />
+            3. <i class="material-icons notranslate pointer-events-none text-success">celebration</i> <span class="text-success">Start</span><br />
+            <small
+              >If you signed in with Twitch you should share your bingo.guessr.tv link with your viewers.<br />
+              Viewers only need to sign in to join the game, they don't interact with the board. The site will automatically fill the board for viewers on their uniquely shuffled boards
+            </small>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <ul class="nav nav-underline flex-column position-fixed">
       <li class="nav-item">
         <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/">
@@ -332,13 +169,11 @@
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link active site-link" aria-current="page" target="_self" rel="noopener noreferrer" href="/bingo.html"
-          ><i class="material-icons notranslate">casino</i> Bingo<br />beta :)</a
-        >
+        <a class="nav-link active site-link" aria-current="page" target="_self" rel="noopener noreferrer" href="/bingo.html"><i class="material-icons notranslate">grid_on</i> Bingo</a>
       </li>
-      <li class="nav-item">
+      <!-- <li class="nav-item">
         <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/watch.html"><i class="material-icons notranslate">live_tv</i> Watch</a>
-      </li>
+      </li> -->
       <li class="nav-item">
         <a class="nav-link" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="material-icons notranslate">settings</i> Settings</a>
       </li>
@@ -358,153 +193,216 @@
       </div>
     </div>
 
-    <div class="container-fluid" id="board" style="top: 4%; left: 10%; display: none">
-      <div class="row m-0">
-        <div data-id="1" class="col bingo-cell" style="border-top-left-radius: 6px">1</div>
-        <div data-id="2" class="col bingo-cell">2</div>
-        <div data-id="3" class="col bingo-cell">3</div>
-        <div data-id="4" class="col bingo-cell">4</div>
-        <div data-id="5" class="col bingo-cell" style="border-top-right-radius: 6px">5</div>
-      </div>
-      <div class="row m-0">
-        <div data-id="6" class="col bingo-cell">6</div>
-        <div data-id="7" class="col bingo-cell">7</div>
-        <div data-id="8" class="col bingo-cell">8</div>
-        <div data-id="9" class="col bingo-cell">9</div>
-        <div data-id="10" class="col bingo-cell">10</div>
-      </div>
-      <div class="row m-0">
-        <div data-id="11" class="col bingo-cell">11</div>
-        <div data-id="12" class="col bingo-cell">12</div>
-        <div data-id="13" class="col bingo-cell">13</div>
-        <div data-id="14" class="col bingo-cell">14</div>
-        <div data-id="15" class="col bingo-cell">15</div>
-      </div>
-      <div class="row m-0">
-        <div data-id="16" class="col bingo-cell">16</div>
-        <div data-id="17" class="col bingo-cell">17</div>
-        <div data-id="18" class="col bingo-cell">18</div>
-        <div data-id="19" class="col bingo-cell">19</div>
-        <div data-id="20" class="col bingo-cell">20</div>
-      </div>
-      <div class="row m-0">
-        <div data-id="21" class="col bingo-cell" style="border-bottom-left-radius: 6px">21</div>
-        <div data-id="22" class="col bingo-cell">22</div>
-        <div data-id="23" class="col bingo-cell">23</div>
-        <div data-id="24" class="col bingo-cell">24</div>
-        <div data-id="25" class="col bingo-cell" style="border-bottom-right-radius: 6px">25</div>
+    <div class="container-fluid" id="board" style="top: 6%; left: 6%">
+      <div class="placeholder-glow">
+        <span class="placeholder board-placeholder"></span>
       </div>
     </div>
 
-    <div class="container-fluid" id="previewBoard" style="top: 5%; left: 30%; display: none">
-      <h4 id="previewUsername" class="text-center"></h4>
-      <div class="row m-0">
-        <div data-id="1" class="col bingo-cell-preview" style="border-top-left-radius: 6px">1</div>
-        <div data-id="2" class="col bingo-cell-preview">2</div>
-        <div data-id="3" class="col bingo-cell-preview">3</div>
-        <div data-id="4" class="col bingo-cell-preview">4</div>
-        <div data-id="5" class="col bingo-cell-preview" style="border-top-right-radius: 6px">5</div>
+    <div id="previewDiv" style="top: 5%; right: 30%; display: none">
+      <div class="card">
+        <div class="card-header">
+          <h4 id="previewUsername" class="text-center"></h4>
+        </div>
+        <div class="card-body p-0">
+          <div id="previewBoard"></div>
+        </div>
       </div>
-      <div class="row m-0">
-        <div data-id="6" class="col bingo-cell-preview">6</div>
-        <div data-id="7" class="col bingo-cell-preview">7</div>
-        <div data-id="8" class="col bingo-cell-preview">8</div>
-        <div data-id="9" class="col bingo-cell-preview">9</div>
-        <div data-id="10" class="col bingo-cell-preview">10</div>
-      </div>
-      <div class="row m-0">
-        <div data-id="11" class="col bingo-cell-preview">11</div>
-        <div data-id="12" class="col bingo-cell-preview">12</div>
-        <div data-id="13" class="col bingo-cell-preview">13</div>
-        <div data-id="14" class="col bingo-cell-preview">14</div>
-        <div data-id="15" class="col bingo-cell-preview">15</div>
-      </div>
-      <div class="row m-0">
-        <div data-id="16" class="col bingo-cell-preview">16</div>
-        <div data-id="17" class="col bingo-cell-preview">17</div>
-        <div data-id="18" class="col bingo-cell-preview">18</div>
-        <div data-id="19" class="col bingo-cell-preview">19</div>
-        <div data-id="20" class="col bingo-cell-preview">20</div>
-      </div>
-      <div class="row m-0">
-        <div data-id="21" class="col bingo-cell-preview" style="border-bottom-left-radius: 6px">21</div>
-        <div data-id="22" class="col bingo-cell-preview">22</div>
-        <div data-id="23" class="col bingo-cell-preview">23</div>
-        <div data-id="24" class="col bingo-cell-preview">24</div>
-        <div data-id="25" class="col bingo-cell-preview" style="border-bottom-right-radius: 6px">25</div>
-      </div>
+    </div>
+
+    <div aria-live="polite" aria-atomic="true" class="position-relative m-3">
+      <div id="toastContainer" class="toast-container"></div>
     </div>
 
     <div class="container-fluid text-center mt-3">
       <div class="row">
-        <div class="col-1">
-          <div aria-live="polite" aria-atomic="true" class="position-relative">
-            <div id="toastContainer" class="toast-container"></div>
-          </div>
-        </div>
-        <div class="col-11 position-relative">
-          <div id="welcomeCard">
-            <div class="card">
-              <div class="card-header text-center">Twitch bingo</div>
-              <div class="card-body text-start">
-                <h5 class="card-title">How to play:</h5>
+        <div class="col-5"></div>
+        <div class="col-7 position-relative">
+          <div class="card" id="settingsCard">
+            <div class="card-header text-center"><img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv Bingo</div>
+            <div class="card-body text-start">
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#howToPlayModal">
+                <i class="material-icons notranslate">help_outline</i> How to play
+              </button>
 
-                <button id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable sharing with viewers" class="btn btn-twitch" onclick="login()">
-                  <span class="twitch-icon"></span> Sign in with Twitch
-                </button>
-                Login with Twitch <small class="text-body-secondary">Optional. Allows viewers to play along</small>
-                <br />
-                <br />
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal"><i class="material-icons notranslate">edit</i>Edit board</button>
-                Create and save your board
-                <br />
-                <br />
-                <button type="button" class="btn btn-success" onclick="start()" id="start"><i class="material-icons notranslate">celebration</i> Start!</button>
-                <br />
-                <small class="text-body-secondary"> Don't forget to share your bingo link with viewers if you logged in with Twitch :)</small>
+              <button id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable sharing with viewers" class="btn btn-twitch" onclick="login()">
+                <span class="twitch-icon"></span> Sign in with Twitch
+              </button>
+              <small id="loginDescription" class="text-body-secondary">Optional. Allows viewers to play along</small>
+
+              <div class="container-fluid mb-2">
+                <div class="row">
+                  <div class="col-4">
+                    <h5><i class="material-icons notranslate mt-3">settings</i>Settings</h5>
+
+                    <div class="mb-3">
+                      <h5>Bingo type</h5>
+                      <div class="btn-group" role="group" aria-label="Mode">
+                        <input type="radio" class="btn-check" name="bingoTypeSelect" value="twitch" id="twitchBingo" autocomplete="off" checked />
+                        <label class="btn btn-outline-primary" for="twitchBingo"><span class="twitch-icon"></span>Twitch Bingo</label>
+                        <input type="radio" class="btn-check" name="bingoTypeSelect" value="custom" id="customBingo" autocomplete="off" />
+                        <label class="btn btn-outline-info" for="customBingo">Custom Bingo</label>
+                      </div>
+                      <br />
+                      <small id="bingoTypeDescription">Random Twitch streams will be shown</small>
+                      <input id="customBingoName" type="text" class="form-control" placeholder="Custom Bingo" aria-label="Custom Bingo" style="display: none" />
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                      <input class="form-check-input" type="checkbox" role="switch" id="allowDiagonals" />
+                      <label class="form-check-label" for="allowDiagonals"><i class="material-icons notranslate">north_east</i>Allow diagonals</label>
+                      <br /><small class="text-body-secondary">Count diagonals when checking for winning patterns</small>
+                    </div>
+                  </div>
+                  <div class="col-8">
+                    <h5><i class="material-icons notranslate mt-3">grid_on</i>Board</h5>
+
+                    <label for="bingoSize" id="bingoSizeLabel" class="form-label">Board size: 5x5 (25 items)</label><br />
+                    <input type="range" class="form-range" min="1" max="10" step="1" value="5" id="bingoSize" />
+
+                    <button type="button" class="btn btn-danger float-end mb-2" onclick="clearAll()">
+                      <i class="material-icons notranslate pointer-events-none">delete_forever</i> Clear all
+                    </button>
+                    <button type="button" class="btn btn-warning float-end mb-2 me-1" onclick="randomizeAll()">
+                      <i class="material-icons notranslate pointer-events-none">casino</i> Randomize all
+                    </button>
+
+                    <div class="container-fluid" style="height: 60vh; overflow: auto">
+                      <div class="row">
+                        <div id="oddInputs" class="col ps-0 pe-1">
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                        </div>
+                        <div id="evenInputs" class="col ps-1 pe-0">
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+
+                          <div class="placeholder-wave item-input-placeholder mb-1">
+                            <span class="placeholder col-12"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="card-footer text-body-secondary">
-                A <a href="/bingo_standalone.html">standalone shared bingo</a> is also available if you want to play some other flavor of bingo :)
-              </div>
+
+              <button type="button" class="btn btn-success btn-lg float-end" onclick="start()" id="start"><i class="material-icons notranslate">celebration</i> Start!</button>
+              <br /><br />
+              <small class="text-body-secondary float-end"> Don't forget to share the bingo link with your viewers if you logged in with Twitch :)</small>
             </div>
           </div>
-
-          <div id="twitchEmbed" style="display: none"></div>
         </div>
       </div>
+
+      <div class="row" id="twitchEmbedDiv" style="display: none">
+        <div class="col-1"></div>
+        <div class="col"><div id="twitchEmbed"></div></div>
+      </div>
+
       <div class="row mb-3 mt-2" id="bottomRow">
         <div class="col-1"></div>
         <div class="col-11">
           <div class="card" id="mainCard" style="display: none">
             <div class="card-body container-fluid">
               <div id="sliderDiv" class="row">
-                <div class="col-6">
+                <div class="col-auto">
+                  <span
+                    class="text-info mb-2"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-html="true"
+                    data-bs-title="
+                    scroll: <strong>resize board</strong><br>
+                    CTRL + scroll: <strong>change board opacity</strong><br>
+                    scroll wheel click + drag: <strong>move board</strong>"
+                  >
+                    <i class="material-icons notranslate">lightbulb</i>
+                    <br /><small>Board controls</small>
+                  </span>
+                </div>
+
+                <div class="col-auto">
                   <div class="vstack">
                     <div>
-                      <label for="boardSize" class="form-label"><i class="material-icons notranslate">zoom_in</i>Board size</label>
-                      <i
-                        class="material-icons notranslate text-info mb-2"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        data-bs-html="true"
-                        data-bs-title="
-                        <strong>Board adjustment shortcuts</strong><br>
-                        scroll: resize board<br>
-                        CTRL+scroll: change board opacity<br>
-                        scroll wheel click+drag: move board"
-                      >
-                        lightbulb
-                      </i>
-
-                      <input type="range" class="form-range align-middle" id="boardSize" value="1" min="0.1" max="2" step="0.01" />
+                      <label for="boardSize" class="form-label float-start"><i class="material-icons notranslate">zoom_in</i>Board size</label>
+                      <input type="range" class="form-range align-middle float-end" id="boardSize" value="1" min="0.1" max="2" step="0.01" />
                     </div>
                     <div>
-                      <label for="boardOpacity" class="form-label"><i class="material-icons notranslate">opacity</i>Board opacity</label>
-                      <input type="range" class="form-range align-middle" id="boardOpacity" value="1" min="0" max="1" step="0.01" />
+                      <label for="boardOpacity" class="form-label float-start me-2"><i class="material-icons notranslate">opacity</i>Board opacity</label>
+                      <input type="range" class="form-range align-middle float-end" id="boardOpacity" value="1" min="0" max="1" step="0.01" />
                     </div>
                   </div>
                 </div>
-                <div class="col-4">
+                <div class="col-auto">
                   <div class="input-group" id="loginInfo" style="display: none">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                       <img id="loginInfoPFP" src="/pics/donk.png" alt="profile pic" style="height: 2em" />
@@ -536,7 +434,7 @@
                   </div>
                 </div>
 
-                <div class="col-2">
+                <div class="col">
                   <button disabled type="button" id="nextStream" onclick="nextStream()" class="btn btn-lg btn-success float-end">
                     <i class="material-icons notranslate">skip_next</i> Next stream
                   </button>

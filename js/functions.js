@@ -409,3 +409,9 @@ function showConfetti(level) {
   confetti.speed = s;
   confetti.start(d);
 } //showConfetti
+
+function encodeHTML(str) {
+  return str.replace(/[\u00A0-\u9999<>&]/g, function (i) {
+    return `&#${i.charCodeAt(0)};`;
+  });
+} //encodeHTML
