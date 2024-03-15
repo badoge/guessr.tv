@@ -8,7 +8,7 @@ const suggestions = [
   "Movie/TV show",
   "Streamer you recognize",
   "Console stream",
-  "Speedrunning",
+  "Speedrunner",
   "Empty chat",
   "Gambling",
   "Sleeping",
@@ -30,7 +30,8 @@ const suggestions = [
   "Playing an instrument",
   "Subscribers only chat",
   "Room full of RGB lights",
-  "Follow/sub goal overlay",
+  "Follow goal overlay",
+  "Sub count overlay",
   "Default profile picture",
   "Eating",
   "Same game 2 times in a row",
@@ -42,6 +43,33 @@ const suggestions = [
   "Kid streaming",
   "Activate Windows watermark",
   "Singing",
+  "Polish streamer 🇵🇱",
+  "Cooking",
+  "Only bots in chat",
+  "Hype Train active",
+  "Wrong stream category",
+  "Neon username sign",
+  "Subathon",
+  "Always on animals stream",
+  "Affiliate/Partner anniversary",
+  "Birthday stream",
+  "Numbers in username",
+  "Art stream",
+  "Social links overlay",
+  "Streamer you follow",
+  "Fullscreen facecam",
+  "Chat overlay",
+  "Emotes overlay",
+  "Pinned chat message",
+  "Drops enabled",
+  "Mobile stream",
+  "Programming stream",
+  "Streamer doesn't speak for 1m",
+  "Donation goal overlay",
+  "Stream ending",
+  "Wearing their own merch",
+  "TTS",
+  "Emoji in title",
 ];
 
 const elements = {
@@ -111,7 +139,7 @@ let boardCreated = false;
 
 async function getMainList() {
   try {
-    let response = await fetch(`https://api.okayeg.com/guess`, requestOptions);
+    let response = await fetch(`https://api.okayeg.com/guess?dank=${Date.now()}`, requestOptions);
     let list = await response.json();
     mainList = list.guess.guess;
     elements.infoTime.innerHTML = `Channel list updated on ${new Date(list.guess.time)}`;
@@ -144,11 +172,17 @@ async function nextStream() {
     channel = mainList.pop();
   }
   if (mainList.length == 0 || !channel) {
-    showToast("No more channels left on the list, refresh to get a new list", "danger", "3000");
+    showToast("No more channels left on the list ...getting new list", "danger", "3000");
+    await getMainList();
+    shuffleArray(mainList);
+    nextStream();
     return;
   }
   if (retryLimit > 5) {
-    showToast("Too many retries, something might be wrong :(", "danger", "3000");
+    showToast("Too many retries, something might be wrong :( ...attempting to fix", "danger", "3000");
+    await getMainList();
+    shuffleArray(mainList);
+    nextStream();
     return;
   }
 
