@@ -412,21 +412,29 @@
                         <a class="dropdown-item" href="#" onclick="logout()"><i class="material-icons notranslate">logout</i>Logout</a>
                       </li>
                     </ul>
-                    <input disabled value="asd" id="bingoLink" type="text" class="form-control" aria-label="Bingo share link" />
+                    <input readonly value="asd" id="bingoLink" type="text" class="form-control" aria-label="Bingo share link" />
                     <button
                       class="btn btn-outline-secondary"
                       type="button"
                       id="copyButton"
-                      data-bs-toggle="tooltip"
+                      data-bs-toggle="popover"
                       data-bs-trigger="manual"
                       data-bs-placement="top"
-                      data-bs-title="Link copied :)"
+                      data-bs-content="Link copied :)"
                       onclick="copyLink()"
                     >
                       <i class="material-icons notranslate">content_copy</i>
                     </button>
                     <button class="btn btn-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLeaderboard" aria-controls="offcanvasLeaderboard">
-                      <i class="material-icons notranslate" id="bingoPopover" data-bs-toggle="popover" data-bs-placement="top" data-bs-title="BINGO!" data-bs-content="A viewer got a BINGO!">
+                      <i
+                        class="material-icons notranslate"
+                        id="bingoPopover"
+                        data-bs-toggle="popover"
+                        data-bs-trigger="manual"
+                        data-bs-placement="top"
+                        data-bs-title="BINGO!"
+                        data-bs-content="A viewer got a BINGO!"
+                      >
                         leaderboard
                       </i>
                       Chat leaderboard
