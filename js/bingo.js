@@ -831,8 +831,7 @@ window.onload = async function () {
     }
   });
 
-  // dragElement();
-  const dragInstance = new NeoDrag.Draggable(elements.board, { gpuAcceleration: true, applyUserSelectHack: true });
+  dragElement();
   enableTooltips();
   loadInputs();
   loadBoard();
