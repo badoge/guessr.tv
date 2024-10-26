@@ -77,6 +77,7 @@ const elements = {
   leaderboard: document.getElementById("leaderboard"),
   infoTime: document.getElementById("infoTime"),
   skipSexual: document.getElementById("skipSexual"),
+  unloadWarningBingo: document.getElementById("unloadWarningBingo"),
   seenChannels: document.getElementById("seenChannels"),
   resetSeenChannels: document.getElementById("resetSeenChannels"),
   loginExpiredModal: document.getElementById("loginExpiredModal"),
@@ -129,6 +130,8 @@ let customBadges = [];
 let refreshCooldown;
 let channelName;
 let skipSexual = true;
+let unloadWarningBingo = true;
+let userInteracted = false;
 let bingoPopover;
 let bingoType = "twitch";
 let bingoSize = 5;
@@ -213,7 +216,7 @@ async function nextStream() {
     previousChannels.push(channel.username);
     seenChannels.push(channel.username);
     localStorage.setItem("seenChannels_bingo", JSON.stringify(seenChannels));
-    elements.seenChannels.innerHTML = seenChannels.length;
+    elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
 
     if (channel.username == channelName) {
       showConfetti(2);
@@ -301,6 +304,8 @@ function randomize(event) {
 
   input.value = random;
   loadItems();
+  userInteracted = true;
+  changeSiteLinkTarget("_blank");
 } //randomize
 
 function randomizeAll() {
@@ -315,6 +320,8 @@ function randomizeAll() {
     bingoItems[index].value = option;
   }
   loadItems();
+  userInteracted = true;
+  changeSiteLinkTarget("_blank");
 } //randomizeAll
 
 function clearAll() {
@@ -322,6 +329,8 @@ function clearAll() {
   for (let index = 0; index < bingoItems.length; index++) {
     bingoItems[index].value = "";
   }
+  userInteracted = false;
+  changeSiteLinkTarget("_self");
 } //clearAll
 
 async function start() {
@@ -343,6 +352,8 @@ async function start() {
   elements.settingsCard.style.display = "none";
   elements.board.style.display = "";
   elements.mainCard.style.display = "";
+  userInteracted = true;
+  changeSiteLinkTarget("_blank");
 } //start
 
 function loadItems() {
@@ -752,10 +763,13 @@ function loadBoard() {
 
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels_bingo")) || [];
-  elements.seenChannels.innerHTML = seenChannels.length;
+  elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
 
   skipSexual = (localStorage.getItem("skipSexual") || "true") === "true";
   elements.skipSexual.checked = skipSexual;
+
+  unloadWarningBingo = (localStorage.getItem("unloadWarningBingo") || "true") === "true";
+  elements.unloadWarningBingo.checked = unloadWarningBingo;
 
   elements.resetSeenChannels.onclick = function () {
     localStorage.setItem("seenChannels_bingo", JSON.stringify([]));
@@ -809,6 +823,11 @@ window.onload = async function () {
     localStorage.setItem("skipSexual", skipSexual);
   };
 
+  elements.unloadWarningBingo.onchange = function () {
+    unloadWarningBingo = this.checked;
+    localStorage.setItem("unloadWarningBingo", unloadWarningBingo);
+  };
+
   elements.boardSize.oninput = function () {
     elements.board.style.scale = this.value;
   };
@@ -837,3 +856,10 @@ window.onload = async function () {
   loadBoard();
   customBadges = await getCustomBadges();
 }; //onload
+
+window.onbeforeunload = function () {
+  if (unloadWarningBingo && userInteracted) {
+    return "Unload warning enabled. You can turn it off in the settings.";
+  }
+  return null;
+}; //onbeforeunload

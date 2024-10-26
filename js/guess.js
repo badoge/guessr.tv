@@ -49,6 +49,7 @@ const elements = {
   clipCover: document.getElementById("clipCover"),
 
   skipSexual: document.getElementById("skipSexual"),
+  unloadWarning: document.getElementById("unloadWarning"),
   viewersHS: document.getElementById("viewersHS"),
   followersHS: document.getElementById("followersHS"),
   viewersStreak: document.getElementById("viewersStreak"),
@@ -62,6 +63,8 @@ const elements = {
   seenChannels: document.getElementById("seenChannels"),
   resetSeenClips: document.getElementById("resetSeenClips"),
   seenClips: document.getElementById("seenClips"),
+
+  resetGameModal: document.getElementById("resetGameModal"),
 
   gameSettingsModal: document.getElementById("gameSettingsModal"),
   streamsVideoType: document.getElementById("streamsVideoType"),
@@ -131,6 +134,8 @@ let powerups = {
 };
 
 let skipSexual = true;
+let unloadWarning = false;
+let gameRunning = false;
 let highscores = {
   viewersHS: 0,
   followersHS: 0,
@@ -142,7 +147,7 @@ let highscores = {
   followersHigherlowerStreak: 0,
 };
 
-let gameSettingsModal;
+let gameSettingsModal, resetGameModal;
 let client;
 let roundActive = false;
 let chatters = [];
@@ -294,6 +299,9 @@ async function startGame() {
   for (const pType in powerups) {
     powerups[pType] = 1;
   }
+
+  gameRunning = true;
+  changeSiteLinkTarget("_blank");
 } //startGame
 
 async function getRandomStream() {
@@ -849,6 +857,8 @@ async function guess(choice, timeUp = false, skipped = false) {
       } else {
         elements.gameEndText.innerHTML += `<br>High Score: ${highscores.viewersStreak.toLocaleString()}`;
       }
+      gameRunning = false;
+      changeSiteLinkTarget("_self");
     }
   }
 
@@ -872,6 +882,8 @@ async function guess(choice, timeUp = false, skipped = false) {
       } else {
         elements.gameEndText.innerHTML += `<br>High Score: ${highscores.followersStreak.toLocaleString()}`;
       }
+      gameRunning = false;
+      changeSiteLinkTarget("_self");
     }
   }
 
@@ -895,6 +907,8 @@ async function guess(choice, timeUp = false, skipped = false) {
       } else {
         elements.gameEndText.innerHTML += `<br>High Score: ${highscores.gameStreak.toLocaleString()}`;
       }
+      gameRunning = false;
+      changeSiteLinkTarget("_self");
     }
   }
 
@@ -920,6 +934,8 @@ async function guess(choice, timeUp = false, skipped = false) {
       } else {
         elements.gameEndText.innerHTML += `<br>High Score: ${highscores.emoteStreak.toLocaleString()}`;
       }
+      gameRunning = false;
+      changeSiteLinkTarget("_self");
     }
   }
 
@@ -945,6 +961,8 @@ async function guess(choice, timeUp = false, skipped = false) {
       } else {
         elements.gameEndText.innerHTML += `<br>High Score: ${score.toLocaleString()}`;
       }
+      gameRunning = false;
+      changeSiteLinkTarget("_self");
     }
   }
 
@@ -990,6 +1008,8 @@ async function guess(choice, timeUp = false, skipped = false) {
     elements.nextRound.style.display = "none";
     elements.endButtons.style.display = "";
     elements.gameEndText.style.display = "";
+    gameRunning = false;
+    changeSiteLinkTarget("_self");
   }
   //end game if game on 5th round and mode is followers
   if (round == 5 && gameSettings.game == "followers") {
@@ -1004,6 +1024,8 @@ async function guess(choice, timeUp = false, skipped = false) {
     elements.nextRound.style.display = "none";
     elements.endButtons.style.display = "";
     elements.gameEndText.style.display = "";
+    gameRunning = false;
+    changeSiteLinkTarget("_self");
   }
 } //guess
 
@@ -1371,7 +1393,11 @@ ${
   }
 } //showCorrection
 
-function reset() {
+function reset(logoClicked = false) {
+  if (logoClicked && gameRunning) {
+    resetGameModal.show();
+    return;
+  }
   stopTimer();
   guessList = [];
   elements.round.innerHTML = `Round <br />1/5`;
@@ -1397,6 +1423,8 @@ function reset() {
   score = 0;
   player = null;
   roundActive = false;
+  gameRunning = false;
+  changeSiteLinkTarget("_self");
   if (client) {
     client.disconnect();
     client = null;
@@ -1827,11 +1855,13 @@ function usePowerup(pType) {
 
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels")) || [];
-  elements.seenChannels.innerHTML = seenChannels.length;
+  elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
   seenClips = JSON.parse(localStorage.getItem("seenClips")) || [];
-  elements.seenClips.innerHTML = seenClips.length;
+  elements.seenClips.innerHTML = seenClips.length.toLocaleString();
   skipSexual = (localStorage.getItem("skipSexual") || "true") === "true";
   elements.skipSexual.checked = skipSexual;
+  unloadWarning = (localStorage.getItem("unloadWarning") || "false") === "true";
+  elements.unloadWarning.checked = unloadWarning;
   highscores.viewersHS = parseInt(localStorage.getItem("viewersHS"), 10) || 0;
   highscores.followersHS = parseInt(localStorage.getItem("followersHS"), 10) || 0;
   highscores.viewersStreak = parseInt(localStorage.getItem("viewersStreak"), 10) || 0;
@@ -1859,6 +1889,7 @@ window.onload = async function () {
   elements.followersHigherlowerStreak.innerHTML = highscores.followersHigherlowerStreak.toLocaleString();
 
   gameSettingsModal = new bootstrap.Modal(elements.gameSettingsModal);
+  resetGameModal = new bootstrap.Modal(elements.resetGameModal);
 
   totalTab = new bootstrap.Tab(elements.totalTab);
   roundTab = new bootstrap.Tab(elements.roundTab);
@@ -1866,6 +1897,11 @@ window.onload = async function () {
   elements.skipSexual.onchange = function () {
     skipSexual = this.checked;
     localStorage.setItem("skipSexual", skipSexual);
+  };
+
+  elements.unloadWarning.onchange = function () {
+    unloadWarning = this.checked;
+    localStorage.setItem("unloadWarning", unloadWarning);
   };
 
   elements.streamsVideoType.onchange = function () {
@@ -1930,8 +1966,8 @@ window.onload = async function () {
   elements.nextRound.onclick = function () {
     localStorage.setItem("seenChannels", JSON.stringify(seenChannels));
     localStorage.setItem("seenClips", JSON.stringify(seenClips));
-    elements.seenChannels.innerHTML = seenChannels.length;
-    elements.seenClips.innerHTML = seenClips.length;
+    elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
+    elements.seenClips.innerHTML = seenClips.length.toLocaleString();
     nextRound();
   };
 
@@ -1988,3 +2024,10 @@ window.onload = async function () {
   //   }
   // });
 }; //onload
+
+window.onbeforeunload = function () {
+  if (unloadWarning && gameRunning) {
+    return "Unload warning enabled. You can turn it off in the settings.";
+  }
+  return null;
+}; //onbeforeunload
