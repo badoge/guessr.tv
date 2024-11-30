@@ -88,8 +88,7 @@ const elements = {
   customBingoName: document.getElementById("customBingoName"),
   bingoSize: document.getElementById("bingoSize"),
   bingoSizeLabel: document.getElementById("bingoSizeLabel"),
-  oddInputs: document.getElementById("oddInputs"),
-  evenInputs: document.getElementById("evenInputs"),
+  boardInputs: document.getElementById("boardInputs"),
   board: document.getElementById("board"),
   previewDiv: document.getElementById("previewDiv"),
   previewBoard: document.getElementById("previewBoard"),
@@ -326,8 +325,11 @@ function randomizeAll() {
 
 function clearAll() {
   const bingoItems = document.querySelectorAll(".bingo-item");
+  const bingoCells = document.querySelectorAll(".bingo-cell");
   for (let index = 0; index < bingoItems.length; index++) {
     bingoItems[index].value = "";
+    bingoCells[index].innerText = index + 1;
+    bingoCells[index].classList.remove("duplicate");
   }
   userInteracted = false;
   changeSiteLinkTarget("_self");
@@ -335,6 +337,10 @@ function clearAll() {
 
 async function start() {
   elements.start.innerHTML = spinner;
+  document.querySelectorAll(".bingo-cell").forEach((cell) => {
+    cell.classList.remove("duplicate");
+    cell.classList.remove("selected"); // shouldn't be a problem, but you never know
+  });
 
   await uploadBoard();
   if (!boardCreated) {
@@ -357,20 +363,65 @@ async function start() {
 } //start
 
 function loadItems() {
-  let itemValues = [];
   const bingoItems = document.querySelectorAll(".bingo-item");
   const cells = document.querySelectorAll(".bingo-cell");
 
-  itemValues = [...bingoItems].map((x) => x.value.trim());
+  const itemValues = [...bingoItems].map((x) => x.value.trim());
 
   for (let index = 0; index < cells.length; index++) {
-    cells[index].innerText = itemValues[index];
+    cells[index].innerText = itemValues[index] || index + 1;
     cells[index].title = itemValues[index];
     cells[index].classList.remove("filled");
+    cells[index].classList.remove("selected");
     board[index].value = itemValues[index];
     board[index].filled = false;
   }
+
+  checkDuplicatesOnBoard();
 } //loadItems
+
+function updateSingleItem(element) {
+  const itemId = parseInt(element.dataset.itemId, 10);
+  const index = itemId - 1;
+  const itemCell = document.querySelector(`.bingo-cell[data-id="${itemId}"]`);
+
+  const itemValue = element.value.trim();
+  board[index].value = itemValue.trim();
+  board[index].filled = false;
+
+  itemCell.innerText = itemValue.trim();
+  itemCell.title = itemValue.trim();
+  itemCell.classList.remove("filled");
+
+  checkDuplicatesOnBoard();
+} //updateSingleItem
+
+function activateCellById(element) {
+  const itemId = element.dataset.itemId;
+  const itemCell = document.querySelector(`.bingo-cell[data-id="${itemId}"]`);
+  itemCell.classList.add("selected");
+} //activateCellById
+
+function deactivateCellById(element) {
+  const itemId = element.dataset.itemId;
+  const itemCell = document.querySelector(`.bingo-cell[data-id="${itemId}"]`);
+  itemCell.classList.remove("selected");
+} //deactivateCellById
+
+function checkDuplicatesOnBoard() {
+  const values = board.map((item) => item.value.toLowerCase());
+  const duplicates = new Set(values.filter((v) => values.indexOf(v) !== values.lastIndexOf(v)));
+
+  if (duplicates.size > 0) {
+    const cells = document.querySelectorAll(".bingo-cell");
+    for (let i = 0; i < board.length; i++) {
+      const value = board[i].value.toLowerCase();
+      cells[i].classList.toggle("duplicate", value && duplicates.has(value));
+    }
+  } else {
+    document.querySelectorAll(".bingo-cell").forEach((c) => c.classList.remove("duplicate"));
+  }
+} //checkDuplicatesOnBoard
 
 async function uploadBoard() {
   let itemValues = [];
@@ -684,17 +735,18 @@ function hidePreview() {
 } //hidePreview
 
 function loadInputs() {
-  elements.oddInputs.innerHTML = "";
-  elements.evenInputs.innerHTML = "";
+  elements.boardInputs.innerHTML = "";
   board = [];
   let size = bingoSize * bingoSize || 25;
   for (let index = 0; index < size; index++) {
-    board.push({ filled: false, value: `${index + 1}` });
+    board.push({ filled: false, value: "" });
 
-    elements[`${(index + 1) % 2 == 0 ? "even" : "odd"}Inputs`].insertAdjacentHTML(
+    elements.boardInputs.insertAdjacentHTML(
       "beforeend",
-      `<div class="input-group mb-1">
-        <input type="text" class="form-control bingo-item" oninput="loadItems()" placeholder="Bingo item #${index + 1}" data-item-id="${index + 1}" aria-label="Bingo item #${index + 1}" />
+      `<div class="input-group mb-1 w-50 pe-1">
+        <input type="text" class="form-control bingo-item"
+        onfocus="activateCellById(this)" onblur="deactivateCellById(this)" oninput="updateSingleItem(this)" 
+        placeholder="Bingo item #${index + 1}" data-item-id="${index + 1}" aria-label="Bingo item #${index + 1}" />
         <button class="btn btn-outline-secondary" onclick="randomize(event)" data-item-id="${index + 1}" type="button" title="Fill with random item">
           <i class="material-icons notranslate pointer-events-none">casino</i>
         </button>
