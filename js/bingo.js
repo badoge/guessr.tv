@@ -436,7 +436,9 @@ async function uploadBoard() {
     showToast("Board must be full", "warning", 2000);
     return;
   }
-  if (hasDuplicates(itemValues)) {
+  const values = board.map((item) => item.value.toLowerCase());
+  const duplicates = new Set(values.filter((v) => values.indexOf(v) !== values.lastIndexOf(v)));
+  if (duplicates.size > 0) {
     showToast("Board must not have duplicates", "warning", 2000);
     return;
   }
