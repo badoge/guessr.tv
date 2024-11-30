@@ -337,10 +337,6 @@ function clearAll() {
 
 async function start() {
   elements.start.innerHTML = spinner;
-  document.querySelectorAll(".bingo-cell").forEach((cell) => {
-    cell.classList.remove("duplicate");
-    cell.classList.remove("selected"); // shouldn't be a problem, but you never know
-  });
 
   await uploadBoard();
   if (!boardCreated) {
@@ -444,6 +440,11 @@ async function uploadBoard() {
     showToast("Board must not have duplicates", "warning", 2000);
     return;
   }
+
+  document.querySelectorAll(".bingo-cell").forEach((cell) => {
+    cell.classList.remove("duplicate");
+    cell.classList.remove("selected"); // shouldn't be a problem, but you never know
+  });
 
   for (let index = 0; index < cells.length; index++) {
     cells[index].innerText = itemValues[index];
