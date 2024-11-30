@@ -82,9 +82,14 @@
   z-index: 2;
 }
 
+.bingo-cell.matching {
+  box-shadow: 0px 0px 0.5rem var(--bs-primary);
+  z-index: 3;
+}
+
 .bingo-cell.selected {
   box-shadow: 0px 0px 0.5rem var(--bs-info);
-  z-index: 2;
+  z-index: 4;
 }
 
 .form-range {

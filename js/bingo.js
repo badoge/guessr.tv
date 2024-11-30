@@ -90,6 +90,10 @@ const elements = {
   bingoSizeLabel: document.getElementById("bingoSizeLabel"),
   boardInputs: document.getElementById("boardInputs"),
   board: document.getElementById("board"),
+  boardSearch: document.getElementById("board-search"),
+  boardSearchBar: document.getElementById("board-search-bar"),
+  boardSearchClear: document.getElementById("board-search-clear"),
+  boardContent: document.getElementById("board-inner"),
   previewDiv: document.getElementById("previewDiv"),
   previewBoard: document.getElementById("previewBoard"),
   previewUsername: document.getElementById("previewUsername"),
@@ -418,6 +422,34 @@ function checkDuplicatesOnBoard() {
     document.querySelectorAll(".bingo-cell").forEach((c) => c.classList.remove("duplicate"));
   }
 } //checkDuplicatesOnBoard
+
+function doBoardSearch() {
+  const value = (elements.boardSearchBar.value || "").trim().toLowerCase();
+  const cells = document.querySelectorAll(".bingo-cell");
+
+  if (value) {
+    for (let i = 0; i < board.length; i++) {
+      const isMatching = board[i].value && board[i].value.toLowerCase().includes(value);
+      cells[i].classList.toggle("matching", isMatching);
+    }
+  } else {
+    document.querySelectorAll(".bingo-cell").forEach((c) => c.classList.remove("matching"));
+  }
+
+  // alter search-clear button style if input is not empty:
+  if (elements.boardSearchBar.value) {
+    elements.boardSearchClear.querySelector("i").innerText = "clear";
+    elements.boardSearchClear.disabled = false;
+  } else {
+    elements.boardSearchClear.querySelector("i").innerText = "search";
+    elements.boardSearchClear.disabled = true;
+  }
+}
+
+function clearSearchBar() {
+  elements.boardSearchBar.value = "";
+  doBoardSearch();
+}
 
 async function uploadBoard() {
   let itemValues = [];
@@ -759,7 +791,7 @@ function loadInputs() {
 } //loadInputs
 
 function loadBoard() {
-  elements.board.innerHTML = "";
+  elements.boardContent.innerHTML = "";
   elements.previewBoard.innerHTML = "";
   elements.board.style.top = "6%";
   elements.board.style.left = "6%";
@@ -800,7 +832,7 @@ function loadBoard() {
       </div>`;
     }
 
-    elements.board.insertAdjacentHTML(
+    elements.boardContent.insertAdjacentHTML(
       "beforeend",
       `<div class="row m-0">
       ${row}
@@ -869,6 +901,7 @@ window.onload = async function () {
   elements.bingoSize.oninput = function () {
     bingoSize = parseInt(this.value, 10);
     elements.bingoSizeLabel.innerHTML = `Board size: ${bingoSize}x${bingoSize} (${bingoSize * bingoSize} ${bingoSize == 1 ? "item" : "items"})`;
+    elements.boardSearch.style.display = bingoSize < 3 ? "none" : "";
     loadInputs();
     loadBoard();
   };
