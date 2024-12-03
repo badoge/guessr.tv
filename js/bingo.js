@@ -436,16 +436,9 @@ function doBoardSearch() {
       const isMatching = board[i].value && board[i].value.toLowerCase().includes(value);
       cells[i].classList.toggle("matching", isMatching);
     }
-  } else {
-    document.querySelectorAll(".bingo-cell").forEach((c) => c.classList.remove("matching"));
-  }
-
-  // alter search-clear button style if input is not empty:
-  if (elements.boardSearchBar.value) {
     elements.boardSearchToggle.querySelector("i").innerText = "clear";
   } else {
-    elements.boardSearchToggle.querySelector("i").innerText = "search";
-    elements.boardSearchBar.classList.remove("expanded");
+    hideSearchBar();
   }
 } //doBoardSearch
 
@@ -464,6 +457,7 @@ function toggleSearchBar() {
 function hideSearchBar() {
   elements.boardSearchToggle.querySelector("i").innerText = "search";
   elements.boardSearchBar.classList.remove("expanded");
+  elements.boardSearchBar.blur();
   document.querySelectorAll(".bingo-cell").forEach((c) => c.classList.remove("matching"));
 } //hideSearchBar
 
