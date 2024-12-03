@@ -277,6 +277,9 @@ function dragElement() {
 
 function fillCell(event) {
   if (!boardCreated) {
+    let textInput = document.querySelector(`input[data-item-id="${event.target.dataset.id}"]`);
+    textInput.scrollIntoView({ behavior: "smooth" });
+    textInput.select();
     return;
   }
   clearTimeout(refreshCooldown);
