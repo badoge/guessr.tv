@@ -201,16 +201,16 @@
     </div>
 
     <div class="container-fluid" id="board" style="top: 6%; left: 6%">
-      <div class="container-fluid input-group mb-1" id="board-search">
-        <button class="btn btn-outline-secondary" disabled onclick="clearSearchBar()" type="button" title="Clear search bar" id="board-search-clear">
-          <i class="material-icons notranslate pointer-events-none">search</i>
-        </button>
-        <input type="text" class="form-control flex-grow-1" id="board-search-bar" placeholder="Quick search" oninput="doBoardSearch()" />
-      </div>
-      <div class="container-fluid" id="board-inner">
+      <div class="container-fluid p-0" id="board-inner">
         <div class="placeholder-glow">
           <span class="placeholder board-placeholder"></span>
         </div>
+      </div>
+      <div id="board-search">
+        <button class="btn btn-secondary" onclick="toggleSearchBar()" type="button" data-bs-toggle="tooltip" data-bs-title="Search board" data-bs-placement="top" id="board-search-toggle">
+          <i class="material-icons notranslate pointer-events-none">search</i>
+        </button>
+        <input type="text" class="form-control" id="board-search-bar" placeholder="Quick search" oninput="doBoardSearch()" />
       </div>
     </div>
 

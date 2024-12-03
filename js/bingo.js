@@ -92,7 +92,7 @@ const elements = {
   board: document.getElementById("board"),
   boardSearch: document.getElementById("board-search"),
   boardSearchBar: document.getElementById("board-search-bar"),
-  boardSearchClear: document.getElementById("board-search-clear"),
+  boardSearchToggle: document.getElementById("board-search-toggle"),
   boardContent: document.getElementById("board-inner"),
   previewDiv: document.getElementById("previewDiv"),
   previewBoard: document.getElementById("previewBoard"),
@@ -281,6 +281,7 @@ function fillCell(event) {
   }
   clearTimeout(refreshCooldown);
   event.target.classList.toggle("filled");
+  hideSearchBar();
   let cellNumber = parseInt(event.target.dataset.id, 10) - 1;
   board[cellNumber].filled = !board[cellNumber].filled;
   checkWin(board, true);
@@ -438,18 +439,30 @@ function doBoardSearch() {
 
   // alter search-clear button style if input is not empty:
   if (elements.boardSearchBar.value) {
-    elements.boardSearchClear.querySelector("i").innerText = "clear";
-    elements.boardSearchClear.disabled = false;
+    elements.boardSearchToggle.querySelector("i").innerText = "clear";
   } else {
-    elements.boardSearchClear.querySelector("i").innerText = "search";
-    elements.boardSearchClear.disabled = true;
+    elements.boardSearchToggle.querySelector("i").innerText = "search";
+    elements.boardSearchBar.classList.remove("expanded");
   }
-}
+} //doBoardSearch
 
-function clearSearchBar() {
+function toggleSearchBar() {
   elements.boardSearchBar.value = "";
-  doBoardSearch();
-}
+  if (elements.boardSearchToggle.querySelector("i").innerText == "search") {
+    elements.boardSearchToggle.querySelector("i").innerText = "clear";
+    elements.boardSearchBar.classList.add("expanded");
+    elements.boardSearchBar.focus();
+    elements.boardSearchBar.select();
+  } else {
+    hideSearchBar();
+  }
+} //toggleSearchBar
+
+function hideSearchBar() {
+  elements.boardSearchToggle.querySelector("i").innerText = "search";
+  elements.boardSearchBar.classList.remove("expanded");
+  document.querySelectorAll(".bingo-cell").forEach((c) => c.classList.remove("matching"));
+} //hideSearchBar
 
 async function uploadBoard() {
   let itemValues = [];
