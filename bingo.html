@@ -212,6 +212,20 @@
         </button>
         <input type="text" class="form-control" id="board-search-bar" placeholder="Quick search" oninput="doBoardSearch()" />
       </div>
+
+      <div id="bingoStats">
+        <button
+          class="btn btn-secondary"
+          type="button"
+          data-bs-toggle="tooltip"
+          data-bs-html="true"
+          data-bs-title="<strong>Stats</strong><hr><em>Watched channels:</em> 0<br><em>BINGO score:</em> 0<br>"
+          data-bs-placement="top"
+          id="bingoStatsTooltip"
+        >
+          <i class="material-icons notranslate pointer-events-none">info_outline</i>
+        </button>
+      </div>
     </div>
 
     <div id="previewDiv" style="top: 5%; right: 30%; display: none">
@@ -440,7 +454,6 @@
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script src="/js/twitchembed.min.js"></script>
     <script src="/js/confetti.min.js"></script>
-    <script src="/js/neodrag.min.js"></script>
     <script src="/js/functions.js"></script>
     <script src="/js/bingo.js"></script>
   </body>

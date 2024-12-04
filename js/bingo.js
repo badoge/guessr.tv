@@ -93,6 +93,8 @@ const elements = {
   boardSearch: document.getElementById("board-search"),
   boardSearchBar: document.getElementById("board-search-bar"),
   boardSearchToggle: document.getElementById("board-search-toggle"),
+  bingoStats: document.getElementById("bingoStats"),
+  bingoStatsTooltip: document.getElementById("bingoStatsTooltip"),
   boardContent: document.getElementById("board-inner"),
   previewDiv: document.getElementById("previewDiv"),
   previewBoard: document.getElementById("previewBoard"),
@@ -123,6 +125,8 @@ let TWITCH = {
 };
 
 let loginExpiredModal;
+let bingoStatsTooltip;
+let streamerScore;
 let copyButton;
 let mainList = [];
 let seenChannels = [];
@@ -225,6 +229,7 @@ async function nextStream() {
       showConfetti(2);
       sendUsername(" - dank ⚠️ ⚠️ ⚠️");
     }
+    updateStatsTooltip();
   } catch (error) {
     console.log(error);
     retryLimit++;
@@ -293,6 +298,7 @@ function fillCell(event) {
       updateLeaderboard();
     }, 3000);
   }
+  updateStatsTooltip();
 } //fillCell
 
 function randomize(event) {
@@ -436,6 +442,9 @@ function doBoardSearch() {
       const isMatching = board[i].value && board[i].value.toLowerCase().includes(value);
       cells[i].classList.toggle("matching", isMatching);
     }
+  }
+
+  if (elements.boardSearchBar.value) {
     elements.boardSearchToggle.querySelector("i").innerText = "clear";
   } else {
     hideSearchBar();
@@ -746,6 +755,15 @@ async function updateLeaderboard() {
   }
 } //updateLeaderboard
 
+function updateStatsTooltip() {
+  let score = checkWin(board, true);
+  bingoStatsTooltip.setContent({
+    ".tooltip-inner": `<strong>Stats</strong><hr><em>Watched channels:</em> ${previousChannels.length}<br><em>BINGO score:</em> ${score.score} ${score.score == 1 ? "point" : "points"} ${
+      score.bingos > 0 ? `(${score.bingos} ${score.bingos == 1 ? "BINGO" : "BINGOs"})` : ""
+    }<br>`,
+  });
+} //updateStatsTooltip
+
 function showPreview(username, userid, score, bingos) {
   elements.previewUsername.innerHTML = `
   ${encodeHTML(username)}'s bingo board<br>Score: ${score.toLocaleString()} ${score == 1 ? "point" : "points"} ${bingos > 0 ? `(${bingos} ${bingos == 1 ? "BINGO" : "BINGOs"})` : ""}`;
@@ -875,7 +893,10 @@ window.onload = async function () {
     showToast("Seen channels reset", "success", 2000);
   };
 
+  enableTooltips();
+
   loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
+  bingoStatsTooltip = new bootstrap.Tooltip(elements.bingoStatsTooltip);
   copyButton = new bootstrap.Popover(elements.copyButton);
   bingoPopover = new bootstrap.Popover(elements.bingoPopover);
 
@@ -949,7 +970,6 @@ window.onload = async function () {
   });
 
   dragElement();
-  enableTooltips();
   loadInputs();
   loadBoard();
   customBadges = await getCustomBadges();

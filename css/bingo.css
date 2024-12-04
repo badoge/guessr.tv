@@ -125,6 +125,21 @@
   opacity: 1;
 }
 
+#bingoStats {
+  position: absolute;
+  display: inline-flex;
+  bottom: -3px;
+  right: -3px;
+}
+
+#bingoStatsTooltip {
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  padding: 2px;
+  cursor: pointer;
+  scale: 0.5;
+}
+
 .form-range {
   width: 300px;
 }
