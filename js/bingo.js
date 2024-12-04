@@ -758,9 +758,9 @@ async function updateLeaderboard() {
 function updateStatsTooltip() {
   let score = checkWin(board, true);
   bingoStatsTooltip.setContent({
-    ".tooltip-inner": `<strong>Stats</strong><hr><em>Watched channels:</em> ${previousChannels.length}<br><em>BINGO score:</em> ${score.score} ${score.score == 1 ? "point" : "points"} ${
-      score.bingos > 0 ? `(${score.bingos} ${score.bingos == 1 ? "BINGO" : "BINGOs"})` : ""
-    }<br>`,
+    ".tooltip-inner": `<strong>Stats</strong><hr><em>Watched channels:</em> ${previousChannels.length}<br><em>BINGO score:</em> ${score.score.toLocaleString()} ${
+      score.score == 1 ? "point" : "points"
+    } ${score.bingos > 0 ? `(${score.bingos} ${score.bingos == 1 ? "BINGO" : "BINGOs"})` : ""}<br>`,
   });
 } //updateStatsTooltip
 
