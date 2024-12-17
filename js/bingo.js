@@ -958,7 +958,7 @@ window.onload = async function () {
   elements.board.addEventListener("mousewheel", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (event.ctrlKey) {
+    if (event.altKey) {
       let opacity = parseFloat(getComputedStyle(elements.board).getPropertyValue("opacity"));
       elements.board.style.opacity = event.wheelDelta > 0 ? Math.min(opacity + 0.07, 1) : Math.max(opacity - 0.07, 0);
       elements.boardOpacity.value = event.wheelDelta > 0 ? opacity + 0.07 : opacity - 0.07;
