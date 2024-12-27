@@ -18,11 +18,14 @@
 
 #previewDiv {
   position: fixed;
+  top: 2%;
+  left: 50%;
+  transform: translate(-800px);
   z-index: 4000;
-  scale: 1;
   pointer-events: none;
   box-shadow: 3px 3px 10px #000000;
   border-radius: 6px;
+  transform-origin: top left;
 }
 
 #previewDiv > .card > .card-body {
@@ -78,17 +81,17 @@
 }
 
 .bingo-cell.duplicate {
-  box-shadow: 0px 0px 1rem var(--bs-danger);
+  box-shadow: 0px 0px 2rem var(--bs-danger);
   z-index: 2;
 }
 
 .bingo-cell.matching {
-  box-shadow: 0px 0px 1rem var(--bs-primary);
+  box-shadow: 0px 0px 2rem var(--bs-warning);
   z-index: 3;
 }
 
 .bingo-cell.selected {
-  box-shadow: 0px 0px 1rem var(--bs-info);
+  box-shadow: 0px 0px 2rem var(--bs-info);
   z-index: 4;
 }
 

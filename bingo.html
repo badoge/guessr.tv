@@ -207,7 +207,15 @@
         </div>
       </div>
       <div id="board-search">
-        <button class="btn btn-secondary" onclick="toggleSearchBar()" type="button" data-bs-toggle="tooltip" data-bs-title="Search board" data-bs-placement="top" id="board-search-toggle">
+        <button
+          class="btn btn-secondary"
+          onclick="toggleSearchBar()"
+          type="button"
+          data-bs-toggle="tooltip"
+          data-bs-title="Search board (F3 / CTRL + F)"
+          data-bs-placement="top"
+          id="board-search-toggle"
+        >
           <i class="material-icons notranslate pointer-events-none">search</i>
         </button>
         <input type="text" class="form-control" id="board-search-bar" placeholder="Quick search" oninput="doBoardSearch()" />
@@ -228,7 +236,7 @@
       </div>
     </div>
 
-    <div id="previewDiv" style="top: 5%; right: 30%; display: none">
+    <div id="previewDiv" style="display: none">
       <div class="card">
         <div class="card-header">
           <h4 id="previewUsername" class="text-center"></h4>
@@ -298,40 +306,79 @@
 
                     <div class="container-fluid" style="height: 55vh; overflow: auto">
                       <div class="row" id="boardInputs">
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
-                        <div class="placeholder-wave item-input-placeholder mb-1">
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
+                          <span class="placeholder col-12"></span>
+                        </div>
+                        <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
                           <span class="placeholder col-12"></span>
                         </div>
                       </div>
@@ -368,7 +415,9 @@
                     data-bs-title="
                     scroll: <strong>resize board</strong><br>
                     ALT + scroll: <strong>change board opacity</strong><br>
-                    scroll wheel click + drag: <strong>move board</strong>"
+                    scroll wheel click + drag: <strong>move board</strong><br>
+                    R: <strong>reset board position</strong><br>
+                    F3 / CTRL + F: <strong>search board</strong>"
                   >
                     <i class="material-icons notranslate">lightbulb</i>
                     <br /><small>Board controls</small>

@@ -251,35 +251,6 @@ function showPreviousStream(currentIndex, forward) {
   player.setChannel(previousChannels[(currentIndex += forward ? 1 : -1)]);
 } //showPreviousStream
 
-function dragElement() {
-  let x = 0;
-  let y = 0;
-
-  const mouseDownHandler = function (e) {
-    if (e.target.classList.contains("bingo-cell") && e.button !== 1) {
-      return;
-    }
-    x = e.clientX;
-    y = e.clientY;
-    document.addEventListener("mousemove", mouseMoveHandler);
-    document.addEventListener("mouseup", mouseUpHandler);
-  };
-
-  const mouseMoveHandler = function (e) {
-    elements.board.style.top = elements.board.offsetTop + e.clientY - y + "px";
-    elements.board.style.left = elements.board.offsetLeft + e.clientX - x + "px";
-    x = e.clientX;
-    y = e.clientY;
-  };
-
-  const mouseUpHandler = function () {
-    document.removeEventListener("mousemove", mouseMoveHandler);
-    document.removeEventListener("mouseup", mouseUpHandler);
-  };
-
-  elements.board.addEventListener("mousedown", mouseDownHandler);
-} //dragElement
-
 function fillCell(event) {
   if (!boardCreated) {
     let textInput = document.querySelector(`input[data-item-id="${event.target.dataset.id}"]`);
@@ -876,6 +847,32 @@ function loadBoard() {
   }
 } //loadBoard
 
+let x = 0;
+let y = 0;
+function mouseDownHandler(e) {
+  if (e.target.classList.contains("bingo-cell") && e.button !== 1) {
+    return;
+  }
+  elements.twitchEmbedDiv.style.pointerEvents = "none";
+  x = e.clientX;
+  y = e.clientY;
+  document.addEventListener("mousemove", mouseMoveHandler);
+  document.addEventListener("mouseup", mouseUpHandler);
+}
+
+function mouseMoveHandler(e) {
+  elements.board.style.top = elements.board.offsetTop + e.clientY - y + "px";
+  elements.board.style.left = elements.board.offsetLeft + e.clientX - x + "px";
+  x = e.clientX;
+  y = e.clientY;
+}
+
+function mouseUpHandler() {
+  elements.twitchEmbedDiv.style.pointerEvents = "all";
+  document.removeEventListener("mousemove", mouseMoveHandler);
+  document.removeEventListener("mouseup", mouseUpHandler);
+}
+
 window.onload = async function () {
   seenChannels = JSON.parse(localStorage.getItem("seenChannels_bingo")) || [];
   elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
@@ -933,6 +930,19 @@ window.onload = async function () {
     bingoSize = parseInt(this.value, 10);
     elements.bingoSizeLabel.innerHTML = `Board size: ${bingoSize}x${bingoSize} (${bingoSize * bingoSize} ${bingoSize == 1 ? "item" : "items"})`;
     elements.boardSearch.style.display = bingoSize < 3 ? "none" : "";
+    switch (bingoSize) {
+      case 10:
+        elements.previewDiv.style.scale = 0.7;
+        break;
+      case 9:
+        elements.previewDiv.style.scale = 0.8;
+        break;
+      case 8:
+        elements.previewDiv.style.scale = 0.85;
+        break;
+      default:
+        elements.previewDiv.style.scale = 1;
+    }
     loadInputs();
     loadBoard();
   };
@@ -969,7 +979,20 @@ window.onload = async function () {
     }
   });
 
-  dragElement();
+  window.addEventListener("keydown", (event) => {
+    if (event.code === "F3" || ((event.ctrlKey || event.metaKey) && event.code === "KeyF")) {
+      event.preventDefault();
+      toggleSearchBar();
+    }
+
+    if (event.code === "KeyR" && document.activeElement.tagName !== "INPUT") {
+      elements.board.style = "top: 6%; left: 6%; scale: 1;";
+      mouseUpHandler();
+      hidePreview();
+    }
+  });
+
+  elements.board.addEventListener("mousedown", mouseDownHandler);
   loadInputs();
   loadBoard();
   customBadges = await getCustomBadges();
