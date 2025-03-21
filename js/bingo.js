@@ -4,7 +4,6 @@ const suggestions = [
   "Over 10,000 viewers",
   "Pet cam",
   "IRL stream",
-  "Hottub stream",
   "Movie/TV show",
   "Streamer you recognize",
   "Console stream",
@@ -18,7 +17,6 @@ const suggestions = [
   "Reacting to videos",
   "Low quality cam",
   "Low quality mic",
-  "Cam bigger than gameplay",
   "NotLikeThis screen",
   "ASMR stream",
   "1k+ viewers & inactive chat",
@@ -29,7 +27,7 @@ const suggestions = [
   "Esports tournament",
   "Playing an instrument",
   "Subscribers only chat",
-  "Room full of RGB lights",
+  "RGB lights in background",
   "Follow goal overlay",
   "Sub count overlay",
   "Default profile picture",
@@ -40,10 +38,9 @@ const suggestions = [
   "Only mods & VIPs in chat",
   "Game older than 20 years",
   "24/7 music stream",
-  "Kid streaming",
+  "DJ",
   "Activate Windows watermark",
   "Singing",
-  "Polish streamer 🇵🇱",
   "Cooking",
   "Only bots in chat",
   "Hype Train active",
@@ -70,6 +67,7 @@ const suggestions = [
   "Wearing their own merch",
   "TTS",
   "Emoji in title",
+  "AI stream",
 ];
 
 const elements = {
@@ -86,6 +84,7 @@ const elements = {
   customBingo: document.getElementById("customBingo"),
   bingoTypeDescription: document.getElementById("bingoTypeDescription"),
   customBingoName: document.getElementById("customBingoName"),
+  customBingoNameDiv: document.getElementById("customBingoNameDiv"),
   bingoSize: document.getElementById("bingoSize"),
   bingoSizeLabel: document.getElementById("bingoSizeLabel"),
   boardInputs: document.getElementById("boardInputs"),
@@ -914,7 +913,7 @@ window.onload = async function () {
     if (this.checked) {
       bingoType = "twitch";
       elements.bingoTypeDescription.innerHTML = "Random Twitch streams will be shown";
-      elements.customBingoName.style.display = "none";
+      elements.customBingoNameDiv.style.display = "none";
     }
   };
 
@@ -922,7 +921,7 @@ window.onload = async function () {
     if (this.checked) {
       bingoType = "custom";
       elements.bingoTypeDescription.innerHTML = "A custom bingo board that can be used to play with your viewers";
-      elements.customBingoName.style.display = "";
+      elements.customBingoNameDiv.style.display = "";
     }
   };
 
