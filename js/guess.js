@@ -1854,9 +1854,17 @@ function usePowerup(pType) {
 } //usePowerup
 
 window.onload = async function () {
-  seenChannels = JSON.parse(localStorage.getItem("seenChannels")) || [];
+  localforage.config({
+    driver: localforage.INDEXEDDB,
+    name: "guessr.tv",
+    version: 1.0,
+    storeName: "guessr",
+    description: "guessr",
+  });
+
+  seenChannels = JSON.parse(await localforage.getItem("seenChannels")) || [];
   elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
-  seenClips = JSON.parse(localStorage.getItem("seenClips")) || [];
+  seenClips = JSON.parse(await localforage.getItem("seenClips")) || [];
   elements.seenClips.innerHTML = seenClips.length.toLocaleString();
   skipSexual = (localStorage.getItem("skipSexual") || "true") === "true";
   elements.skipSexual.checked = skipSexual;
@@ -1964,21 +1972,21 @@ window.onload = async function () {
   // };
 
   elements.nextRound.onclick = function () {
-    localStorage.setItem("seenChannels", JSON.stringify(seenChannels));
-    localStorage.setItem("seenClips", JSON.stringify(seenClips));
+    localforage.setItem("seenChannels", JSON.stringify(seenChannels));
+    localforage.setItem("seenClips", JSON.stringify(seenChannels));
     elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
     elements.seenClips.innerHTML = seenClips.length.toLocaleString();
     nextRound();
   };
 
   elements.resetSeenChannels.onclick = function () {
-    localStorage.setItem("seenChannels", JSON.stringify([]));
+    localforage.setItem("seenChannels", JSON.stringify([]));
     seenChannels = [];
     elements.seenChannels.innerHTML = 0;
     showToast("Seen channels reset", "success", 2000);
   };
   elements.resetSeenClips.onclick = function () {
-    localStorage.setItem("seenClips", JSON.stringify([]));
+    localforage.setItem("seenClips", JSON.stringify([]));
     seenClips = [];
     elements.seenClips.innerHTML = 0;
     showToast("Seen clips reset", "success", 2000);
@@ -2012,8 +2020,8 @@ window.onload = async function () {
   //   }
 
   //   if (elements.nextRound.offsetParent && e.key === "Enter") {
-  //     localStorage.setItem("seenChannels", JSON.stringify(seenChannels));
-  //     localStorage.setItem("seenClips", JSON.stringify(seenClips));
+  //     localforage.setItem("seenChannels", JSON.stringify(seenChannels));
+  //     localforage.setItem("seenClips", JSON.stringify(seenClips));
   //     nextRound();
   //     return;
   //   }

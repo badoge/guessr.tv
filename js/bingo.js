@@ -1,74 +1,80 @@
-const suggestions = [
-  "VTuber",
-  "Streamer AFK",
-  "Over 10,000 viewers",
-  "Pet cam",
-  "IRL stream",
-  "Movie/TV show",
-  "Streamer you recognize",
-  "Console stream",
-  "Speedrunner",
-  "Empty chat",
-  "Gambling",
-  "Sleeping",
-  "Dancing",
-  "#AD stream",
-  "Sponsors overlay",
-  "Reacting to videos",
-  "Low quality cam",
-  "Low quality mic",
-  "NotLikeThis screen",
-  "ASMR stream",
-  "1k+ viewers & inactive chat",
-  "Hand cam",
-  "Cosplaying",
-  "Random gifs in overlay",
-  "Driving stream",
-  "Esports tournament",
-  "Playing an instrument",
-  "Subscribers only chat",
-  "RGB lights in background",
-  "Follow goal overlay",
-  "Sub count overlay",
-  "Default profile picture",
-  "Eating",
-  "Same game 2 times in a row",
-  "Top gifter 100+ gifts",
-  "Top cheerer 10k+ bits",
-  "Only mods & VIPs in chat",
-  "Game older than 20 years",
-  "24/7 music stream",
-  "DJ",
-  "Activate Windows watermark",
-  "Singing",
-  "Cooking",
-  "Only bots in chat",
-  "Hype Train active",
-  "Wrong stream category",
-  "Neon username sign",
-  "Subathon",
-  "Always on animals stream",
-  "Affiliate/Partner anniversary",
-  "Birthday stream",
-  "Numbers in username",
-  "Art stream",
-  "Social links overlay",
-  "Streamer you follow",
-  "Fullscreen facecam",
-  "Chat overlay",
-  "Emotes overlay",
-  "Pinned chat message",
-  "Drops enabled",
-  "Mobile stream",
-  "Programming stream",
-  "Streamer doesn't speak for 1m",
-  "Donation goal overlay",
-  "Stream ending",
-  "Wearing their own merch",
-  "TTS",
-  "Emoji in title",
-  "AI stream",
+let itemPacks = [
+  {
+    name: "Default Twitch bingo",
+    items: [
+      "VTuber",
+      "Streamer AFK",
+      "Over 10,000 viewers",
+      "Pet cam",
+      "IRL stream",
+      "Movie/TV show",
+      "Streamer you recognize",
+      "Console stream",
+      "Speedrunner",
+      "Empty chat",
+      "Gambling",
+      "Sleeping",
+      "Dancing",
+      "#AD stream",
+      "Sponsors overlay",
+      "Reacting to videos",
+      "Low quality cam",
+      "Low quality mic",
+      "NotLikeThis screen",
+      "ASMR stream",
+      "1k+ viewers & inactive chat",
+      "Hand cam",
+      "Cosplaying",
+      "Random gifs in overlay",
+      "Driving stream",
+      "Esports tournament",
+      "Playing an instrument",
+      "Subscribers only chat",
+      "RGB lights in background",
+      "Follow goal overlay",
+      "Sub count overlay",
+      "Default profile picture",
+      "Eating",
+      "Same game 2 times in a row",
+      "Top gifter 100+ gifts",
+      "Top cheerer 10k+ bits",
+      "Only mods & VIPs in chat",
+      "Game older than 20 years",
+      "24/7 music stream",
+      "DJ",
+      "Activate Windows watermark",
+      "Singing",
+      "Cooking",
+      "Only bots in chat",
+      "Hype Train active",
+      "Wrong stream category",
+      "Neon username sign",
+      "Subathon",
+      "Always on animals stream",
+      "Affiliate/Partner anniversary",
+      "Birthday stream",
+      "Numbers in username",
+      "Art stream",
+      "Social links overlay",
+      "Streamer you follow",
+      "Fullscreen facecam",
+      "Chat overlay",
+      "Emotes overlay",
+      "Pinned chat message",
+      "Drops enabled",
+      "Mobile stream",
+      "Programming stream",
+      "Streamer doesn't speak for 1m",
+      "Donation goal overlay",
+      "Stream ending",
+      "Wearing their own merch",
+      "TTS",
+      "Emoji in title",
+      "AI stream",
+    ],
+  },
 ];
+let selectedPack = 0;
 
 const elements = {
   leaderboardCount: document.getElementById("leaderboardCount"),
@@ -79,6 +85,12 @@ const elements = {
   seenChannels: document.getElementById("seenChannels"),
   resetSeenChannels: document.getElementById("resetSeenChannels"),
   loginExpiredModal: document.getElementById("loginExpiredModal"),
+  packsModal: document.getElementById("packsModal"),
+  packEditorSelect: document.getElementById("packEditorSelect"),
+  packEditorName: document.getElementById("packEditorName"),
+  packEditorItems: document.getElementById("packEditorItems"),
+  deletePackButton: document.getElementById("deletePackButton"),
+  packSelector: document.getElementById("packSelector"),
   allowDiagonals: document.getElementById("allowDiagonals"),
   twitchBingo: document.getElementById("twitchBingo"),
   customBingo: document.getElementById("customBingo"),
@@ -123,7 +135,7 @@ let TWITCH = {
   userID: "",
 };
 
-let loginExpiredModal;
+let loginExpiredModal, packsModal;
 let bingoStatsTooltip;
 let streamerScore;
 let copyButton;
@@ -221,7 +233,7 @@ async function nextStream() {
     }
     previousChannels.push(channel.username);
     seenChannels.push(channel.username);
-    localStorage.setItem("seenChannels_bingo", JSON.stringify(seenChannels));
+    localforage.setItem("seenChannels", JSON.stringify(seenChannels));
     elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
 
     if (channel.username == channelName) {
@@ -276,13 +288,13 @@ function randomize(event) {
   const input = document.querySelector(`[data-item-id="${id}"]`);
   const bingoItems = document.querySelectorAll(".bingo-item");
   const taken = [...bingoItems].map((x) => x.value).filter(Boolean);
-  let random = suggestions[Math.floor(Math.random() * suggestions.length)];
-  if (taken.length >= suggestions.length) {
+  let random = itemPacks[selectedPack].items[Math.floor(Math.random() * itemPacks[selectedPack].items.length)];
+  if (taken.length >= itemPacks[selectedPack].items.length) {
     showToast("No more presets left", "danger", 3000);
     return;
   }
   while (taken.includes(random)) {
-    random = suggestions[Math.floor(Math.random() * suggestions.length)];
+    random = itemPacks[selectedPack].items[Math.floor(Math.random() * itemPacks[selectedPack].items.length)];
   }
 
   input.value = random;
@@ -293,7 +305,7 @@ function randomize(event) {
 
 function randomizeAll() {
   const bingoItems = document.querySelectorAll(".bingo-item");
-  let options = shuffleArray(structuredClone(suggestions));
+  let options = shuffleArray(structuredClone(itemPacks[selectedPack].items));
   for (let index = 0; index < bingoItems.length; index++) {
     let option = options.pop();
     if (!option) {
@@ -872,8 +884,115 @@ function mouseUpHandler() {
   document.removeEventListener("mouseup", mouseUpHandler);
 }
 
+function loadPacks(selectedIndex = 0) {
+  //remove Loading... placeholder or old options when updating the list
+  elements.packEditorSelect.replaceChildren();
+  elements.packSelector.replaceChildren();
+
+  //add the custom packs to the selects
+  for (let index = 0; index < itemPacks.length; index++) {
+    let option = document.createElement("option");
+    option.value = index;
+    option.innerText = itemPacks[index].name;
+    elements.packSelector.appendChild(option);
+    elements.packEditorSelect.appendChild(option.cloneNode(true));
+  }
+
+  elements.packSelector.selectedIndex = selectedIndex;
+  elements.packEditorSelect.selectedIndex = selectedIndex;
+
+  elements.packEditorName.value = itemPacks[selectedIndex].name;
+
+  //default pack has no raw text
+  if (selectedIndex == 0) {
+    elements.packEditorItems.value = itemPacks[selectedIndex].items.join("\n");
+  } else {
+    elements.packEditorItems.value = itemPacks[selectedIndex].raw;
+  }
+
+  //add hints if user has no custom packs
+  if (itemPacks.length == 1) {
+    let option1 = document.createElement("option");
+    let option2 = document.createElement("option");
+    option1.value = -1;
+    option2.value = -1;
+    option1.disabled = true;
+    option2.disabled = true;
+    option1.innerText = "Create your own pack using the button on the right";
+    option2.innerText = "Create a pack using the green button on the right :)";
+    elements.packSelector.appendChild(option1);
+    elements.packEditorSelect.appendChild(option2);
+  }
+
+  //disable editing for default pack
+  if (selectedIndex == 0) {
+    elements.deletePackButton.disabled = true;
+    elements.packEditorName.disabled = true;
+    elements.packEditorItems.disabled = true;
+  } else {
+    elements.deletePackButton.disabled = false;
+    elements.packEditorName.disabled = false;
+    elements.packEditorItems.disabled = false;
+  }
+} //loadPacks
+
+function createPack() {
+  itemPacks.push({ name: `Custom pack #${itemPacks.length}`, items: [], raw: "" });
+  selectedPack = itemPacks.length - 1;
+  loadPacks(selectedPack);
+} //createPack
+
+function editPacks() {
+  packsModal.show();
+} //editPacks
+
+function changePack(select) {
+  selectedPack = parseInt(select.value, 10);
+  loadPacks(selectedPack);
+} //changePack
+
+function savePacks() {
+  let packName = elements.packEditorName.value.trim();
+  let packItemsRaw = elements.packEditorItems.value;
+  let packItems = elements.packEditorItems.value
+    .split(String.fromCharCode(10))
+    .map((x) => x.trim())
+    .filter(Boolean);
+
+  itemPacks[selectedPack].name = packName;
+  itemPacks[selectedPack].raw = packItemsRaw;
+  itemPacks[selectedPack].items = packItems;
+
+  if (itemPacks.filter((e) => e.name === packName).length > 1) {
+    showToast("Pack name already exists", "warning", 2000);
+  }
+
+  if (new Set(packItems.map((x) => x.toLowerCase())).size !== packItems.length) {
+    showToast("Pack has duplicates", "danger", 2000);
+  }
+
+  loadPacks(selectedPack);
+
+  localforage.setItem("itemPacks", JSON.stringify(itemPacks.slice(1)));
+} //savePacks
+
+function deletePack() {
+  itemPacks.splice(selectedPack, 1);
+  loadPacks(--selectedPack);
+} //deletePack
+
 window.onload = async function () {
-  seenChannels = JSON.parse(localStorage.getItem("seenChannels_bingo")) || [];
+  localforage.config({
+    driver: localforage.INDEXEDDB,
+    name: "guessr.tv/bingo",
+    version: 1.0,
+    storeName: "bingo",
+    description: "bingo",
+  });
+
+  let storedItemPacks = JSON.parse(await localforage.getItem("itemPacks")) || [];
+  itemPacks.push(...storedItemPacks);
+  seenChannels = JSON.parse(await localforage.getItem("seenChannels")) || [];
   elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
 
   skipSexual = (localStorage.getItem("skipSexual") || "true") === "true";
@@ -883,7 +1002,7 @@ window.onload = async function () {
   elements.unloadWarningBingo.checked = unloadWarningBingo;
 
   elements.resetSeenChannels.onclick = function () {
-    localStorage.setItem("seenChannels_bingo", JSON.stringify([]));
+    localforage.setItem("seenChannels", JSON.stringify([]));
     elements.seenChannels.innerHTML = 0;
     seenChannels = [];
     showToast("Seen channels reset", "success", 2000);
@@ -892,6 +1011,7 @@ window.onload = async function () {
   enableTooltips();
 
   loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
+  packsModal = new bootstrap.Modal(elements.packsModal);
   bingoStatsTooltip = new bootstrap.Tooltip(elements.bingoStatsTooltip);
   copyButton = new bootstrap.Popover(elements.copyButton);
   bingoPopover = new bootstrap.Popover(elements.bingoPopover);
@@ -994,6 +1114,7 @@ window.onload = async function () {
   elements.board.addEventListener("mousedown", mouseDownHandler);
   loadInputs();
   loadBoard();
+  loadPacks();
   customBadges = await getCustomBadges();
 }; //onload
 

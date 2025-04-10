@@ -104,7 +104,7 @@ async function nextStream() {
       pfp: user.data[0].profile_image_url || "/pics/guessr.png",
     });
     seenChannels.push(channel.username);
-    localStorage.setItem("seenChannels_watch", JSON.stringify(seenChannels));
+    localforage.setItem("seenChannels", JSON.stringify(seenChannels));
     elements.seenChannels.innerHTML = seenChannels.length;
   } catch (error) {
     console.log(error);
@@ -134,11 +134,20 @@ function showPreviousStream(currentIndex, forward) {
 } //showPreviousStream
 
 window.onload = async function () {
-  seenChannels = JSON.parse(localStorage.getItem("seenChannels_watch")) || [];
+  localforage.config({
+    driver: localforage.INDEXEDDB,
+    name: "guessr.tv/watch",
+    version: 1.0,
+    storeName: "watch",
+    description: "watch",
+  });
+
+  seenChannels = JSON.parse(await localforage.getItem("seenChannels")) || [];
+
   elements.seenChannels.innerHTML = seenChannels.length;
 
   elements.resetSeenChannels.onclick = function () {
-    localStorage.setItem("seenChannels_watch", JSON.stringify([]));
+    localforage.setItem("seenChannels", JSON.stringify([]));
     elements.seenChannels.innerHTML = 0;
     seenChannels = [];
     showToast("Seen channels reset", "success", 2000);
