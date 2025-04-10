@@ -155,8 +155,14 @@ let usernameSent = false;
 let totalTab, roundTab;
 
 async function getMainList() {
+  let requestOptions = {
+    headers: {
+      pragma: "no-cache",
+      "cache-control": "no-cache",
+    },
+  };
   try {
-    let response = await fetch(`https://api.okayeg.com/guess`, requestOptions);
+    let response = await fetch(`https://api.okayeg.com/guess?dank=${Date.now()}`, requestOptions);
     let list = await response.json();
     mainList = list.guess.guess;
     max = Math.max(...mainList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 5000);
@@ -171,7 +177,7 @@ async function getMainList() {
 
 async function getMainListClips() {
   try {
-    let response = await fetch(`https://api.okayeg.com/guess/clips/${gameSettings.collection}?time=${Date.now()}`, requestOptions);
+    let response = await fetch(`https://api.okayeg.com/guess/clips/${gameSettings.collection}?time=${Date.now()}`);
     let list = await response.json();
     mainList = list.random[0].clips;
     max = Math.max(...mainList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 5000);
@@ -185,7 +191,7 @@ async function getMainListClips() {
 } //getMainListClips
 
 async function loadGameList() {
-  let response = await fetch(`/games.json`, requestOptions);
+  let response = await fetch(`/games.json`);
   gameList = await response.json();
   elements.gameList.innerHTML = "";
   shuffleArray(gameList);
@@ -196,7 +202,7 @@ async function loadGameList() {
 
 async function loadEmoteList() {
   try {
-    let response = await fetch(`https://api.okayeg.com/guess/emotes?time=${Date.now()}`, requestOptions);
+    let response = await fetch(`https://api.okayeg.com/guess/emotes?time=${Date.now()}`);
     let json = await response.json();
     emoteList = json.random;
   } catch (error) {
@@ -320,14 +326,14 @@ async function getRandomStream() {
 
   //update stream info
   try {
-    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${random.userid}`, requestOptions);
+    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${random.userid}`);
     let stream = await response.json();
 
     if (stream.data[0]) {
       //get follower count if game mode is followers
       if (gameSettings.game == "followers") {
         try {
-          let response = await fetch(`https://helper.guessr.tv/twitch/channels/followers?broadcaster_id=${random.userid}`, requestOptions);
+          let response = await fetch(`https://helper.guessr.tv/twitch/channels/followers?broadcaster_id=${random.userid}`);
           let followers = await response.json();
           random.followers = followers.total;
           if (random.followers > max) {
@@ -345,7 +351,7 @@ async function getRandomStream() {
       if (gameSettings.game == "emote") {
         let tries = 0;
         try {
-          let response = await fetch(`https://helper.guessr.tv/twitch/chat/emotes?broadcaster_id=${random.userid}`, requestOptions);
+          let response = await fetch(`https://helper.guessr.tv/twitch/chat/emotes?broadcaster_id=${random.userid}`);
           let emotes = await response.json();
           if (emotes?.data?.length > 0) {
             let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
@@ -401,7 +407,7 @@ async function getClipsGuessList() {
   await getMainListClips(); // needs to be fetched before each game bcz list has 5 clips only
   let ids = mainList.map((e) => e.id);
   try {
-    let response = await fetch(`https://helper.guessr.tv/twitch/clips?id=${ids.join(",")}`, requestOptions);
+    let response = await fetch(`https://helper.guessr.tv/twitch/clips?id=${ids.join(",")}`);
     if (response.status != 200) {
       showToast("Something went wrong while updating clip view counts :(", "danger", 3000);
       // await getClipsGuessList();
@@ -442,7 +448,7 @@ async function getClipsFollowerCount() {
   let fetched = 0;
   for (let index = 0; index < 5; index++) {
     try {
-      let response = await fetch(`https://helper.guessr.tv/twitch/channels/followers?broadcaster_id=${guessList[index].userid}`, requestOptions);
+      let response = await fetch(`https://helper.guessr.tv/twitch/channels/followers?broadcaster_id=${guessList[index].userid}`);
       if (response.status != 200) {
         showToast("Something went wrong while updating the follow counts :(", "danger", 3000);
         return;
@@ -469,7 +475,7 @@ async function getClipsEmotes() {
   for (let index = 0; index < 5; index++) {
     let tries = 0;
     try {
-      let response = await fetch(`https://helper.guessr.tv/twitch/chat/emotes?broadcaster_id=${guessList[index].userid}`, requestOptions);
+      let response = await fetch(`https://helper.guessr.tv/twitch/chat/emotes?broadcaster_id=${guessList[index].userid}`);
       if (response.status != 200) {
         showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
         return;

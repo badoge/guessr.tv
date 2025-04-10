@@ -19,8 +19,14 @@ let player;
 let retryLimit = 0;
 
 async function getMainList() {
+  let requestOptions = {
+    headers: {
+      pragma: "no-cache",
+      "cache-control": "no-cache",
+    },
+  };
   try {
-    let response = await fetch(`https://api.okayeg.com/guess`, requestOptions);
+    let response = await fetch(`https://api.okayeg.com/guess?dank=${Date.now()}`, requestOptions);
     let list = await response.json();
     mainList = list.guess.guess;
     elements.infoTime.innerHTML = `Channel list updated on ${new Date(list.guess.time)}`;
@@ -67,14 +73,13 @@ async function nextStream() {
 
   //update stream info
   try {
-    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${channel.userid}`, requestOptions);
+    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${channel.userid}`);
     let stream = await response.json();
     if (!stream.data[0]) {
-      showToast("Channel is offline, getting new channel", "info", 1000);
       retryLimit++;
       return nextStream();
     }
-    let response2 = await fetch(`https://helper.guessr.tv/twitch/users?id=${channel.userid}`, requestOptions);
+    let response2 = await fetch(`https://helper.guessr.tv/twitch/users?id=${channel.userid}`);
     let user = await response2.json();
     elements.pfp.src = user.data[0].profile_image_url || "/pics/guessr.png";
     let name = stream.data[0].user_name.toLowerCase() == stream.data[0].user_login.toLowerCase() ? stream.data[0].user_name : `${stream.data[0].user_name} (${stream.data[0].user_login})`;

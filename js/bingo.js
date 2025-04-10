@@ -159,6 +159,12 @@ let won = false;
 let boardCreated = false;
 
 async function getMainList() {
+  let requestOptions = {
+    headers: {
+      pragma: "no-cache",
+      "cache-control": "no-cache",
+    },
+  };
   try {
     let response = await fetch(`https://api.okayeg.com/guess?dank=${Date.now()}`, requestOptions);
     let list = await response.json();
@@ -200,19 +206,15 @@ async function nextStream() {
     return;
   }
   if (retryLimit > 5) {
-    showToast("Too many retries, something might be wrong :( ...attempting to fix", "danger", "3000");
-    await getMainList();
-    shuffleArray(mainList);
-    nextStream();
+    showToast("Too many retries, something might be wrong :(", "danger", "3000");
     return;
   }
 
   //update stream info
   try {
-    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${channel.userid}`, requestOptions);
+    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${channel.userid}`);
     let stream = await response.json();
     if (!stream.data[0]) {
-      showToast("Channel is offline, getting new channel", "info", 1500);
       retryLimit++;
       return nextStream();
     }
@@ -506,7 +508,6 @@ async function uploadBoard() {
         "Content-Type": "application/json",
       },
       body: body,
-      redirect: "follow",
     };
     try {
       let response = await fetch(`https://bingo.guessr.tv/save`, requestOptions);
@@ -688,7 +689,6 @@ async function updateLeaderboard() {
       "Content-Type": "application/json",
     },
     body: body,
-    redirect: "follow",
   };
 
   try {
@@ -869,20 +869,20 @@ function mouseDownHandler(e) {
   y = e.clientY;
   document.addEventListener("mousemove", mouseMoveHandler);
   document.addEventListener("mouseup", mouseUpHandler);
-}
+} //mouseDownHandler
 
 function mouseMoveHandler(e) {
   elements.board.style.top = elements.board.offsetTop + e.clientY - y + "px";
   elements.board.style.left = elements.board.offsetLeft + e.clientX - x + "px";
   x = e.clientX;
   y = e.clientY;
-}
+} //mouseMoveHandler
 
 function mouseUpHandler() {
   elements.twitchEmbedDiv.style.pointerEvents = "all";
   document.removeEventListener("mousemove", mouseMoveHandler);
   document.removeEventListener("mouseup", mouseUpHandler);
-}
+} //mouseUpHandler
 
 function loadPacks(selectedIndex = 0) {
   //remove Loading... placeholder or old options when updating the list

@@ -157,16 +157,8 @@ async function refresh() {
   elements.leaderboard.innerHTML = spinner;
   elements.leaderboardCount.innerHTML = "Loading...";
 
-  let requestOptions = {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    redirect: "follow",
-  };
   try {
-    let response = await fetch(`https://bingo.guessr.tv/${elements.channel.innerText}/refresh`, requestOptions);
+    let response = await fetch(`https://bingo.guessr.tv/${elements.channel.innerText}/refresh`);
     let result = await response.json();
     console.log(result);
 
@@ -310,7 +302,6 @@ async function join() {
       "Content-Type": "application/json",
     },
     body: body,
-    redirect: "follow",
   };
   try {
     let response = await fetch(`https://bingo.guessr.tv/join`, requestOptions);
