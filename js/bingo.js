@@ -74,7 +74,8 @@ let itemPacks = [
     ],
   },
 ];
-let selectedPack = 0;
+let selectedPacks = [0];
+let currentItems = [];
 
 const elements = {
   leaderboardCount: document.getElementById("leaderboardCount"),
@@ -90,7 +91,8 @@ const elements = {
   packEditorName: document.getElementById("packEditorName"),
   packEditorItems: document.getElementById("packEditorItems"),
   deletePackButton: document.getElementById("deletePackButton"),
-  packSelector: document.getElementById("packSelector"),
+  packSwitchesDiv: document.getElementById("packSwitchesDiv"),
+  packDropdownButton: document.getElementById("packDropdownButton"),
   allowDiagonals: document.getElementById("allowDiagonals"),
   twitchBingo: document.getElementById("twitchBingo"),
   customBingo: document.getElementById("customBingo"),
@@ -290,13 +292,13 @@ function randomize(event) {
   const input = document.querySelector(`[data-item-id="${id}"]`);
   const bingoItems = document.querySelectorAll(".bingo-item");
   const taken = [...bingoItems].map((x) => x.value).filter(Boolean);
-  let random = itemPacks[selectedPack].items[Math.floor(Math.random() * itemPacks[selectedPack].items.length)];
-  if (taken.length >= itemPacks[selectedPack].items.length) {
+  let random = currentItems[Math.floor(Math.random() * currentItems.length)];
+  if (taken.length >= currentItems.length) {
     showToast("No more presets left", "danger", 3000);
     return;
   }
   while (taken.includes(random)) {
-    random = itemPacks[selectedPack].items[Math.floor(Math.random() * itemPacks[selectedPack].items.length)];
+    random = currentItems[Math.floor(Math.random() * currentItems.length)];
   }
 
   input.value = random;
@@ -307,7 +309,7 @@ function randomize(event) {
 
 function randomizeAll() {
   const bingoItems = document.querySelectorAll(".bingo-item");
-  let options = shuffleArray(structuredClone(itemPacks[selectedPack].items));
+  let options = shuffleArray(structuredClone(currentItems));
   for (let index = 0; index < bingoItems.length; index++) {
     let option = options.pop();
     if (!option) {
@@ -887,21 +889,33 @@ function mouseUpHandler() {
 function loadPacks(selectedIndex = 0) {
   //remove Loading... placeholder or old options when updating the list
   elements.packEditorSelect.replaceChildren();
-  elements.packSelector.replaceChildren();
+  elements.packSwitchesDiv.innerHTML = "";
 
-  //add the custom packs to the selects
+  //add the custom packs to the dropdown and editor select
   for (let index = 0; index < itemPacks.length; index++) {
     let option = document.createElement("option");
     option.value = index;
     option.innerText = itemPacks[index].name;
-    elements.packSelector.appendChild(option);
     elements.packEditorSelect.appendChild(option.cloneNode(true));
+    elements.packSwitchesDiv.insertAdjacentHTML(
+      "beforeend",
+      `<div class="form-check form-switch">
+        <input class="form-check-input pack-checkbox" type="checkbox" role="switch" id="packSwitch${index}" data-id="${index}" onchange="updateSelectedPacks()" ${
+        selectedPacks.includes(index) ? "checked" : ""
+      } />
+        <label class="form-check-label" for="packSwitch${index}">${itemPacks[index].name}</label>
+      </div>`
+    );
   }
 
-  elements.packSelector.selectedIndex = selectedIndex;
   elements.packEditorSelect.selectedIndex = selectedIndex;
-
   elements.packEditorName.value = itemPacks[selectedIndex].name;
+
+  if (selectedPacks.length == 0) {
+    elements.packDropdownButton.innerHTML = `<i class="material-icons notranslate">warning</i>No packs selected`;
+  } else {
+    elements.packDropdownButton.innerText = `${itemPacks[selectedPacks[0]].name} ${selectedPacks.length > 1 ? `(+${selectedPacks.length - 1})` : ""}`;
+  }
 
   //default pack has no raw text
   if (selectedIndex == 0) {
@@ -912,16 +926,12 @@ function loadPacks(selectedIndex = 0) {
 
   //add hints if user has no custom packs
   if (itemPacks.length == 1) {
-    let option1 = document.createElement("option");
-    let option2 = document.createElement("option");
-    option1.value = -1;
-    option2.value = -1;
-    option1.disabled = true;
-    option2.disabled = true;
-    option1.innerText = "Create your own pack using the button on the right";
-    option2.innerText = "Create a pack using the green button on the right :)";
-    elements.packSelector.appendChild(option1);
-    elements.packEditorSelect.appendChild(option2);
+    let option = document.createElement("option");
+    option.value = -1;
+    option.disabled = true;
+    option.innerText = "Create a pack using the green button on the right :)";
+    elements.packEditorSelect.appendChild(option);
+    elements.packSwitchesDiv.insertAdjacentHTML("beforeend", `<br><button type="button" class="btn btn-primary" onclick="editPacks()">Create a new pack</button>`);
   }
 
   //disable editing for default pack
@@ -934,24 +944,40 @@ function loadPacks(selectedIndex = 0) {
     elements.packEditorName.disabled = false;
     elements.packEditorItems.disabled = false;
   }
+
+  currentItems = [];
+  for (let index = 0; index < selectedPacks.length; index++) {
+    currentItems.push(...itemPacks[selectedPacks[index]].items);
+  }
 } //loadPacks
 
 function createPack() {
   itemPacks.push({ name: `Custom pack #${itemPacks.length}`, items: [], raw: "" });
-  selectedPack = itemPacks.length - 1;
-  loadPacks(selectedPack);
+  selectedPacks.push(itemPacks.length - 1);
+  loadPacks(itemPacks.length - 1);
+  localforage.setItem("itemPacks", JSON.stringify(itemPacks.slice(1)));
 } //createPack
 
 function editPacks() {
   packsModal.show();
 } //editPacks
 
+function updateSelectedPacks() {
+  selectedPacks = [];
+  let checkeboxes = document.querySelectorAll(".pack-checkbox:checked");
+  for (let index = 0; index < checkeboxes.length; index++) {
+    selectedPacks.push(parseInt(checkeboxes[index].dataset.id, 10));
+  }
+  loadPacks();
+} //updateSelectedPacks
+
 function changePack(select) {
-  selectedPack = parseInt(select.value, 10);
-  loadPacks(selectedPack);
+  loadPacks(parseInt(select.value, 10));
 } //changePack
 
 function savePacks() {
+  let id = parseInt(elements.packEditorSelect.value, 10);
+
   let packName = elements.packEditorName.value.trim();
   let packItemsRaw = elements.packEditorItems.value;
   let packItems = elements.packEditorItems.value
@@ -959,9 +985,9 @@ function savePacks() {
     .map((x) => x.trim())
     .filter(Boolean);
 
-  itemPacks[selectedPack].name = packName;
-  itemPacks[selectedPack].raw = packItemsRaw;
-  itemPacks[selectedPack].items = packItems;
+  itemPacks[id].name = packName;
+  itemPacks[id].raw = packItemsRaw;
+  itemPacks[id].items = packItems;
 
   if (itemPacks.filter((e) => e.name === packName).length > 1) {
     showToast("Pack name already exists", "warning", 2000);
@@ -971,14 +997,20 @@ function savePacks() {
     showToast("Pack has duplicates", "danger", 2000);
   }
 
-  loadPacks(selectedPack);
+  loadPacks(id);
 
   localforage.setItem("itemPacks", JSON.stringify(itemPacks.slice(1)));
 } //savePacks
 
 function deletePack() {
-  itemPacks.splice(selectedPack, 1);
-  loadPacks(--selectedPack);
+  let id = parseInt(elements.packEditorSelect.value, 10);
+  itemPacks.splice(id, 1);
+  const index = selectedPacks.indexOf(id);
+  if (index > -1) {
+    selectedPacks.splice(index, 1);
+  }
+  loadPacks(--id);
+  localforage.setItem("itemPacks", JSON.stringify(itemPacks.slice(1)));
 } //deletePack
 
 window.onload = async function () {
