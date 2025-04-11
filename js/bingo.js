@@ -271,6 +271,7 @@ function fillCell(event) {
     let textInput = document.querySelector(`input[data-item-id="${event.target.dataset.id}"]`);
     textInput.scrollIntoView({ behavior: "smooth" });
     textInput.select();
+    textInput.focus();
     return;
   }
   clearTimeout(refreshCooldown);
@@ -309,6 +310,12 @@ function randomize(event) {
 
 function randomizeAll() {
   const bingoItems = document.querySelectorAll(".bingo-item");
+
+  if (![...bingoItems].map((e) => e.value).includes("")) {
+    showToast("Board is full", "warning", 2000);
+    return;
+  }
+
   let options = shuffleArray(structuredClone(currentItems));
   for (let index = 0; index < bingoItems.length; index++) {
     let option = options.pop();
@@ -316,7 +323,9 @@ function randomizeAll() {
       showToast("No more presets left", "danger", 3000);
       break;
     }
-    bingoItems[index].value = option;
+    if (!bingoItems[index].value) {
+      bingoItems[index].value = option;
+    }
   }
   loadItems();
   userInteracted = true;
@@ -391,6 +400,92 @@ function updateSingleItem(element) {
 
   checkDuplicatesOnBoard();
 } //updateSingleItem
+
+function move(event) {
+  let currentId = parseInt(event.target.dataset.itemId, 10);
+  switch (event.key) {
+    case "ArrowLeft": {
+      if (event.target.selectionStart > 0) {
+        return;
+      }
+
+      if (Math.abs(currentId % 2) == 1) {
+        return;
+      }
+      let textInput = document.querySelector(`input[data-item-id="${currentId - 1}"]`);
+      if (!textInput) {
+        return;
+      }
+      textInput.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      textInput.select();
+      textInput.focus();
+      break;
+    }
+
+    case "ArrowRight": {
+      if (event.target.selectionStart < event.target.value.length) {
+        return;
+      }
+
+      if (currentId % 2 == 0) {
+        return;
+      }
+
+      let textInput = document.querySelector(`input[data-item-id="${currentId + 1}"]`);
+      if (!textInput) {
+        return;
+      }
+      textInput.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      textInput.select();
+      textInput.focus();
+      break;
+    }
+
+    case "ArrowUp": {
+      let textInput = document.querySelector(`input[data-item-id="${currentId - 2}"]`);
+      if (!textInput) {
+        return;
+      }
+      textInput.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      textInput.select();
+      textInput.focus();
+      break;
+    }
+
+    case "ArrowDown": {
+      let textInput = document.querySelector(`input[data-item-id="${currentId + 2}"]`);
+      if (!textInput) {
+        return;
+      }
+      textInput.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      textInput.select();
+      textInput.focus();
+      break;
+    }
+
+    case "Tab": {
+      event.preventDefault();
+      if (event.shiftKey) {
+        let textInput = document.querySelector(`input[data-item-id="${currentId - 1}"]`);
+        if (!textInput) {
+          textInput = document.querySelector(`input[data-item-id="${bingoSize * bingoSize}"]`);
+        }
+        textInput.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        textInput.select();
+        textInput.focus();
+      } else {
+        let textInput = document.querySelector(`input[data-item-id="${currentId + 1}"]`);
+        if (!textInput) {
+          textInput = document.querySelector(`input[data-item-id="1"]`);
+        }
+        textInput.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        textInput.select();
+        textInput.focus();
+      }
+      break;
+    }
+  }
+}
 
 function activateCellById(element) {
   const itemId = element.dataset.itemId;
@@ -781,7 +876,7 @@ function hidePreview() {
   elements.previewDiv.style.display = "none";
 } //hidePreview
 
-function loadInputs() {
+function loadInputs(bingoItems = []) {
   elements.boardInputs.innerHTML = "";
   board = [];
   let size = bingoSize * bingoSize || 25;
@@ -792,8 +887,8 @@ function loadInputs() {
       "beforeend",
       `<div class="input-group mb-1 w-50 pe-1">
         <input type="text" class="form-control bingo-item"
-        onfocus="activateCellById(this)" onblur="deactivateCellById(this)" oninput="updateSingleItem(this)" 
-        placeholder="Bingo item #${index + 1}" data-item-id="${index + 1}" aria-label="Bingo item #${index + 1}" />
+        onfocus="activateCellById(this)" onblur="deactivateCellById(this)" oninput="updateSingleItem(this)" onkeydown="move(event)" 
+        placeholder="Bingo item #${index + 1}" data-item-id="${index + 1}" aria-label="Bingo item #${index + 1}" value="${bingoItems[index] || ""}" />
         <button class="btn btn-outline-secondary" onclick="randomize(event)" data-item-id="${index + 1}" type="button" title="Fill with random item">
           <i class="material-icons notranslate pointer-events-none">casino</i>
         </button>
@@ -802,7 +897,7 @@ function loadInputs() {
   }
 } //loadInputs
 
-function loadBoard() {
+function loadBoard(bingoItems = []) {
   elements.boardContent.innerHTML = "";
   elements.previewBoard.innerHTML = "";
   elements.board.style.top = "6%";
@@ -836,7 +931,7 @@ function loadBoard() {
 
       row += `
       <div onclick="fillCell(event)" data-id="${order}" class="col bingo-cell" ${extraStyle}>
-      ${order}
+      ${bingoItems[order - 1] || order}
       </div>`;
       romPreview += `
       <div data-id="${order}" class="col bingo-cell-preview" ${extraStyle}>
@@ -1079,6 +1174,7 @@ window.onload = async function () {
 
   elements.bingoSize.oninput = function () {
     bingoSize = parseInt(this.value, 10);
+    const bingoItems = [...document.querySelectorAll(".bingo-item")].map((e) => e.value);
     elements.bingoSizeLabel.innerHTML = `Board size: ${bingoSize}x${bingoSize} (${bingoSize * bingoSize} ${bingoSize == 1 ? "item" : "items"})`;
     elements.boardSearch.style.display = bingoSize < 3 ? "none" : "";
     switch (bingoSize) {
@@ -1094,8 +1190,8 @@ window.onload = async function () {
       default:
         elements.previewDiv.style.scale = 1;
     }
-    loadInputs();
-    loadBoard();
+    loadInputs(bingoItems);
+    loadBoard(bingoItems);
   };
 
   elements.skipSexual.onchange = function () {
