@@ -92,6 +92,8 @@ const elements = {
   chatHint: document.getElementById("chatHint"),
 };
 
+const { animate, utils } = anime;
+
 let channelBadges = { subscriber: [], bits: [] };
 let globalBadges = {};
 let customBadges = [];
@@ -1268,27 +1270,25 @@ function animateScore(points, percent, streak = null) {
   };
 
   if (streak === null) {
-    anime({
-      targets: score,
+    animate(score, {
       points: points,
       percent: percent,
-      round: 1,
-      duration: 500,
-      easing: "easeInOutExpo",
-      update: function () {
+      modifier: utils.round(0),
+      duration: 1000,
+      ease: "inOutExpo",
+      onUpdate: function () {
         elements.scoreProgressBarLabel.innerHTML = `${score.points.toLocaleString()} ${points == 1 ? "Point" : "Points"}`;
         elements.progressBar.style.width = `${score.percent}%`;
       },
     });
   } else {
-    anime({
-      targets: score,
+    animate(score, {
       points: points,
       percent: percent,
-      round: 1,
-      duration: 500,
-      easing: "easeInOutExpo",
-      update: function () {
+      modifier: utils.round(0),
+      duration: 1000,
+      ease: "inOutExpo",
+      onUpdate: function () {
         elements.scoreProgressBarLabel.innerHTML =
           points > streak
             ? `You beat your high score! Your new highscore is ${score.points.toLocaleString()}`
