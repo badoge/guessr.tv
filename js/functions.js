@@ -55,41 +55,57 @@ function addBadges(badges, userid) {
   }
 } //addBadges
 
+async function getTwitchUserId(username) {
+  try {
+    let response = await fetch(`https://helper.donk.workers.dev/twitch/users?login=${username}`);
+    let result = await response.json();
+    if (!result?.data || !result?.data[0]?.id) {
+      return null;
+    }
+    return result.data[0].id;
+  } catch (error) {
+    console.log("getTwitchUserId error", error);
+    return null;
+  }
+} //getTwitchUserId
+
 async function getChannelBadges(username) {
   try {
-    let response = await fetch(`https://api.okayeg.com/emotes?channel=${username}`);
+    let twitchUserId = await getTwitchUserId(username);
+    if (!twitchUserId) {
+      return { subscriber: [], bits: [] };
+    }
+    let response = await fetch(`https://helper.donk.workers.dev/twitch/chat/badges?broadcaster_id=${twitchUserId}`);
     let result = await response.json();
-    if (!result.data.badges || result.data.badges.length == 0) {
+    if (!result?.data || result?.data?.length < 1) {
       return { subscriber: [], bits: [] };
     }
     let badges = { subscriber: [], bits: [] };
-    if (result.data.badges.length > 0) {
-      let subBadges = [];
-      let bitBadges = [];
-      if (result.data.badges[0]) {
-        if (result.data.badges[0].set_id == "subscriber") {
-          subBadges = result.data.badges[0].versions;
-        }
-        if (result.data.badges[0].set_id == "bits") {
-          bitBadges = result.data.badges[0].versions;
-        }
+    let subBadges = [];
+    let bitBadges = [];
+    if (result?.data[0]?.versions?.length > 0) {
+      if (result.data[0].set_id == "subscriber") {
+        subBadges = result.data[0].versions;
       }
-      if (result.data.badges[1]) {
-        if (result.data.badges[1].set_id == "subscriber") {
-          subBadges = result.data.badges[1].versions;
-        }
-        if (result.data.badges[1].set_id == "bits") {
-          bitBadges = result.data.badges[1].versions;
-        }
+      if (result.data[0].set_id == "bits") {
+        bitBadges = result.data[0].versions;
       }
-      for (let index = 0, j = subBadges.length; index < j; index++) {
-        badges.subscriber.push({ id: subBadges[index].id, url: subBadges[index].image_url_4x });
-      }
-      for (let index = 0, j = bitBadges.length; index < j; index++) {
-        badges.bits.push({ id: bitBadges[index].id, url: bitBadges[index].image_url_4x });
-      }
-      return badges;
     }
+    if (result?.data[1]?.versions?.length > 0) {
+      if (result.data[1].set_id == "subscriber") {
+        subBadges = result.data[1].versions;
+      }
+      if (result.data[1].set_id == "bits") {
+        bitBadges = result.data[1].versions;
+      }
+    }
+    for (let index = 0, j = subBadges.length; index < j; index++) {
+      badges.subscriber.push({ id: subBadges[index].id, url: subBadges[index].image_url_4x });
+    }
+    for (let index = 0, j = bitBadges.length; index < j; index++) {
+      badges.bits.push({ id: bitBadges[index].id, url: bitBadges[index].image_url_4x });
+    }
+    return badges;
   } catch (error) {
     console.log("getChannelBadges error", error);
     return { subscriber: [], bits: [] };
@@ -98,7 +114,7 @@ async function getChannelBadges(username) {
 
 async function getGlobalBadges() {
   try {
-    let response = await fetch(`https://api.okayeg.com/badges/global`);
+    let response = await fetch(`https://helper.donk.workers.dev/twitch/chat/badges/global`);
     let result = await response.json();
     if (!result.data || result.data.length == 0) {
       return {};
