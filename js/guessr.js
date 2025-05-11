@@ -51,13 +51,10 @@ const elements = {
   skipSexual: document.getElementById("skipSexual"),
   unloadWarning: document.getElementById("unloadWarning"),
   viewersHS: document.getElementById("viewersHS"),
-  followersHS: document.getElementById("followersHS"),
   viewersStreak: document.getElementById("viewersStreak"),
-  followersStreak: document.getElementById("followersStreak"),
   gameStreak: document.getElementById("gameStreak"),
   emoteStreak: document.getElementById("emoteStreak"),
   viewersHigherlowerStreak: document.getElementById("viewersHigherlowerStreak"),
-  followersHigherlowerStreak: document.getElementById("followersHigherlowerStreak"),
 
   resetSeenChannels: document.getElementById("resetSeenChannels"),
   seenChannels: document.getElementById("seenChannels"),
@@ -124,7 +121,7 @@ let previousNumber = null;
 let timer;
 let emoteChoices = { a: 1, b: 2, c: 3, d: 4, e: 5 };
 let gameSettings = {
-  game: "viewers", // viewers - followers - gamename - emote
+  game: "viewers", // viewers - gamename - emote
   video: "streams", // streams - clips
   collection: "random", // "random", "short", "long", "popular", "hottub", "forsen"
   controls: "slider", // slider - choices - text - higherlower
@@ -140,13 +137,10 @@ let unloadWarning = false;
 let gameRunning = false;
 let highscores = {
   viewersHS: 0,
-  followersHS: 0,
   viewersStreak: 0,
-  followersStreak: 0,
   gameStreak: 0,
   emoteStreak: 0,
   viewersHigherlowerStreak: 0,
-  followersHigherlowerStreak: 0,
 };
 
 let gameSettingsModal, resetGameModal;
@@ -332,23 +326,6 @@ async function getRandomStream() {
     let stream = await response.json();
 
     if (stream.data[0]) {
-      //get follower count if game mode is followers
-      if (gameSettings.game == "followers") {
-        try {
-          let response = await fetch(`https://helper.guessr.tv/twitch/channels/followers?broadcaster_id=${random.userid}`);
-          let followers = await response.json();
-          random.followers = followers.total;
-          if (random.followers > max) {
-            max = random.followers + Math.floor(Math.random() * 5000);
-            elements.guessNumber.max = max;
-          }
-        } catch (error) {
-          showToast("Something went wrong while updating the follow count :(", "danger", 3000);
-          console.log(error);
-          return await getRandomStream();
-        }
-      } //followers
-
       //get 1 channel emote if mode is emote
       if (gameSettings.game == "emote") {
         let tries = 0;
@@ -430,10 +407,6 @@ async function getClipsGuessList() {
       showToast("Clips set contains deleted/already seen clips, getting new set...", "info", 2000);
       return await getClipsGuessList();
     }
-    //get follow counts now if the video type is clips - if the video type is streams the follower count will be fetched in getRandomStream()
-    if (gameSettings.game == "followers") {
-      await getClipsFollowerCount();
-    }
 
     //get an emote for each channel
     if (gameSettings.game == "emote") {
@@ -445,32 +418,6 @@ async function getClipsGuessList() {
     console.log(error);
   }
 } //getClipsGuessList
-
-async function getClipsFollowerCount() {
-  let fetched = 0;
-  for (let index = 0; index < 5; index++) {
-    try {
-      let response = await fetch(`https://helper.guessr.tv/twitch/channels/followers?broadcaster_id=${guessList[index].userid}`);
-      if (response.status != 200) {
-        showToast("Something went wrong while updating the follow counts :(", "danger", 3000);
-        return;
-      }
-      let followers = await response.json();
-      guessList[index].followers = followers.total;
-      fetched++;
-    } catch (error) {
-      showToast("Something went wrong while updating the follow counts :(", "danger", 3000);
-      console.log(error);
-    }
-  }
-  if (fetched < 5) {
-    guessList = [];
-    showToast("Clips set contains deleted/already seen clips, getting new set...", "info", 2000);
-    return await getClipsGuessList();
-  }
-  max = Math.max(...guessList.map((o) => o.followers || 0)) + Math.floor(Math.random() * 1000);
-  elements.guessNumber.max = max;
-} //getClipsFollowerCount
 
 async function getClipsEmotes() {
   let fetched = 0;
@@ -571,14 +518,6 @@ async function nextRound() {
     }
   }
 
-  if (gameSettings.game == "followers") {
-    elements.guessRangeLabel.innerHTML = "How many followers does this stream have?";
-    elements.multiChoiceLabel.innerHTML = "How many followers does this stream have?";
-    elements.guessLabel.innerHTML = "Followers";
-    elements.guessNumber.max = 99999999;
-    elements.guessNumber.value = "";
-  }
-
   if (gameSettings.game == "gamename") {
     //add the answer to the options list
     if (!gameList.some((e) => e.name === guessList[round - 1].game_name)) {
@@ -605,15 +544,15 @@ async function nextRound() {
   if (gameSettings.controls == "higherlower") {
     if (previousNumber == null) {
       previousNumber = Math.floor(Math.random() * (gameSettings.game == "viewers" ? 1000 : 50000));
-      elements.higherlowerLabel.innerHTML = `Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower ${
-        gameSettings.game == "viewers" ? "view count" : "follow count"
-      } than <span class="previous-number">${previousNumber.toLocaleString()}?</span> 
+      elements.higherlowerLabel.innerHTML = `Does this ${
+        gameSettings.video == "streams" ? "stream" : "clip"
+      } have a higher or lower view count than <span class="previous-number">${previousNumber.toLocaleString()}?</span> 
       <i class="material-icons notranslate" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="The first round has a random starting number, later rounds will be compared to the previous stream">info</i>`;
       enableTooltips();
     } else {
-      elements.higherlowerLabel.innerHTML = `Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower ${
-        gameSettings.game == "viewers" ? "view count" : "follow count"
-      } than the previous ${gameSettings.video == "streams" ? "stream" : "clip"} <span class="previous-number">(${previousNumber.toLocaleString()})?</span>`;
+      elements.higherlowerLabel.innerHTML = `Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower view count than the previous ${
+        gameSettings.video == "streams" ? "stream" : "clip"
+      } <span class="previous-number">(${previousNumber.toLocaleString()})?</span>`;
     }
   }
 
@@ -839,8 +778,8 @@ async function guess(choice, timeUp = false, skipped = false) {
     elements.round.innerHTML = `Streak <br />${score.toLocaleString()}`;
   }
 
-  //show progress bar and correction for viewers or followers mode - slider controls - streams or clips
-  if ((gameSettings.game == "viewers" || gameSettings.game == "followers") && gameSettings.controls == "slider") {
+  //show progress bar and correction for viewers mode - slider controls - streams or clips
+  if (gameSettings.game == "viewers" && gameSettings.controls == "slider") {
     animateScore(points, percent);
     showCorrection(guessList[round - 1][gameSettings.game], answer, diff, points, color);
   }
@@ -864,31 +803,6 @@ async function guess(choice, timeUp = false, skipped = false) {
         localStorage.setItem("viewersStreak", highscores.viewersStreak);
       } else {
         elements.gameEndText.innerHTML += `<br>High Score: ${highscores.viewersStreak.toLocaleString()}`;
-      }
-      gameRunning = false;
-      changeSiteLinkTarget("_self");
-    }
-  }
-
-  //show progress bar and correction for followers game - multi choice controls - streams or clips
-  if (gameSettings.game == "followers" && gameSettings.controls == "choices") {
-    percent = (score / highscores.followersStreak) * 100;
-
-    animateScore(score, percent, highscores.followersStreak);
-    showCorrection(guessList[round - 1][gameSettings.game], answer, diff, points, color);
-
-    if (points == 0) {
-      elements.nextRound.style.display = "none";
-      elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-      elements.endButtons.style.display = "";
-      elements.gameEndText.style.display = "";
-
-      if (score > highscores.followersStreak) {
-        elements.gameEndText.innerHTML += `<br>New High Score!`;
-        highscores.followersStreak = score;
-        localStorage.setItem("followersStreak", highscores.followersStreak);
-      } else {
-        elements.gameEndText.innerHTML += `<br>High Score: ${highscores.followersStreak.toLocaleString()}`;
       }
       gameRunning = false;
       changeSiteLinkTarget("_self");
@@ -947,9 +861,9 @@ async function guess(choice, timeUp = false, skipped = false) {
     }
   }
 
-  //show progress bar and correction for viewers or followers mode - higherlower controls - streams or clips
-  if ((gameSettings.game == "viewers" || gameSettings.game == "followers") && gameSettings.controls == "higherlower") {
-    let streak = gameSettings.game == "viewers" ? highscores.viewersHigherlowerStreak : highscores.followersHigherlowerStreak;
+  //show progress bar and correction for viewers mode - higherlower controls - streams or clips
+  if (gameSettings.game == "viewers" && gameSettings.controls == "higherlower") {
+    let streak = highscores.viewersHigherlowerStreak;
     percent = (score / streak) * 100;
 
     animateScore(score, percent, streak);
@@ -964,8 +878,8 @@ async function guess(choice, timeUp = false, skipped = false) {
       elements.gameEndText.style.display = "";
       if (score > streak) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
-        gameSettings.game == "viewers" ? (highscores.viewersHigherlowerStreak = score) : (highscores.followersHigherlowerStreak = score);
-        localStorage.setItem(gameSettings.game == "viewers" ? "viewersHigherlowerStreak" : "followersHigherlowerStreak", score);
+        highscores.viewersHigherlowerStreak = score;
+        localStorage.setItem("viewersHigherlowerStreak", score);
       } else {
         elements.gameEndText.innerHTML += `<br>High Score: ${score.toLocaleString()}`;
       }
@@ -1012,22 +926,6 @@ async function guess(choice, timeUp = false, skipped = false) {
       localStorage.setItem("viewersHS", highscores.viewersHS);
     } else {
       elements.gameEndText.innerHTML += `<br>High Score: ${highscores.viewersHS.toLocaleString()}`;
-    }
-    elements.nextRound.style.display = "none";
-    elements.endButtons.style.display = "";
-    elements.gameEndText.style.display = "";
-    gameRunning = false;
-    changeSiteLinkTarget("_self");
-  }
-  //end game if game on 5th round and mode is followers
-  if (round == 5 && gameSettings.game == "followers") {
-    elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-    if (score > highscores.followersHS) {
-      elements.gameEndText.innerHTML += `<br>New High Score!`;
-      highscores.followersHS = score;
-      localStorage.setItem("followersHS", highscores.followersHS);
-    } else {
-      elements.gameEndText.innerHTML += `<br>High Score: ${highscores.followersHS.toLocaleString()}`;
     }
     elements.nextRound.style.display = "none";
     elements.endButtons.style.display = "";
@@ -1176,21 +1074,8 @@ function calculateScore(answer, skipped = false) {
     result.correct = guessList[round - 1].viewers;
   }
 
-  //calculate score for followers mode - streams or clips - slider controls
-  if (gameSettings.game == "followers" && gameSettings.controls == "slider") {
-    //get max follow count for current game
-    let roundMax = Math.max(...guessList.slice(0, 5).map((o) => o.followers || 0));
-    //get scaled decay between 1000 and 250000
-    let decay = (guessList[round - 1].followers / roundMax) * (250000 - 1000) + 1000;
-    diff = Math.abs(answer - guessList[round - 1].followers);
-    points = Math.round(5000 * Math.exp(-diff / decay));
-    percent = Math.round((points / 5000) * 100);
-    result.answer = answer;
-    result.correct = guessList[round - 1].viewers;
-  }
-
-  //check if answer is corrent for multi choice controls - viewers or followers game - streams or clips
-  if (gameSettings.controls == "choices" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
+  //check if answer is corrent for multi choice controls - viewers game - streams or clips
+  if (gameSettings.controls == "choices" && gameSettings.game == "viewers") {
     if (skipped || answer == guessList[round - 1][gameSettings.game]) {
       points = 1;
     } else {
@@ -1201,8 +1086,8 @@ function calculateScore(answer, skipped = false) {
     diff = Math.abs(answer - guessList[round - 1][gameSettings.game]);
   }
 
-  //check if answer is corrent for higherlower controls - viewers or followers game - streams or clips
-  if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
+  //check if answer is corrent for higherlower controls - viewers game - streams or clips
+  if (gameSettings.controls == "higherlower" && gameSettings.game == "viewers") {
     let correctAnswer = answer; // will match if prev number is equal to current number
     if (guessList[round - 1][gameSettings.game] > previousNumber) {
       correctAnswer = "higher";
@@ -1306,11 +1191,10 @@ function animateScore(points, percent, streak = null) {
 /**temp lidl function that just groups the correction stuff from guess() :)  */
 function showCorrection(correct, answer, diff, points, color) {
   let overUnder = answer - correct > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
-  let SVG = gameSettings.game == "viewers" ? viewersSVG : followSVG;
 
   if (gameSettings.controls == "slider" && gameSettings.game == "viewers") {
     elements.correction.innerHTML = `
-  The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${SVG}
+  The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${viewersSVG}
   <strong>${correct.toLocaleString()}</strong>
    ${correct == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
   ${
@@ -1320,24 +1204,9 @@ function showCorrection(correct, answer, diff, points, color) {
   }`;
   }
 
-  if (gameSettings.controls == "slider" && gameSettings.game == "followers") {
-    elements.correction.innerHTML = `
-    The stream has ${SVG} <strong>${correct.toLocaleString()}</strong>
-     ${correct == 1 ? "follower" : "followers"}<br>
-    ${
-      diff == 0
-        ? "You nailed the follower count perfectly ✌"
-        : `${
-            answer == -1
-              ? "You did not submit an answer"
-              : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "follower" : "followers"}`
-          }`
-    }`;
-  }
-
   if (gameSettings.controls == "choices" && gameSettings.game == "viewers") {
     elements.correction.innerHTML = `
-    The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${SVG}<strong>${correct.toLocaleString()}</strong>
+    The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${viewersSVG}<strong>${correct.toLocaleString()}</strong>
      ${correct == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
     ${
       points == 1
@@ -1348,19 +1217,6 @@ function showCorrection(correct, answer, diff, points, color) {
         ? "You did not select an answer"
         : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`
     }`;
-  }
-
-  if (gameSettings.controls == "choices" && gameSettings.game == "followers") {
-    elements.correction.innerHTML = `The stream has ${SVG}<strong>${correct.toLocaleString()}</strong> ${correct == 1 ? "follower" : "followers"}<br>
-      ${
-        points == 1
-          ? answer == -1
-            ? "You skipped this round 🤷"
-            : "You nailed the view count perfectly ✌"
-          : answer == -1
-          ? "You did not select an answer"
-          : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "follower" : "followers"}`
-      }`;
   }
 
   if (gameSettings.game == "emote") {
@@ -1384,14 +1240,14 @@ function showCorrection(correct, answer, diff, points, color) {
   }
 
   if (gameSettings.controls == "higherlower") {
-    elements.correction.innerHTML = `The ${gameSettings.video == "streams" ? "channel" : "clips"} has ${SVG}<strong>${guessList[round - 1][gameSettings.game].toLocaleString()}</strong> ${
-      gameSettings.game == "viewers" ? `${correct == 1 ? "viewer" : "viewers"}` : `${correct == 1 ? "follower" : "followers"}`
-    }${correct == previousNumber ? " (same as previous channel!)" : ""}<br>
+    elements.correction.innerHTML = `The ${gameSettings.video == "streams" ? "channel" : "clips"} has ${viewersSVG}<strong>${guessList[round - 1][
+      gameSettings.game
+    ].toLocaleString()}</strong> ${correct == 1 ? "viewer" : "viewers"}${correct == previousNumber ? " (same as previous channel!)" : ""}<br>
 ${
   points == 1
     ? answer == -1
       ? "<br>You skipped this round 🤷"
-      : `This ${gameSettings.video == "streams" ? "stream" : "clip"} has a <i>${answer}</i> ${gameSettings.game == "viewers" ? "view count" : "follow count"} than previous`
+      : `This ${gameSettings.video == "streams" ? "stream" : "clip"} has a <i>${answer}</i> view count than previous`
     : answer == -1
     ? "You did not select an answer"
     : `The previous ${gameSettings.video == "streams" ? "channel" : "clips"} had ${previousNumber.toLocaleString()} ${gameSettings.game}`
@@ -1442,7 +1298,7 @@ async function showSettings(game) {
   gameSettings.game = game;
 
   //hide controls selector if game does not support it
-  if (game == "viewers" || game == "followers") {
+  if (game == "viewers") {
     elements.controlsTypeDiv.style.display = "";
   } else {
     elements.controlsTypeDiv.style.display = "none";
@@ -1450,14 +1306,10 @@ async function showSettings(game) {
 
   //update controlsDesc
   if (gameSettings.controls == "higherlower") {
-    elements.controlsDesc.innerHTML = `You will have to guess if the current stream has a higher or lower ${
-      game == "followers" ? "follow" : "view"
-    } count than the previous one  - Keep playing till you get a wrong answer`;
+    elements.controlsDesc.innerHTML = `You will have to guess if the current stream has a higher or lower view count than the previous one - Keep playing till you get a wrong answer`;
   }
   if (gameSettings.controls == "slider") {
-    elements.controlsDesc.innerHTML = `You will have to guess the exact ${
-      gameSettings.game == "followers" ? "follow" : "view"
-    } count - 5 rounds - 5,000 points per round based on how close you are to the correct number`;
+    elements.controlsDesc.innerHTML = `You will have to guess the exact view count - 5 rounds - 5,000 points per round based on how close you are to the correct number`;
   }
 
   //add disclaimer
@@ -1494,11 +1346,6 @@ async function getSettings() {
     reset();
     return;
   }
-  if (gameSettings.game == "followers" && gameSettings.collection == "forsen" && gameSettings.video == "clips") {
-    showToast("Hmmm today I'll pick followers mode then pick a clip collection that has 1 channel only 🤙", "info", 5000);
-    reset();
-    return;
-  }
 
   //update chat hint based on mode
   switch (gameSettings.game) {
@@ -1512,7 +1359,7 @@ async function getSettings() {
       elements.chatHint.innerHTML = "<h4>Type a number in chat to guess</h4>";
       break;
   }
-  if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
+  if (gameSettings.controls == "higherlower" && gameSettings.game == "viewers") {
     elements.chatHint.innerHTML = `<h4>Type <kbd class="notranslate">higher</kbd> or <kbd class="notranslate">lower</kbd> in chat to guess</h4>`;
   }
 
@@ -1564,7 +1411,7 @@ async function connectChat() {
 
     let input = msg.split(" ").filter(Boolean);
 
-    if (gameSettings.controls !== "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
+    if (gameSettings.controls !== "higherlower" && gameSettings.game == "viewers") {
       let answer = parseAnswer(input[0]);
       if (answer === null || answer === undefined || answer === "" || answer < 0) {
         return;
@@ -1572,7 +1419,7 @@ async function connectChat() {
       results = calculateScore(answer);
     }
 
-    if (gameSettings.controls == "higherlower" && (gameSettings.game == "viewers" || gameSettings.game == "followers")) {
+    if (gameSettings.controls == "higherlower" && gameSettings.game == "viewers") {
       if (input[0]?.toLowerCase() !== "higher" && input[0]?.toLowerCase() !== "lower") {
         return;
       }
@@ -1877,13 +1724,10 @@ window.onload = async function () {
   unloadWarning = (localStorage.getItem("unloadWarning") || "false") === "true";
   elements.unloadWarning.checked = unloadWarning;
   highscores.viewersHS = parseInt(localStorage.getItem("viewersHS"), 10) || 0;
-  highscores.followersHS = parseInt(localStorage.getItem("followersHS"), 10) || 0;
   highscores.viewersStreak = parseInt(localStorage.getItem("viewersStreak"), 10) || 0;
-  highscores.followersStreak = parseInt(localStorage.getItem("followersStreak"), 10) || 0;
   highscores.gameStreak = parseInt(localStorage.getItem("gameStreak"), 10) || 0;
   highscores.emoteStreak = parseInt(localStorage.getItem("emoteStreak"), 10) || 0;
   highscores.viewersHigherlowerStreak = parseInt(localStorage.getItem("viewersHigherlowerStreak"), 10) || 0;
-  highscores.followersHigherlowerStreak = parseInt(localStorage.getItem("followersHigherlowerStreak"), 10) || 0;
   channelName = localStorage.getItem("channelName") || "";
   elements.channelName.value = channelName;
 
@@ -1894,13 +1738,10 @@ window.onload = async function () {
   // }
 
   elements.viewersHS.innerHTML = highscores.viewersHS.toLocaleString();
-  elements.followersHS.innerHTML = highscores.followersHS.toLocaleString();
   elements.viewersStreak.innerHTML = highscores.viewersStreak.toLocaleString();
-  elements.followersStreak.innerHTML = highscores.followersStreak.toLocaleString();
   elements.gameStreak.innerHTML = highscores.gameStreak.toLocaleString();
   elements.emoteStreak.innerHTML = highscores.emoteStreak.toLocaleString();
   elements.viewersHigherlowerStreak.innerHTML = highscores.viewersHigherlowerStreak.toLocaleString();
-  elements.followersHigherlowerStreak.innerHTML = highscores.followersHigherlowerStreak.toLocaleString();
 
   gameSettingsModal = new bootstrap.Modal(elements.gameSettingsModal);
   resetGameModal = new bootstrap.Modal(elements.resetGameModal);
@@ -1934,9 +1775,7 @@ window.onload = async function () {
   elements.sliderControls.onchange = function () {
     if (this.checked) {
       gameSettings.controls = "slider";
-      elements.controlsDesc.innerHTML = `You will have to guess the exact ${
-        gameSettings.game == "followers" ? "follow" : "view"
-      } count - 5 rounds - 5,000 points per round based on how close you are to the correct number`;
+      elements.controlsDesc.innerHTML = `You will have to guess the exact view count - 5 rounds - 5,000 points per round based on how close you are to the correct number`;
     }
   };
   elements.choicesControls.onchange = function () {
@@ -1948,9 +1787,7 @@ window.onload = async function () {
   elements.higherlowerControls.onchange = function () {
     if (this.checked) {
       gameSettings.controls = "higherlower";
-      elements.controlsDesc.innerHTML = `You will have to guess if the current stream has a higher or lower ${
-        gameSettings.game == "followers" ? "follow" : "view"
-      } count than the previous one  - Keep playing till you get a wrong answer`;
+      elements.controlsDesc.innerHTML = `You will have to guess if the current stream has a higher or lower view count than the previous one - Keep playing till you get a wrong answer`;
     }
   };
 

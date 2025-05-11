@@ -49,8 +49,7 @@ iframe {
   border-color: #7f40a1 !important;
 }
 
-.viewers-svg,
-.follow-svg {
+.viewers-svg {
   filter: invert(79%) sepia(7%) saturate(294%) hue-rotate(169deg) brightness(90%) contrast(93%);
 }
 
