@@ -51,7 +51,6 @@ const elements = {
   skipSexual: document.getElementById("skipSexual"),
   unloadWarning: document.getElementById("unloadWarning"),
   viewersHS: document.getElementById("viewersHS"),
-  viewersStreak: document.getElementById("viewersStreak"),
   gameStreak: document.getElementById("gameStreak"),
   emoteStreak: document.getElementById("emoteStreak"),
   viewersHigherlowerStreak: document.getElementById("viewersHigherlowerStreak"),
@@ -71,7 +70,6 @@ const elements = {
   videoTypeDesc: document.getElementById("videoTypeDesc"),
   controlsTypeDiv: document.getElementById("controlsTypeDiv"),
   sliderControls: document.getElementById("sliderControls"),
-  choicesControls: document.getElementById("choicesControls"),
   higherlowerControls: document.getElementById("higherlowerControls"),
   controlsDesc: document.getElementById("controlsDesc"),
   timerValue: document.getElementById("timerValue"),
@@ -137,7 +135,6 @@ let unloadWarning = false;
 let gameRunning = false;
 let highscores = {
   viewersHS: 0,
-  viewersStreak: 0,
   gameStreak: 0,
   emoteStreak: 0,
   viewersHigherlowerStreak: 0,
@@ -511,10 +508,8 @@ async function nextRound() {
 
   if (gameSettings.game == "viewers") {
     elements.guessRangeLabel.innerHTML = "How many viewers does this stream have?";
-    elements.multiChoiceLabel.innerHTML = "How many viewers does this stream have?";
     if (gameSettings.video == "clips") {
       elements.guessRangeLabel.innerHTML = "How many views does this clip have?";
-      elements.multiChoiceLabel.innerHTML = "How many views does this clip have?";
     }
   }
 
@@ -534,10 +529,6 @@ async function nextRound() {
     elements.multiChoiceDiv.style.display = "none"; //hide now and show in generateEmoteChoices when it is done so that all emotes load at once
     elements.multiChoiceLabel.innerHTML = "Which emote belongs to this channel?";
     await generateEmoteChoices(guessList[round - 1].userid);
-  }
-
-  if (gameSettings.controls == "choices" && gameSettings.game != "emote") {
-    generateChoices(guessList[round - 1][gameSettings.game]);
   }
 
   //set random number for previousNumber in first round
@@ -620,44 +611,6 @@ async function nextRound() {
 
   startTimer();
 } //nextRound
-
-function generateChoices(answer) {
-  let patterns = [
-    [Math.floor(Math.random() * max * 1.5), Math.floor(Math.random() * answer * 4), Math.floor(Math.random() * answer), Math.floor(Math.random() * 5)],
-    [Math.floor(Math.random() * max), Math.floor(Math.random() * max), Math.floor(Math.random() * max), 0],
-    [Math.floor(Math.random() * 10000) + 10000, Math.floor(Math.random() * 10000) + 10000, Math.floor(Math.random() * 10000) + 10000, 0],
-    [Math.floor(Math.random() * 2) + 2, Math.floor(Math.random() * 2) + 2, Math.floor(Math.random() * 2) + 2, Math.floor(Math.random() * 2) + 2],
-    [Math.floor(Math.random() * 100), Math.floor(Math.random() * 100), Math.floor(Math.random() * 100), Math.floor(Math.random() * 100)],
-    [Math.floor(Math.random() * 10) + 10, Math.floor(Math.random() * 10) + 100, Math.floor(Math.random() * 10) + 1000, Math.floor(Math.random() * 10) + 10000],
-    [answer + 1, answer + 2, answer + 3, answer + 4],
-    [1, 2, 3, 4],
-  ];
-  let options = [answer].concat(patterns[Math.floor(Math.random() * patterns.length)]);
-
-  //remove duplicates
-  while (hasDuplicates(options)) {
-    options = options.map(function (option) {
-      if (options.indexOf(option) !== options.lastIndexOf(option)) {
-        return Math.floor(Math.random() * (answer + 1) * 10);
-      }
-      return option;
-    });
-  }
-  //check if answer is included in the options
-  if (!options.includes(answer)) {
-    options[0] = answer;
-  }
-  shuffleArray(options);
-
-  for (let index = 0; index < options.length; index++) {
-    const mcIndex = `multiChoice${index + 1}`;
-    elements[mcIndex].disabled = false;
-    elements[mcIndex].classList.add("btn-outline-success");
-    elements[mcIndex].classList.remove("btn-outline-secondary");
-    elements[mcIndex].dataset.answer = options[index];
-    elements[mcIndex].innerHTML = options[index].toLocaleString();
-  }
-} //generateChoices
 
 async function generateEmoteChoices(userid) {
   let picked = [];
@@ -784,32 +737,7 @@ async function guess(choice, timeUp = false, skipped = false) {
     showCorrection(guessList[round - 1][gameSettings.game], answer, diff, points, color);
   }
 
-  //show progress bar and correction for viewers - multi choice controls - streams or clips
-  if (gameSettings.game == "viewers" && gameSettings.controls == "choices") {
-    percent = (score / highscores.viewersStreak) * 100;
-
-    animateScore(score, percent, highscores.viewersStreak);
-    showCorrection(guessList[round - 1][gameSettings.game], answer, diff, points, color);
-
-    if (points == 0) {
-      elements.nextRound.style.display = "none";
-      elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-      elements.endButtons.style.display = "";
-      elements.gameEndText.style.display = "";
-
-      if (score > highscores.viewersStreak) {
-        elements.gameEndText.innerHTML += `<br>New High Score!`;
-        highscores.viewersStreak = score;
-        localStorage.setItem("viewersStreak", highscores.viewersStreak);
-      } else {
-        elements.gameEndText.innerHTML += `<br>High Score: ${highscores.viewersStreak.toLocaleString()}`;
-      }
-      gameRunning = false;
-      changeSiteLinkTarget("_self");
-    }
-  }
-
-  //show progress bar and correction for gamename game - multi choice controls - streams or clips
+  //show progress bar and correction for gamename game - text controls - streams or clips
   if (gameSettings.game == "gamename") {
     percent = (score / highscores.gameStreak) * 100;
 
@@ -1074,18 +1002,6 @@ function calculateScore(answer, skipped = false) {
     result.correct = guessList[round - 1].viewers;
   }
 
-  //check if answer is corrent for multi choice controls - viewers game - streams or clips
-  if (gameSettings.controls == "choices" && gameSettings.game == "viewers") {
-    if (skipped || answer == guessList[round - 1][gameSettings.game]) {
-      points = 1;
-    } else {
-      points = 0;
-    }
-    result.answer = answer;
-    result.correct = guessList[round - 1][gameSettings.game];
-    diff = Math.abs(answer - guessList[round - 1][gameSettings.game]);
-  }
-
   //check if answer is corrent for higherlower controls - viewers game - streams or clips
   if (gameSettings.controls == "higherlower" && gameSettings.game == "viewers") {
     let correctAnswer = answer; // will match if prev number is equal to current number
@@ -1202,21 +1118,6 @@ function showCorrection(correct, answer, diff, points, color) {
       ? "You nailed the view count perfectly ✌"
       : `${answer == -1 ? "You did not submit an answer" : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`}`
   }`;
-  }
-
-  if (gameSettings.controls == "choices" && gameSettings.game == "viewers") {
-    elements.correction.innerHTML = `
-    The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${viewersSVG}<strong>${correct.toLocaleString()}</strong>
-     ${correct == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
-    ${
-      points == 1
-        ? answer == -1
-          ? "You skipped this round 🤷"
-          : "You nailed the view count perfectly ✌"
-        : answer == -1
-        ? "You did not select an answer"
-        : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`
-    }`;
   }
 
   if (gameSettings.game == "emote") {
@@ -1724,7 +1625,6 @@ window.onload = async function () {
   unloadWarning = (localStorage.getItem("unloadWarning") || "false") === "true";
   elements.unloadWarning.checked = unloadWarning;
   highscores.viewersHS = parseInt(localStorage.getItem("viewersHS"), 10) || 0;
-  highscores.viewersStreak = parseInt(localStorage.getItem("viewersStreak"), 10) || 0;
   highscores.gameStreak = parseInt(localStorage.getItem("gameStreak"), 10) || 0;
   highscores.emoteStreak = parseInt(localStorage.getItem("emoteStreak"), 10) || 0;
   highscores.viewersHigherlowerStreak = parseInt(localStorage.getItem("viewersHigherlowerStreak"), 10) || 0;
@@ -1738,7 +1638,6 @@ window.onload = async function () {
   // }
 
   elements.viewersHS.innerHTML = highscores.viewersHS.toLocaleString();
-  elements.viewersStreak.innerHTML = highscores.viewersStreak.toLocaleString();
   elements.gameStreak.innerHTML = highscores.gameStreak.toLocaleString();
   elements.emoteStreak.innerHTML = highscores.emoteStreak.toLocaleString();
   elements.viewersHigherlowerStreak.innerHTML = highscores.viewersHigherlowerStreak.toLocaleString();
@@ -1776,12 +1675,6 @@ window.onload = async function () {
     if (this.checked) {
       gameSettings.controls = "slider";
       elements.controlsDesc.innerHTML = `You will have to guess the exact view count - 5 rounds - 5,000 points per round based on how close you are to the correct number`;
-    }
-  };
-  elements.choicesControls.onchange = function () {
-    if (this.checked) {
-      gameSettings.controls = "choices";
-      elements.controlsDesc.innerHTML = "You will be given 5 options and you will have to pick 1 of them - Keep playing till you get a wrong answer";
     }
   };
   elements.higherlowerControls.onchange = function () {
