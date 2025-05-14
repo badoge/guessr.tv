@@ -143,7 +143,7 @@ let highscores = {
 let gameSettingsModal, resetGameModal;
 let client;
 let roundActive = false;
-let chatters = [];
+let chatters = new Map();
 let usernameSent = false;
 let totalTab, roundTab;
 
@@ -183,6 +183,16 @@ async function getMainListClips() {
   }
 } //getMainListClips
 
+async function getEmoteList() {
+  try {
+    let response = await fetch(`https://api.okayeg.com/guess/emotes?time=${Date.now()}`);
+    let json = await response.json();
+    emoteList = json.random;
+  } catch (error) {
+    console.log(error);
+  }
+} //getEmoteList
+
 async function loadGameList() {
   let response = await fetch(`/games.json`);
   gameList = await response.json();
@@ -192,16 +202,6 @@ async function loadGameList() {
     elements.gameList.innerHTML += `<option value="${gameList[index].name}"></option>`;
   }
 } //loadGameList
-
-async function loadEmoteList() {
-  try {
-    let response = await fetch(`https://api.okayeg.com/guess/emotes?time=${Date.now()}`);
-    let json = await response.json();
-    emoteList = json.random;
-  } catch (error) {
-    console.log(error);
-  }
-} //loadEmoteList
 
 function toggleControls(hide = false) {
   if (hide) {
@@ -244,7 +244,7 @@ function toggleControls(hide = false) {
 
 async function startGame() {
   guessList = [];
-  chatters = [];
+  chatters = new Map();
   roundResults = [];
   score = 0;
   elements.leaderboardList.innerHTML = "";
@@ -263,7 +263,7 @@ async function startGame() {
 
   if (gameSettings.game == "emote") {
     gameSettings.controls = "choices";
-    await loadEmoteList();
+    await getEmoteList();
   } //game
 
   //reset player
@@ -277,7 +277,7 @@ async function startGame() {
     elements.score.innerHTML = `Score <br />0`;
     elements.scoreDiv.style.display = "";
   } else {
-    elements.round.innerHTML = "Streak <br />0";
+    elements.round.innerHTML = "Score <br />0";
     elements.score.innerHTML = "";
     elements.scoreDiv.style.display = "";
   }
@@ -462,9 +462,8 @@ async function nextRound() {
   //get new clips list if game uses streaks after 5 rounds
   if (round == 5 && gameSettings.video == "clips" && (gameSettings.controls == "choices" || gameSettings.controls == "text" || gameSettings.controls == "higherlower")) {
     await getClipsGuessList();
-    //reset round counter becuase the guess list will get reset
+    //reset round counter because the guess list will get reset
     round = 0;
-    chatters.map((e) => (e.lastGuess = 0));
   }
 
   //get a random stream with updated info and add it to guessList
@@ -534,14 +533,14 @@ async function nextRound() {
   //set random number for previousNumber in first round
   if (gameSettings.controls == "higherlower") {
     if (previousNumber == null) {
-      previousNumber = Math.floor(Math.random() * (gameSettings.game == "viewers" ? 1000 : 50000));
-      elements.higherlowerLabel.innerHTML = `Does this ${
-        gameSettings.video == "streams" ? "stream" : "clip"
-      } have a higher or lower view count than <span class="previous-number">${previousNumber.toLocaleString()}?</span> 
-      <i class="material-icons notranslate" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="The first round has a random starting number, later rounds will be compared to the previous stream">info</i>`;
+      previousNumber = Math.floor(Math.random() * (gameSettings.game == "viewers" ? 100 : 500));
+      elements.higherlowerLabel.innerHTML = `
+      Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower view count than <span class="previous-number">${previousNumber.toLocaleString()}?</span> 
+      <i style="vertical-align: text-top;" class="material-icons notranslate" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="The first round has a random starting number, later rounds will be compared to the previous round">info</i>`;
       enableTooltips();
     } else {
-      elements.higherlowerLabel.innerHTML = `Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower view count than the previous ${
+      elements.higherlowerLabel.innerHTML = `
+      Does this ${gameSettings.video == "streams" ? "stream" : "clip"} have a higher or lower view count than the previous ${
         gameSettings.video == "streams" ? "stream" : "clip"
       } <span class="previous-number">(${previousNumber.toLocaleString()})?</span>`;
     }
@@ -558,7 +557,7 @@ async function nextRound() {
     elements.round.innerHTML = `Round <br />${round}/5`;
     elements.score.innerHTML = `Score <br />${score.toLocaleString()}`;
   } else {
-    elements.round.innerHTML = `Streak <br />${score.toLocaleString()}`;
+    elements.round.innerHTML = `Score <br />${score.toLocaleString()}`;
     elements.score.innerHTML = "";
   }
 
@@ -664,7 +663,11 @@ async function guess(choice, timeUp = false, skipped = false) {
   switch (choice) {
     case "slider":
       answer = parseInt(elements.guessNumber.value, 10);
+      if (timeUp && !answer) {
+        answer = -1;
+      }
       break;
+
     case 1:
     case 2:
     case 3:
@@ -672,6 +675,7 @@ async function guess(choice, timeUp = false, skipped = false) {
     case 5:
       answer = parseInt(elements[`multiChoice${choice}`].dataset.answer, 10);
       break;
+
     case "higher":
     case "lower":
       answer = choice;
@@ -691,16 +695,19 @@ async function guess(choice, timeUp = false, skipped = false) {
         elements.gameInput.value = "";
         return;
       }
+      if (timeUp && !answer) {
+        answer = -1;
+      }
       break;
 
     default:
       //user did not answer and time is up so set answer to -1 so they get 0 points
-      //also works when `skipped` is 'true' - in that case user gets max points
+      //also works when `skipped` is 'true'
       answer = -1;
   }
 
   //show warning if no answer is selected
-  if ((isNaN(answer) || answer === null) && gameSettings.game != "gamename" && gameSettings.controls != "higherlower") {
+  if ((isNaN(answer) || answer === null) && gameSettings.game != "gamename" && gameSettings.controls != "higherlower" && !timeUp) {
     showToast("Invalid answer", "warning", 2000);
     return;
   }
@@ -728,7 +735,7 @@ async function guess(choice, timeUp = false, skipped = false) {
   if (gameSettings.controls == "slider") {
     elements.score.innerHTML = `Score <br />${score.toLocaleString()}`;
   } else {
-    elements.round.innerHTML = `Streak <br />${score.toLocaleString()}`;
+    elements.round.innerHTML = `Score <br />${score.toLocaleString()}`;
   }
 
   //show progress bar and correction for viewers mode - slider controls - streams or clips
@@ -744,21 +751,9 @@ async function guess(choice, timeUp = false, skipped = false) {
     animateScore(score, percent, highscores.gameStreak);
     showCorrection(guessList[round - 1].game_name, answer == -1 ? answer : elements.gameInput.value, null, points, color);
 
-    if (points == 0) {
-      elements.nextRound.style.display = "none";
-      elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-      elements.endButtons.style.display = "";
-      elements.gameEndText.style.display = "";
-
-      if (score > highscores.gameStreak) {
-        elements.gameEndText.innerHTML += `<br>New High Score!`;
-        highscores.gameStreak = score;
-        localStorage.setItem("gameStreak", highscores.gameStreak);
-      } else {
-        elements.gameEndText.innerHTML += `<br>High Score: ${highscores.gameStreak.toLocaleString()}`;
-      }
-      gameRunning = false;
-      changeSiteLinkTarget("_self");
+    if (score > highscores.gameStreak) {
+      highscores.gameStreak = score;
+      localStorage.setItem("gameStreak", highscores.gameStreak);
     }
   }
 
@@ -771,21 +766,9 @@ async function guess(choice, timeUp = false, skipped = false) {
     animateScore(score, percent, highscores.emoteStreak);
     showCorrection(guessList[round - 1].emote, answer == -1 ? answer : emote, null, points, null);
 
-    if (points == 0) {
-      elements.nextRound.style.display = "none";
-      elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-      elements.endButtons.style.display = "";
-      elements.gameEndText.style.display = "";
-
-      if (score > highscores.emoteStreak) {
-        elements.gameEndText.innerHTML += `<br>New High Score!`;
-        highscores.emoteStreak = score;
-        localStorage.setItem("emoteStreak", highscores.emoteStreak);
-      } else {
-        elements.gameEndText.innerHTML += `<br>High Score: ${highscores.emoteStreak.toLocaleString()}`;
-      }
-      gameRunning = false;
-      changeSiteLinkTarget("_self");
+    if (score > highscores.emoteStreak) {
+      highscores.emoteStreak = score;
+      localStorage.setItem("emoteStreak", highscores.emoteStreak);
     }
   }
 
@@ -799,43 +782,31 @@ async function guess(choice, timeUp = false, skipped = false) {
 
     previousNumber = guessList[round - 1][gameSettings.game]; //set now for next round
 
-    if (points == 0) {
-      elements.nextRound.style.display = "none";
-      elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-      elements.endButtons.style.display = "";
-      elements.gameEndText.style.display = "";
-      if (score > streak) {
-        elements.gameEndText.innerHTML += `<br>New High Score!`;
-        highscores.viewersHigherlowerStreak = score;
-        localStorage.setItem("viewersHigherlowerStreak", score);
-      } else {
-        elements.gameEndText.innerHTML += `<br>High Score: ${score.toLocaleString()}`;
-      }
-      gameRunning = false;
-      changeSiteLinkTarget("_self");
+    if (score > streak) {
+      highscores.viewersHigherlowerStreak = score;
+      localStorage.setItem("viewersHigherlowerStreak", score);
     }
   }
 
   // remember the correction content - will reuse it on the final screen
   roundResult.correctionHTML = elements.correction.innerHTML;
 
-  //update streamers score on the lb and then update all viewers scores
+  //update streamer's answer in the chatters map and then update all viewers' scores when updating the leaderboard
   if (gameSettings.chat) {
     let username = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
-    let pos = chatters.map((e) => e.username).indexOf(username);
-    if (pos === -1) {
-      chatters.push({
+    let streamer = chatters.get(username);
+    if (!streamer) {
+      chatters.set(username, {
         username: username,
-        score: points,
-        round: points,
-        lastGuess: round,
+        score: 0,
+        round: 0,
+        answer: { points: points },
         color: streamerColor,
         badges: addBadges("streamer", channelId),
       });
     } else {
-      chatters[pos].score += points;
-      chatters[pos].round = points;
-      chatters[pos].lastGuess = round;
+      streamer.answer = { points: points };
+      chatters.set(username, streamer);
     }
     updateLeaderboard();
   }
@@ -980,9 +951,12 @@ function calculateScore(answer, skipped = false) {
 
   //check emote mode answer
   if (gameSettings.game == "emote") {
-    if (skipped || answer == guessList[round - 1].userid) {
+    if (answer == guessList[round - 1].userid) {
       points = 1;
     } else {
+      points = -1;
+    }
+    if (skipped) {
       points = 0;
     }
     result.answer = answer;
@@ -1011,9 +985,12 @@ function calculateScore(answer, skipped = false) {
     if (guessList[round - 1][gameSettings.game] < previousNumber) {
       correctAnswer = "lower";
     }
-    if (skipped || answer === correctAnswer) {
+    if (answer === correctAnswer) {
       points = 1;
     } else {
+      points = -1;
+    }
+    if (skipped) {
       points = 0;
     }
     result.answer = answer;
@@ -1029,21 +1006,32 @@ function calculateScore(answer, skipped = false) {
     } else {
       correctGuess = checkSimilarity(answer, guessList[round - 1].game_name_clean);
     }
-    if (skipped || correctGuess) {
+    if (correctGuess) {
       points = 1;
     } else {
+      points = -1;
+    }
+    if (skipped) {
       points = 0;
     }
     result.answer = String(elements.gameInput.value);
     result.correct = guessList[round - 1].game_name;
   }
 
-  //guess() was called by timer and user did not provide an answer so give user 0 points
+  //guess() was called by the timer and user did not provide an answer so give user 0 points for slider and -1 for other modes
   if (!skipped && answer == -1) {
-    points = 0;
+    switch (gameSettings.controls) {
+      case "higherlower":
+      case "choices":
+      case "text":
+        points = -1;
+        break;
+      case "slider":
+        points = 0;
+        break;
+    }
     percent = 0;
     result.answer = gameSettings.controls == "slider" ? 0 : "⏱️ timed out";
-    result.isTimedOut = true;
   }
 
   //get color class name for correction text
@@ -1110,49 +1098,56 @@ function showCorrection(correct, answer, diff, points, color) {
 
   if (gameSettings.controls == "slider" && gameSettings.game == "viewers") {
     elements.correction.innerHTML = `
-  The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${viewersSVG}
-  <strong>${correct.toLocaleString()}</strong>
-   ${correct == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
-  ${
-    diff == 0
-      ? "You nailed the view count perfectly ✌"
-      : `${answer == -1 ? "You did not submit an answer" : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${diff == 1 ? "view" : "views"}`}`
-  }`;
+    The ${gameSettings.video == "streams" ? "stream" : "clip"} has ${viewersSVG}<strong>${correct.toLocaleString()}</strong>
+    ${correct == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`}<br>
+    ${
+      diff == 0
+        ? "You nailed the view count perfectly ✌"
+        : `${
+            answer == -1
+              ? "You did not submit an answer"
+              : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${
+                  diff == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`
+                }`
+          }`
+    }`;
   }
 
   if (gameSettings.game == "emote") {
-    elements.correction.innerHTML = `The streamer's emote was <img style="height: 56px;" 
-    src="https://static-cdn.jtvnw.net/emoticons/v2/${correct}/default/dark/3.0" alt="emote"><br>
+    elements.correction.innerHTML = `
+    The streamer's emote is <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${correct}/default/dark/3.0" alt="emote"><br>
     ${
-      points == 1
+      points > -1
         ? answer == -1
           ? "You skipped this round 🤷"
           : "You guessed the emote correctly ✌"
         : answer == -1
-        ? "You did not select an answer"
-        : `Your guess was <img style="height: 56px;" 
-              src="https://static-cdn.jtvnw.net/emoticons/v2/${answer}/default/dark/3.0" alt="emote">`
+        ? "You did not select an emote"
+        : `You guessed <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${answer}/default/dark/3.0" alt="emote">`
     }`;
   }
 
   if (gameSettings.game == "gamename") {
-    elements.correction.innerHTML = `The streamer was playing <strong>${correct}</strong><br>
-  ${points == 1 ? "You guessed the game correctly ✌" : `${answer == -1 ? "You did not select an answer" : `Your guess was <span class="${color}">${answer}</span>`}`}`;
+    elements.correction.innerHTML = `
+    The streamer is playing <strong>${correct}</strong><br>
+    ${points == 1 ? "You guessed the game correctly ✌" : `${answer == -1 ? "You did not select an answer" : `You guessed <span class="${color}">${answer}</span>`}`}`;
   }
 
   if (gameSettings.controls == "higherlower") {
-    elements.correction.innerHTML = `The ${gameSettings.video == "streams" ? "channel" : "clips"} has ${viewersSVG}<strong>${guessList[round - 1][
-      gameSettings.game
-    ].toLocaleString()}</strong> ${correct == 1 ? "viewer" : "viewers"}${correct == previousNumber ? " (same as previous channel!)" : ""}<br>
-${
-  points == 1
-    ? answer == -1
-      ? "<br>You skipped this round 🤷"
-      : `This ${gameSettings.video == "streams" ? "stream" : "clip"} has a <i>${answer}</i> view count than previous`
-    : answer == -1
-    ? "You did not select an answer"
-    : `The previous ${gameSettings.video == "streams" ? "channel" : "clips"} had ${previousNumber.toLocaleString()} ${gameSettings.game}`
-}`;
+    elements.correction.innerHTML = `
+    The ${gameSettings.video == "streams" ? "channel" : "clips"} has ${viewersSVG}<strong>${guessList[round - 1][gameSettings.game].toLocaleString()}</strong>
+    ${correct == 1 ? "viewer" : "viewers"}${correct == previousNumber ? " (same as previous channel!)" : ""}<br>
+    ${
+      points > -1
+        ? answer == -1
+          ? "<br>You skipped this round 🤷"
+          : `This ${gameSettings.video == "streams" ? "stream" : "clip"} has a <i>${answer}</i> view count than the previous ${gameSettings.video == "streams" ? "stream" : "clip"}`
+        : answer == -1
+        ? "You did not select an answer"
+        : `The previous ${gameSettings.video == "streams" ? "channel" : "clip"} had ${previousNumber.toLocaleString()} ${
+            previousNumber == 1 ? `${gameSettings.video == "streams" ? "viewer" : "view"}` : `${gameSettings.video == "streams" ? "viewers" : "views"}`
+          }`
+    }`;
   }
 } //showCorrection
 
@@ -1207,10 +1202,10 @@ async function showSettings(game) {
 
   //update controlsDesc
   if (gameSettings.controls == "higherlower") {
-    elements.controlsDesc.innerHTML = `You will have to guess if the current stream has a higher or lower view count than the previous one - Keep playing till you get a wrong answer`;
+    elements.controlsDesc.innerHTML = `You will have to guess if the current stream has a higher or lower view count than the previous one<br>Endless mode, gain or lose a point for each guess you make`;
   }
   if (gameSettings.controls == "slider") {
-    elements.controlsDesc.innerHTML = `You will have to guess the exact view count - 5 rounds - 5,000 points per round based on how close you are to the correct number`;
+    elements.controlsDesc.innerHTML = `You will have to guess the exact view count of each stream<br />5 rounds - 5,000 points per round based on how close you are to the correct view count`;
   }
 
   //add disclaimer
@@ -1265,6 +1260,13 @@ async function getSettings() {
   }
 
   channelName = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
+
+  if (channelName.includes("://") || channelName.includes(".")) {
+    showToast("Invalid username. Input your username only not the link", "warning", 3000);
+    reset();
+    return;
+  }
+
   if (channelName) {
     localStorage.setItem("channelName", channelName);
     gameSettings.chat = true;
@@ -1342,56 +1344,43 @@ async function connectChat() {
       results = calculateScore(answer);
     }
 
-    let pos = chatters.map((e) => e.username).indexOf(context.username);
-    //set points to 😵 to eliminate chatter if they get first answer wrong
-    if ((gameSettings.controls == "choices" || gameSettings.controls == "higherlower" || gameSettings.game == "gamename") && results.points == 0) {
-      results.points = "😵";
-    }
-    if (pos === -1) {
-      //add the chatter to the array if they are not already in
-      chatters.push({
+    let chatter = chatters.get(context.username);
+    if (!chatter) {
+      //add the chatter to the map if they are not already in
+      let badges = addBadges(context.badges, context["user-id"]);
+      chatters.set(context.username, {
         username: context.username,
-        score: results.points,
-        round: results.points,
-        lastGuess: round,
+        score: 0,
+        round: 0,
+        answer: results,
         color: context.color,
-        badges: addBadges(context.badges, context["user-id"]),
+        badges: badges,
       });
       //add chatter to the top of the leaderboard if 1st round or at the end otherwise
       elements.leaderboardList.insertAdjacentHTML(
         `${round == 1 ? "afterbegin" : "beforeend"}`,
-        `<li class="list-group-item"><span>🔵</span><span style="color:${context.color || "#FFFFFF"};">${chatters[chatters.length - 1].badges} ${context.username}:</span> 🙈</li>`
+        `<li class="list-group-item"><span id="${context.username}_dot">🔵</span><span style="color:${context.color || "#FFFFFF"};">${badges} ${context.username}:</span> 🙈</li>`
       );
       if (gameSettings.controls == "slider") {
         //add chatter to the round leaderboard if game uses slider controls
         elements.leaderboardListRound.insertAdjacentHTML(
           `${round == 1 ? "afterbegin" : "beforeend"}`,
-          `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${chatters[chatters.length - 1].badges} ${context.username}:</span> 🙈</li>`
+          `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${badges} ${context.username}:</span> 🙈</li>`
         );
       }
-    } else if (chatters[pos].lastGuess < round && chatters[pos].score != "😵") {
-      //chatter is already in the array so check if they already guessed this round and are not eliminated
-      if (gameSettings.controls == "choices" || gameSettings.controls == "higherlower" || gameSettings.game == "gamename") {
-        //if the game has multi choice controls increment the score by 1
-        chatters[pos].score++;
-        if (results.points == "😵") {
-          //if chatter got the answer wrong set score to 😵 to eliminate them
-          chatters[pos].score = "😵";
-        }
-      } else {
-        //if the game has slider controls add the points to the total score
-        chatters[pos].score += results.points;
-        chatters[pos].round = results.points;
-      }
-      chatters[pos].lastGuess = round;
-      document.getElementById(`${context.username}_dot`).style.visibility = "visible";
-      if (gameSettings.controls == "slider") {
+    } else {
+      //chatter is already in the map so save their answer
+      //check if the chatter already answered before adding them to the round leaderboard
+      if (gameSettings.controls == "slider" && !chatter.answer) {
         //add chatter to the round leaderboard if game uses slider controls
         elements.leaderboardListRound.insertAdjacentHTML(
           `${round == 1 ? "afterbegin" : "beforeend"}`,
-          `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${chatters[pos].badges} ${context.username}:</span> 🙈</li>`
+          `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${chatter.badges} ${context.username}:</span> 🙈</li>`
         );
       }
+      chatter.answer = results;
+      chatters.set(context.username, chatter);
+      document.getElementById(`${context.username}_dot`).style.visibility = "visible";
     }
   }); //message
 
@@ -1455,7 +1444,18 @@ function startTimer() {
     document.querySelector("#timer").innerHTML = timer.getTimeValues().toString(["minutes", "seconds", "secondTenths"]);
   });
   timer.addEventListener("targetAchieved", function (e) {
-    guess(null, true);
+    let answer = null;
+    switch (gameSettings.controls) {
+      case "slider":
+        answer = "slider";
+        break;
+      case "text":
+        answer = "game";
+        break;
+      default:
+        break;
+    }
+    guess(answer, true);
     elements.timerDiv.style.display = "none";
     timer.reset();
     timer.stop();
@@ -1492,36 +1492,50 @@ function showLeaderboard() {
 } //showLeaderboard
 
 function updateLeaderboard() {
-  let username = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
-  //sort and parse the scores so 😵 get set to 0 and get put at the bottom
-  chatters.sort((a, b) => (parseInt(b.score, 10) || 0) - (parseInt(a.score, 10) || 0));
-  let list = "";
-  for (let index = 0; index < chatters.length; index++) {
-    if (chatters[index].lastGuess < round && (gameSettings.controls == "choices" || gameSettings.controls == "higherlower" || gameSettings.game == "gamename")) {
-      //eliminate chatter if they did not answer this round if the game has multi choice controls
-      chatters[index].score = "😵";
+  //update the scores for everyone
+  for (const [key, value] of chatters.entries()) {
+    if (!value?.answer) {
+      //skip chatters that didn't play this round
+      continue;
     }
-    list += `<li class="list-group-item ${username == chatters[index].username ? "bg-primary" : ""}">
-    <span id="${chatters[index].username}_dot" style="visibility: hidden">🔵</span>
-    <span style="color:${chatters[index].color || "#FFFFFF"};">${chatters[index].badges} ${chatters[index].username}:</span> 
-    ${chatters[index].score.toLocaleString()}</li>`;
+    value.score += value?.answer.points;
+    value.round = value?.answer.points;
+    chatters.set(key, value);
+  }
+
+  const sortedChatters = new Map([...chatters.entries()].sort((a, b) => b[1].score - a[1].score));
+  let username = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
+  let list = "";
+  for (const [key, value] of sortedChatters.entries()) {
+    list += `
+    <li class="list-group-item ${username == value.username ? "bg-primary" : ""}">
+      <span id="${value.username}_dot" style="visibility: hidden">🔵</span>
+      <span style="color:${value.color || "#FFFFFF"};">${value.badges} ${value.username}:</span> ${value.score.toLocaleString()}
+    </li>`;
   }
   elements.leaderboardList.innerHTML = list;
 
   //if game uses slider controls then update round leaderboard
   if (gameSettings.controls == "slider") {
-    chatters.sort((a, b) => (parseInt(b.round, 10) || 0) - (parseInt(a.round, 10) || 0));
+    const roundSortedChatters = new Map([...chatters.entries()].sort((a, b) => b[1].round - a[1].round));
     let list = "";
-    for (let index = 0; index < chatters.length; index++) {
-      if (chatters[index].lastGuess < round) {
+    for (const [key, value] of roundSortedChatters.entries()) {
+      if (!value?.answer) {
         //skip chatters that didn't play this round
         continue;
       }
-      list += `<li class="list-group-item ${username == chatters[index].username ? "bg-primary" : ""}">
-      <span style="color:${chatters[index].color || "#FFFFFF"};">${chatters[index].badges} ${chatters[index].username}:</span> 
-      ${chatters[index].round.toLocaleString()}</li>`;
+      list += `
+      <li class="list-group-item ${username == value.username ? "bg-primary" : ""}">
+        <span style="color:${value.color || "#FFFFFF"};">${value.badges} ${value.username}:</span> ${value.round.toLocaleString()}
+      </li>`;
     }
     elements.leaderboardListRound.innerHTML = list;
+  }
+
+  //reset answers for everyone for next round
+  for (const [key, value] of chatters.entries()) {
+    value.answer = null;
+    chatters.set(key, value);
   }
 } //updateLeaderboard
 
@@ -1557,7 +1571,7 @@ function usePowerup(pType) {
   switch (pType) {
     case "pSkip": {
       if (gameSettings.controls === "higherlower" || gameSettings.controls === "choices") {
-        // call `guess()` with empty answer, but add "skipped" flag for max points:
+        // call `guess()` with empty answer, but add "skipped" flag to award 0 points
         guess(null, false, true);
       } else {
         throw new Error(`Powerup [${pType}] not allowed for game mode [${gameSettings.controls}]`);
@@ -1674,13 +1688,13 @@ window.onload = async function () {
   elements.sliderControls.onchange = function () {
     if (this.checked) {
       gameSettings.controls = "slider";
-      elements.controlsDesc.innerHTML = `You will have to guess the exact view count - 5 rounds - 5,000 points per round based on how close you are to the correct number`;
+      elements.controlsDesc.innerHTML = `You will have to guess the exact view count of each stream<br />5 rounds - 5,000 points per round based on how close you are to the correct view count`;
     }
   };
   elements.higherlowerControls.onchange = function () {
     if (this.checked) {
       gameSettings.controls = "higherlower";
-      elements.controlsDesc.innerHTML = `You will have to guess if the current stream has a higher or lower view count than the previous one - Keep playing till you get a wrong answer`;
+      elements.controlsDesc.innerHTML = `You will have to guess if the current stream has a higher or lower view count than the previous one<br>Endless mode, gain or lose a point for each guess you make`;
     }
   };
 
@@ -1709,7 +1723,7 @@ window.onload = async function () {
 
   elements.nextRound.onclick = function () {
     localforage.setItem("seenChannels", JSON.stringify(seenChannels));
-    localforage.setItem("seenClips", JSON.stringify(seenChannels));
+    localforage.setItem("seenClips", JSON.stringify(seenClips));
     elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
     elements.seenClips.innerHTML = seenClips.length.toLocaleString();
     nextRound();
@@ -1727,46 +1741,6 @@ window.onload = async function () {
     elements.seenClips.innerHTML = 0;
     showToast("Seen clips reset", "success", 2000);
   };
-
-  // document.addEventListener("keydown", async (e) => {
-  //   if (gameSettings.game == "viewers" && elements.guessRange.offsetParent) {
-  //     if (e.key === "ArrowRight" || e.key === "ArrowUp") {
-  //       elements.guessRange.value++;
-  //       let value = parseInt(elements.guessRange.value, 10);
-  //       elements.guessNumber.value = Math.round(Math.exp((Math.log(max) / 100) * value));
-  //       if (value == 0) {
-  //         elements.guessNumber.value = 0;
-  //       }
-  //       return;
-  //     }
-  //     if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
-  //       elements.guessRange.value--;
-  //       let value = parseInt(elements.guessRange.value, 10);
-  //       elements.guessNumber.value = Math.round(Math.exp((Math.log(max) / 100) * value));
-  //       if (value == 0) {
-  //         elements.guessNumber.value = 0;
-  //       }
-  //       return;
-  //     }
-  //   }
-
-  //   if (elements.guess.offsetParent && e.key === "Enter") {
-  //     guess();
-  //     return;
-  //   }
-
-  //   if (elements.nextRound.offsetParent && e.key === "Enter") {
-  //     localforage.setItem("seenChannels", JSON.stringify(seenChannels));
-  //     localforage.setItem("seenClips", JSON.stringify(seenClips));
-  //     nextRound();
-  //     return;
-  //   }
-  //   if (elements.playAgain.offsetParent && e.key === "Enter") {
-  //     await startGame();
-  //     nextRound();
-  //     return;
-  //   }
-  // });
 }; //onload
 
 window.onbeforeunload = function () {

@@ -231,6 +231,10 @@ function shuffleArraySeed(array, seed) {
 } //shuffleArraySeed
 
 function checkSimilarity(guess, answer) {
+  if (guess === -1) {
+    // timer ran out and the user did not answer
+    return false;
+  }
   const distanceMatrix = Array(answer.length + 1)
     .fill(null)
     .map(() => Array(guess.length + 1).fill(null));

@@ -64,18 +64,18 @@
             </div>
             <hr />
             <div class="input-group mb-3">
-              <span class="input-group-text">Game name mode max streak</span>
+              <span class="input-group-text">Game name mode high score</span>
               <span class="input-group-text" id="gameStreak">0</span>
               <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('gameStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
             </div>
             <div class="input-group mb-3">
-              <span class="input-group-text">Emote mode max streak</span>
+              <span class="input-group-text">Emote mode high score</span>
               <span class="input-group-text" id="emoteStreak">0</span>
               <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('emoteStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
             </div>
             <hr />
             <div class="input-group mb-3">
-              <span class="input-group-text">Viewers mode higher/lower max streak</span>
+              <span class="input-group-text">Viewers mode higher/lower high score</span>
               <span class="input-group-text" id="viewersHigherlowerStreak">0</span>
               <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('viewersHigherlowerStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
             </div>
@@ -196,7 +196,9 @@
                 <label class="btn btn-outline-success" for="higherlowerControls">Higher Lower</label>
               </div>
               <br />
-              <small id="controlsDesc"> You will have to guess the exact view count - 5 rounds - 5,000 points per round based on how close you are to the correct number </small>
+              <small id="controlsDesc">
+                You will have to guess the exact view count of each stream<br />5 rounds - 5,000 points per round based on how close you are to the correct view count
+              </small>
             </div>
 
             <div id="timerSettingsDiv" class="mt-3">
@@ -517,8 +519,8 @@
     <script src="/js/confetti.min.js"></script>
     <script src="/js/anime.iife.min.js"></script>
     <script src="/js/tmi.min.js"></script>
-    <script src="/js/functions.min.js"></script>
-    <script src="/js/guessr.min.js"></script>
+    <script src="/js/functions.js"></script>
+    <script src="/js/guessr.js"></script>
     <script src="https://embed.twitch.tv/embed/v1.js" async></script>
   </body>
 </html>
