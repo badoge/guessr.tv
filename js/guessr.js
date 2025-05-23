@@ -158,8 +158,6 @@ async function getMainList() {
     let response = await fetch(`https://api.okayeg.com/guess?dank=${Date.now()}`, requestOptions);
     let list = await response.json();
     mainList = list.guess.guess;
-    max = Math.max(...mainList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 5000);
-    elements.guessNumber.max = max;
     elements.guessRange.value = 0;
     elements.guessNumber.value = "";
     elements.infoTime.innerHTML = `Channel list updated on ${new Date(list.guess.time)}`;
@@ -168,20 +166,18 @@ async function getMainList() {
   }
 } //getMainList
 
-async function getMainListClips() {
+async function getClipSet() {
   try {
     let response = await fetch(`https://api.okayeg.com/guess/clips/${gameSettings.collection}?time=${Date.now()}`);
     let list = await response.json();
     mainList = list.random[0].clips;
-    max = Math.max(...mainList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 5000);
-    elements.guessNumber.max = max;
     elements.guessRange.value = 0;
     elements.guessNumber.value = "";
     elements.infoTime.innerHTML = `Clip set generated on ${new Date(list.random[0].time)}`;
   } catch (error) {
     console.log(error);
   }
-} //getMainListClips
+} //getClipSet
 
 async function getEmoteList() {
   try {
@@ -356,16 +352,15 @@ async function getRandomStream() {
         return await getRandomStream();
       }
 
-      if (random.viewers > max) {
-        max = random.viewers + Math.floor(Math.random() * 5000);
-        elements.guessNumber.max = max;
-      }
-
       //update stream info
       random.viewers = stream.data[0].viewer_count;
       random.game_name = stream.data[0].game_name;
       random.game_name_clean = cleanString(stream.data[0].game_name);
       random.thumbnail = stream.data[0].thumbnail_url || "";
+
+      //set the max slider value
+      max = random.viewers + Math.floor(Math.random() * 10000);
+      elements.guessNumber.max = max;
       return random;
     } else {
       //stream is offline so remove it from the main list and get a new one
@@ -380,7 +375,7 @@ async function getRandomStream() {
 } //getRandomStream
 
 async function getClipsGuessList() {
-  await getMainListClips(); // needs to be fetched before each game bcz list has 5 clips only
+  await getClipSet(); // needs to be fetched before each game bcz list has 5 clips only
   let ids = mainList.map((e) => e.id);
   try {
     let response = await fetch(`https://helper.guessr.tv/twitch/clips?id=${ids.join(",")}`);
@@ -395,17 +390,26 @@ async function getClipsGuessList() {
       mainList[clipIndex].viewers = clips.data[index].view_count; //update clips from the bot with up to date view count from helper
       mainList[clipIndex].thumbnail = clips.data[index].thumbnail_url || "";
     }
+
+    //remove deleted clips
     guessList = mainList.filter((n) => clips.data.some((n2) => n.id == n2.id));
-    //remove seen clips
-    guessList = mainList.filter((n) => !seenClips.includes(n.id));
-    max = Math.max(...guessList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 1000);
-    elements.guessNumber.max = max;
     if (guessList.length < 5) {
-      showToast("Clips set contains deleted/already seen clips, getting new set...", "info", 2000);
+      showToast("Clip set contains deleted clips, getting new set...", "info", 2000);
       return await getClipsGuessList();
     }
 
-    //get an emote for each channel
+    //remove seen clips
+    guessList = guessList.filter((n) => !seenClips.includes(n.id));
+    if (guessList.length < 5) {
+      showToast("Clip set contains already seen clips, getting new set...", "info", 2000);
+      return await getClipsGuessList();
+    }
+
+    //update max slider value
+    max = Math.max(...guessList.map((o) => o.viewers || 0)) + Math.floor(Math.random() * 10000);
+    elements.guessNumber.max = max;
+
+    //get an emote for each channel-
     if (gameSettings.game == "emote") {
       await getClipsEmotes();
     }
@@ -440,7 +444,7 @@ async function getClipsEmotes() {
         guessList[index].emote = emote;
         fetched++;
       } else {
-        showToast("Channel has no emotes, getting new channel...", "info", 3000);
+        showToast("Channel has no emotes, getting new clip set...", "info", 3000);
         return await getClipsGuessList();
       }
     } catch (error) {
@@ -450,7 +454,7 @@ async function getClipsEmotes() {
   }
   if (fetched < 5) {
     guessList = [];
-    showToast("Clips set contains deleted/already seen clips, getting new set...", "info", 2000);
+    showToast("Clip set contains deleted clips, getting new set...", "info", 2000);
     return await getClipsGuessList();
   }
 } //getClipsEmotes
@@ -473,7 +477,6 @@ async function nextRound() {
 
   round++;
   roundActive = true;
-  elements.guessNumber.max = max;
   elements.guessRange.value = 0;
   elements.guessNumber.value = "";
   elements.gameInput.value = "";
