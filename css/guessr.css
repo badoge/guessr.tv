@@ -1,7 +1,7 @@
 #scoreDiv {
   font-size: 1.8rem;
   position: fixed;
-  top: 250px;
+  top: 320px;
   left: 0;
   padding-left: 10px;
   border-top-right-radius: 50px;
@@ -12,7 +12,7 @@
 #timerDiv {
   font-size: 1.8rem;
   position: fixed;
-  top: 350px;
+  top: 420px;
   left: 0;
   padding-left: 10px;
   border-top-right-radius: 50px;
@@ -101,11 +101,6 @@
 
 #guessInputDiv {
   scale: 1.3;
-}
-
-#welcomeCard {
-  margin: auto;
-  width: 45vw;
 }
 
 .game-card {

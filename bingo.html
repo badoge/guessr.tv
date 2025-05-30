@@ -219,9 +219,10 @@
       <li class="nav-item">
         <a class="nav-link active site-link" aria-current="page" target="_self" rel="noopener noreferrer" href="/bingo.html"><i class="material-icons notranslate">grid_on</i> Bingo</a>
       </li>
-      <!-- <li class="nav-item">
+      <li class="nav-item">
         <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/watch.html"><i class="material-icons notranslate">live_tv</i> Watch</a>
-      </li> -->
+      </li>
+      <hr class="m-0" />
       <li class="nav-item">
         <a class="nav-link" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="material-icons notranslate">settings</i> Settings</a>
       </li>
@@ -229,6 +230,10 @@
         <a class="nav-link" data-bs-toggle="modal" data-bs-target="#aboutModal"><i class="material-icons notranslate">help_outline</i> About</a>
       </li>
     </ul>
+
+    <div aria-live="polite" aria-atomic="true" class="position-relative m-2">
+      <div id="toastContainer" class="toast-container"></div>
+    </div>
 
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasLeaderboard" aria-labelledby="offcanvasLeaderboardLabel">
       <div class="offcanvas-header">
@@ -288,11 +293,7 @@
       </div>
     </div>
 
-    <div aria-live="polite" aria-atomic="true" class="position-relative m-3">
-      <div id="toastContainer" class="toast-container"></div>
-    </div>
-
-    <div class="container-fluid mt-3">
+    <div class="container-fluid pt-3">
       <div class="row">
         <div class="col-5"></div>
         <div class="col-7 position-relative">

@@ -62,7 +62,11 @@
               <span class="input-group-text" id="viewersHS">0</span>
               <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('viewersHS')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
             </div>
-            <hr />
+            <div class="input-group mb-3">
+              <span class="input-group-text">Higher Lower mode high score</span>
+              <span class="input-group-text" id="viewersHigherlowerStreak">0</span>
+              <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('viewersHigherlowerStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+            </div>
             <div class="input-group mb-3">
               <span class="input-group-text">Game name mode high score</span>
               <span class="input-group-text" id="gameStreak">0</span>
@@ -73,12 +77,7 @@
               <span class="input-group-text" id="emoteStreak">0</span>
               <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('emoteStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
             </div>
-            <hr />
-            <div class="input-group mb-3">
-              <span class="input-group-text">Viewers mode higher/lower high score</span>
-              <span class="input-group-text" id="viewersHigherlowerStreak">0</span>
-              <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('viewersHigherlowerStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
-            </div>
+
             <hr />
             <div class="input-group mt-3">
               <span class="input-group-text">Seen Channels</span>
@@ -187,20 +186,6 @@
               </select>
             </div>
 
-            <div id="controlsTypeDiv" class="mt-3">
-              <h5>Mode</h5>
-              <div class="btn-group" role="group" aria-label="Mode">
-                <input type="radio" class="btn-check" name="controlsSelect" value="slider" id="sliderControls" autocomplete="off" checked />
-                <label class="btn btn-outline-primary" for="sliderControls">Normal</label>
-                <input type="radio" class="btn-check" name="controlsSelect" value="higherlower" id="higherlowerControls" autocomplete="off" />
-                <label class="btn btn-outline-success" for="higherlowerControls">Higher Lower</label>
-              </div>
-              <br />
-              <small id="controlsDesc">
-                You will have to guess the exact view count of each stream<br />5 rounds - 5,000 points per round based on how close you are to the correct view count
-              </small>
-            </div>
-
             <div id="timerSettingsDiv" class="mt-3">
               <h5>Timer</h5>
               <div class="input-group">
@@ -271,10 +256,10 @@
       <li class="nav-item">
         <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/bingo.html"><i class="material-icons notranslate">grid_on</i> Bingo</a>
       </li>
-      <!--
       <li class="nav-item">
         <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/watch.html"><i class="material-icons notranslate">live_tv</i> Watch</a>
-      </li> -->
+      </li>
+      <hr class="m-0" />
       <li class="nav-item">
         <a class="nav-link" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="material-icons notranslate">settings</i> Settings</a>
       </li>
@@ -283,68 +268,83 @@
       </li>
     </ul>
 
-    <div class="container-fluid text-center mt-3">
-      <div class="row">
-        <div class="col-2">
-          <div aria-live="polite" aria-atomic="true" class="position-relative">
-            <div id="toastContainer" class="toast-container"></div>
-          </div>
-        </div>
-        <div class="col-8 position-relative pe-1">
-          <div id="twitchEmbed">
-            <div class="card mt-5" id="welcomeCard">
-              <div class="card-header"><img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv</div>
-              <div class="card-body">
-                <div class="container-fluid">
-                  <div class="row mb-3">
-                    <div class="card game-card cursor-pointer" onclick="showSettings('viewers')">
-                      <div class="card-body">
-                        <h2>
-                          Viewers
-                          <svg class="viewers-svg" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
-                            <g>
-                              <path
-                                fill-rule="evenodd"
-                                d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
-                                clip-rule="evenodd"
-                              ></path>
-                            </g>
-                          </svg>
-                        </h2>
-                        <div class="hidden">
-                          A random Twitch streamer will be shown and you will have to guess how many viewers they have. The closer you are to the target view count the more points you'll
-                          earn.
-                        </div>
-                      </div>
-                    </div>
+    <div aria-live="polite" aria-atomic="true" class="position-relative m-2">
+      <div id="toastContainer" class="toast-container"></div>
+    </div>
+
+    <div class="container text-center pt-5" id="menuContainer">
+      <div class="row justify-content-center">
+        <div class="col-6">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col">
+                <div class="card game-card cursor-pointer bg-body-tertiary" onclick="showSettings('viewers')">
+                  <div class="card-body">
+                    <h2>
+                      <svg class="viewers-svg" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
+                        <g>
+                          <path
+                            fill-rule="evenodd"
+                            d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
+                            clip-rule="evenodd"
+                          ></path>
+                        </g>
+                      </svg>
+                      Viewers
+                    </h2>
+                    <div class="hidden">Guess how many viewers the random streamer has</div>
                   </div>
-                  <div class="row mb-3">
-                    <div class="card game-card cursor-pointer" onclick="showSettings('gamename')">
-                      <div class="card-body">
-                        <h2>
-                          Game
-                          <i class="material-icons notranslate mp-icon">sports_esports</i>
-                        </h2>
-                        <div class="hidden">You will be shown a random Twitch stream and you will have to guess what game they are playing.</div>
-                      </div>
-                    </div>
+                </div>
+              </div>
+
+              <div class="col">
+                <div class="card game-card cursor-pointer bg-body-tertiary" onclick="showSettings('higherlower')">
+                  <div class="card-body">
+                    <h2>
+                      <i class="material-icons notranslate mp-icon">import_export</i>
+                      Higher Lower
+                    </h2>
+                    <div class="hidden">Guess if the streamer has a higher or lower view count than the previous one</div>
                   </div>
-                  <div class="row">
-                    <div class="card game-card cursor-pointer" onclick="showSettings('emote')">
-                      <div class="card-body">
-                        <h2>
-                          Emote
-                          <i class="material-icons notranslate mp-icon">emoji_emotions</i>
-                        </h2>
-                        <div class="hidden">You will be shown a random Twitch stream and you will have to guess which emote belongs to them.</div>
-                      </div>
-                    </div>
+                </div>
+              </div>
+            </div>
+            <hr />
+            <div class="row">
+              <div class="col">
+                <div class="card game-card cursor-pointer bg-body-tertiary" onclick="showSettings('game')">
+                  <div class="card-body">
+                    <h2>
+                      <i class="material-icons notranslate mp-icon">sports_esports</i>
+                      Game
+                    </h2>
+                    <div class="hidden">Guess what game the random streamer is playing</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="card game-card cursor-pointer bg-body-tertiary" onclick="showSettings('emote')">
+                  <div class="card-body">
+                    <h2>
+                      <i class="material-icons notranslate mp-icon">emoji_emotions</i>
+                      Emote
+                    </h2>
+                    <div class="hidden">Guess which emote belongs to the random streamer</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
 
+    <div class="container-fluid text-center mt-3" id="gameContainer" style="display: none">
+      <div class="row">
+        <div class="col-2"></div>
+
+        <div class="col-8 position-relative pe-1">
+          <div id="twitchEmbed"></div>
           <div id="streamCover" style="display: none"></div>
           <div id="clipCover" style="display: none"></div>
         </div>
@@ -388,6 +388,7 @@
           </div>
         </div>
       </div>
+
       <div class="row mb-3 mt-2" id="bottomRow">
         <div class="col-2"></div>
         <div class="col-10">
@@ -519,8 +520,8 @@
     <script src="/js/confetti.min.js"></script>
     <script src="/js/anime.iife.min.js"></script>
     <script src="/js/tmi.min.js"></script>
-    <script src="/js/functions.js"></script>
-    <script src="/js/guessr.js"></script>
+    <script src="/js/functions.min.js"></script>
+    <script src="/js/guessr.min.js"></script>
     <script src="https://embed.twitch.tv/embed/v1.js" async></script>
   </body>
 </html>

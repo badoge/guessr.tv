@@ -2,10 +2,6 @@
   cursor: pointer;
 }
 
-.material-icons {
-  vertical-align: bottom;
-}
-
 #toastContainer {
   position: fixed;
   bottom: 10px;

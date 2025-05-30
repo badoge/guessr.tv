@@ -22,4 +22,5 @@
   -webkit-font-feature-settings: "liga";
   font-feature-settings: "liga";
   -webkit-font-smoothing: antialiased;
+  vertical-align: text-bottom;
 }
