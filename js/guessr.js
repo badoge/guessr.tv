@@ -29,6 +29,8 @@ const elements = {
   higher: document.getElementById("higher"),
   lower: document.getElementById("lower"),
 
+  irlDiv: document.getElementById("irlDiv"),
+
   resultsDiv: document.getElementById("resultsDiv"),
   nextRound: document.getElementById("nextRound"),
   endButtons: document.getElementById("endButtons"),
@@ -71,7 +73,6 @@ const elements = {
   clipCollection: document.getElementById("clipCollection"),
   videoTypeDesc: document.getElementById("videoTypeDesc"),
   timerValue: document.getElementById("timerValue"),
-  chatSettingsDiv: document.getElementById("chatSettingsDiv"),
   channelName: document.getElementById("channelName"),
   //drops: document.getElementById("drops"),
   disclaimer: document.getElementById("disclaimer"),
@@ -115,7 +116,7 @@ let previousNumber = null;
 let timer;
 let emoteChoices = { a: 1, b: 2, c: 3, d: 4, e: 5 };
 let gameSettings = {
-  mode: "viewers", // viewers - higherlower - game - emote
+  mode: "viewers", // viewers - higherlower - game - emote - irl
   clips: false, // false: game will show streams - true: game will show clips
   collection: "random", // "random", "short", "long", "popular", "hottub", "forsen"
   chat: false, // true - false
@@ -200,6 +201,7 @@ function toggleControls(hide = false) {
     elements.multiChoiceDiv.style.display = "none";
     elements.gameNameDiv.style.display = "none";
     elements.higherlowerDiv.style.display = "none";
+    elements.irlDiv.style.display = "none";
     return;
   }
 
@@ -209,24 +211,37 @@ function toggleControls(hide = false) {
       elements.multiChoiceDiv.style.display = "none";
       elements.gameNameDiv.style.display = "none";
       elements.higherlowerDiv.style.display = "none";
+      elements.irlDiv.style.display = "none";
       break;
     case "emote":
       elements.sliderDiv.style.display = "none";
       elements.multiChoiceDiv.style.display = "";
       elements.gameNameDiv.style.display = "none";
       elements.higherlowerDiv.style.display = "none";
+      elements.irlDiv.style.display = "none";
       break;
     case "game":
       elements.sliderDiv.style.display = "none";
       elements.multiChoiceDiv.style.display = "none";
       elements.gameNameDiv.style.display = "";
       elements.higherlowerDiv.style.display = "none";
+      elements.irlDiv.style.display = "none";
       break;
     case "higherlower":
       elements.sliderDiv.style.display = "none";
       elements.multiChoiceDiv.style.display = "none";
       elements.gameNameDiv.style.display = "none";
       elements.higherlowerDiv.style.display = "";
+      elements.irlDiv.style.display = "none";
+      break;
+    case "irl":
+      elements.sliderDiv.style.display = "none";
+      elements.multiChoiceDiv.style.display = "none";
+      elements.gameNameDiv.style.display = "none";
+      elements.higherlowerDiv.style.display = "none";
+      elements.irlDiv.style.display = "";
+      document.getElementById("irlCorrection").innerHTML = "Where is this streamer?";
+      loadMap();
       break;
     default:
       break;
@@ -567,7 +582,7 @@ async function nextRound() {
       height: "100%",
       allowfullscreen: false,
       layout: "video",
-      channel: guessList[round - 1].username,
+      channel: gameSettings.mode == "irl" ? irlstream : guessList[round - 1].username,
       parent: ["guessr.tv"],
     };
     if (!player) {
@@ -658,9 +673,44 @@ async function checkEmote(id) {
   }
 } //checkEmote
 
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the Earth in kilometers
+  const toRad = (angle) => angle * (Math.PI / 180);
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+
+  return distance; // in kilometers
+}
+
 async function guess(choice, timeUp = false, skipped = false) {
   roundActive = false;
   let answer;
+
+  if (gameSettings.mode == "irl") {
+    if (!markerAnswer) {
+      showToast("No location selected", "warning", 2000);
+      return;
+    }
+
+    let diff = getDistance(markerAnswer.latitude, markerAnswer.longitude, irlLocation.latitude, irlLocation.longitude);
+
+    L.marker([irlLocation.latitude, irlLocation.longitude]).addTo(map);
+
+    map.flyTo(L.latLng(irlLocation.latitude, irlLocation.longitude));
+
+    document.getElementById("irlCorrection").innerHTML = `Your guess was <strong>${Math.round(
+      diff
+    ).toLocaleString()} km</strong> away from the streamer<br><small><span class="text-danger">Refresh the page</span> to reset and pick a new stream :)</small>`;
+
+    console.log(diff);
+    return;
+  }
 
   switch (choice) {
     case "slider":
@@ -1177,6 +1227,7 @@ function reset(logoClicked = false) {
   elements.multiChoiceDiv.style.display = "none";
   elements.gameNameDiv.style.display = "none";
   elements.higherlowerDiv.style.display = "none";
+  elements.irlDiv.style.display = "none";
   elements.resultsDiv.style.display = "none";
   elements.mainCard.style.display = "none";
   elements.streamCover.style.display = "none";
@@ -1221,9 +1272,18 @@ async function showSettings(mode) {
       elements.disclaimer.style.display = "none";
   }
 
+  if (mode == "irl") {
+    document.getElementById("irlSettingsDiv").style.display = "";
+    document.getElementById("channelId").value = "";
+  } else {
+    document.getElementById("irlSettingsDiv").style.display = "none";
+  }
+
   gameSettingsModal.show();
 } //showSettings
 
+let irlid = "";
+let irlstream = "";
 async function getSettings() {
   elements.getSettingsButton.innerHTML = spinner;
   elements.getSettingsButton.disabled = true;
@@ -1266,7 +1326,27 @@ async function getSettings() {
     return;
   }
 
-  if (channelName) {
+  if (gameSettings.mode == "irl") {
+    irlid = parseInt(document.getElementById("channelId").value, 10);
+
+    if (!irlid) {
+      showToast("no irl channel id provided", "danger", 2000);
+      reset();
+      return;
+    }
+
+    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${irlid}`);
+    let stream = await response.json();
+    if (!stream?.data[0] || !stream?.data[0]?.user_login) {
+      showToast("stream not found/offline", "warning", 2000);
+      reset();
+      return;
+    }
+
+    irlstream = stream.data[0].user_login;
+  }
+
+  if (channelName && gameSettings.mode !== "irl") {
     localStorage.setItem("channelName", channelName);
     gameSettings.chat = true;
     connectChat();
@@ -1619,6 +1699,49 @@ function usePowerup(pType) {
   });
 } //usePowerup
 
+let map;
+let markerAnswer;
+let irlLocation;
+function loadMap() {
+  if (map) {
+    //reset map and marker if we already loaded it
+    map.setView([40, 16], 2);
+    map.eachLayer((layer) => {
+      if (layer instanceof L.Marker) {
+        layer.remove();
+      }
+    });
+  } else {
+    //load map if it doesnt exist yet
+    map = L.map("map", {
+      center: [40, 16],
+      zoom: 2,
+    });
+
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors`,
+    }).addTo(map);
+
+    map.on("click", function (e) {
+      const { lat, lng } = e.latlng;
+      console.log(` Latitude ${lat.toFixed(5)}, Longitude ${lng.toFixed(5)}`);
+
+      map.eachLayer((layer) => {
+        if (layer instanceof L.Marker) {
+          layer.remove();
+        }
+      });
+      L.marker([lat, lng]).addTo(map);
+      markerAnswer = { latitude: lat, longitude: lng };
+    });
+  }
+
+  dankdank = RealtimeIRL.forStreamer("twitch", irlid).addLocationListener(function (location) {
+    irlLocation = location;
+    console.log(irlLocation);
+  });
+} //loadMap
+let dankdank;
 window.onload = async function () {
   localforage.config({
     driver: localforage.INDEXEDDB,
@@ -1726,6 +1849,13 @@ window.onload = async function () {
     elements.seenClips.innerHTML = 0;
     showToast("Seen clips reset", "success", 2000);
   };
+
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+
+  if (urlParams.get("irl") === "true") {
+    document.getElementById("irl").style.display = "";
+  }
 }; //onload
 
 window.onbeforeunload = function () {

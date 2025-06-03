@@ -26,6 +26,7 @@
 
     <link rel="stylesheet" href="/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/css/icons.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="/css/common.min.css" />
     <link rel="stylesheet" href="/css/guessr.min.css" />
   </head>
@@ -186,7 +187,7 @@
               </select>
             </div>
 
-            <div id="timerSettingsDiv" class="mt-3">
+            <div class="mt-3">
               <h5>Timer</h5>
               <div class="input-group">
                 <div class="input-group-text">Round timer</div>
@@ -196,13 +197,26 @@
               <small>Your guess will be automatically submitted when the timer runs out. Set to 0 to disable</small>
             </div>
 
-            <div id="chatSettingsDiv" class="mt-3">
+            <div class="mt-3">
               <h4>Play with chat</h4>
               <div class="input-group">
                 <span class="input-group-text" id="channelNameLabel">twitch.tv/</span>
                 <input type="text" id="channelName" class="form-control" placeholder="username" aria-label="channel name" aria-describedby="channelNameLabel" />
               </div>
               <small class="mb-3">Your viewers will be able to play along by guessing in chat</small>
+            </div>
+
+            <div id="irlSettingsDiv" class="mt-3">
+              <h4>IRL stream channel id</h4>
+              <div class="input-group">
+                <span class="input-group-text" id="channelIdLabel">https://rtirl.com/twitch:</span>
+                <input type="text" id="channelId" class="form-control" placeholder="123456789" aria-label="channel id" aria-describedby="channelIdLabel" />
+              </div>
+              <small class="mb-3">
+                Go to <a href="https://rtirl.com/" target="_blank" rel="noopener noreferrer">RealtimeIRL</a> and pick a random stream and enter their twitch user id above. Example: when you
+                click a stream the url will change to https://rtirl.com/twitch:123456789, so enter 123456789 in the field above :)<br />Scuffed proof of concept :) try to get someone else to
+                pick a stream for you to not spoil the location
+              </small>
             </div>
 
             <!-- <div id="drops" class="alert alert-info mt-3" role="alert" style="display: none">
@@ -330,6 +344,21 @@
                       Emote
                     </h2>
                     <div class="hidden">Guess which emote belongs to the random streamer</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mt-3" id="irl" style="display: none">
+              <hr />
+              <div class="col">
+                <div class="card game-card cursor-pointer bg-body-tertiary" onclick="showSettings('irl')">
+                  <div class="card-body">
+                    <h2>
+                      <i class="material-icons notranslate mp-icon">public</i>
+                      IRL streams
+                    </h2>
+                    <div class="hidden">Guess where the streamer is</div>
                   </div>
                 </div>
               </div>
@@ -483,6 +512,18 @@
                 </div>
               </div>
 
+              <div id="irlDiv" class="row align-items-center" style="display: none">
+                <div class="col">
+                  <div id="map" style="height: 300px"></div>
+                </div>
+
+                <div class="col-3">
+                  <p id="irlCorrection">Where is this streamer?</p>
+                  <br />
+                  <button type="button" onclick="guess('map',false)" class="btn btn-lg btn-success guess">Guess</button>
+                </div>
+              </div>
+
               <div id="resultsDiv" class="row align-items-center" style="display: none">
                 <div class="col-3">
                   <button type="button" id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
@@ -523,5 +564,7 @@
     <script src="/js/functions.min.js"></script>
     <script src="/js/guessr.min.js"></script>
     <script src="https://embed.twitch.tv/embed/v1.js" async></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/@rtirl/api@latest/lib/index.min.js" async></script>
   </body>
 </html>
