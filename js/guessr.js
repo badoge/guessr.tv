@@ -151,25 +151,32 @@ async function getMainList() {
     },
   };
   try {
-    let response = await fetch(`https://api.okayeg.com/guess?dank=${Date.now()}`, requestOptions);
-    let list = await response.json();
-    mainList = list.guess.guess;
+    let response = await fetch(`https://guessr.donk.workers.dev/list?dank=${Date.now()}`, requestOptions);
+    let result = await response.json();
+    console.log(result);
+    mainList = result.list;
     elements.guessRange.value = 0;
     elements.guessNumber.value = "";
-    elements.infoTime.innerHTML = `Channel list updated on ${new Date(list.guess.time)}`;
+    elements.infoTime.innerHTML = `Channel list updated on ${new Date(result.time)}`;
   } catch (error) {
     console.log(error);
   }
 } //getMainList
 
 async function getClipSet() {
+  let requestOptions = {
+    headers: {
+      pragma: "no-cache",
+      "cache-control": "no-cache",
+    },
+  };
   try {
-    let response = await fetch(`https://api.okayeg.com/guess/clips/${gameSettings.collection}?time=${Date.now()}`);
+    let response = await fetch(`https://guessr.donk.workers.dev/clips/${gameSettings.collection}?time=${Date.now()}`, requestOptions);
     let list = await response.json();
-    mainList = list.random[0].clips;
+    mainList = JSON.parse(list[0].clips);
     elements.guessRange.value = 0;
     elements.guessNumber.value = "";
-    elements.infoTime.innerHTML = `Clip set generated on ${new Date(list.random[0].time)}`;
+    elements.infoTime.innerHTML = `Clip set generated on 2025/06/08`;
   } catch (error) {
     console.log(error);
   }
@@ -313,29 +320,33 @@ async function startGame() {
 
 async function getRandomStream() {
   //pick a random stream from the main list which has ~700 streams
-  let random = mainList[Math.floor(Math.random() * mainList.length)];
+  let randomUserid = mainList[Math.floor(Math.random() * mainList.length)];
+  let randomStream = { userid: randomUserid };
 
   //check if channel is already seen
-  if (seenChannels.some((e) => e === random.username)) {
-    return await getRandomStream();
-  }
-
-  //get a new stream if skip sexual is checked
-  if (random.sexual && skipSexual) {
+  if (seenChannels.includes(randomStream.userid)) {
     return await getRandomStream();
   }
 
   //update stream info
   try {
-    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${random.userid}`);
+    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${randomStream.userid}`);
     let stream = await response.json();
 
     if (stream.data[0]) {
+      let response2 = await fetch(`https://helper.guessr.tv/twitch/channels?broadcaster_id=${randomStream.userid}`);
+      let result2 = await response2.json();
+
+      //get a new stream if skip sexual is checked
+      if (result2?.data[0]?.content_classification_labels?.includes("SexualThemes") && skipSexual) {
+        return await getRandomStream();
+      }
+
       //get 1 channel emote if mode is emote
       if (gameSettings.mode == "emote") {
         let tries = 0;
         try {
-          let response = await fetch(`https://helper.guessr.tv/twitch/chat/emotes?broadcaster_id=${random.userid}`);
+          let response = await fetch(`https://helper.guessr.tv/twitch/chat/emotes?broadcaster_id=${randomStream.userid}`);
           let emotes = await response.json();
           if (emotes?.data?.length > 0) {
             let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
@@ -347,7 +358,7 @@ async function getRandomStream() {
               }
               emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
             }
-            random.emote = emote;
+            randomStream.emote = emote;
           } else {
             showToast("Channel has no emotes, getting new channel...", "info", 3000);
             return await getRandomStream();
@@ -359,24 +370,28 @@ async function getRandomStream() {
         }
       } //emote
 
-      //get a new stream if current one has no category
+      //get a new stream if current one has no category in game name mode
       if (!stream.data[0].game_name && gameSettings.mode == "game") {
         return await getRandomStream();
       }
 
       //update stream info
-      random.viewers = stream.data[0].viewer_count;
-      random.game_name = stream.data[0].game_name;
-      random.game_name_clean = cleanString(stream.data[0].game_name);
-      random.thumbnail = stream.data[0].thumbnail_url || "";
+      randomStream.username = stream.data[0].user_login;
+      randomStream.viewers = stream.data[0].viewer_count;
+      randomStream.game_name = stream.data[0].game_name;
+      randomStream.game_name_clean = cleanString(stream.data[0].game_name);
+      randomStream.thumbnail = stream.data[0].thumbnail_url || "";
 
       //set the max slider value
-      max = random.viewers + Math.floor(Math.random() * 10000);
+      max = randomStream.viewers + Math.floor(Math.random() * 10000);
       elements.guessNumber.max = max;
-      return random;
+      return randomStream;
     } else {
       //stream is offline so remove it from the main list and get a new one
-      mainList = mainList.filter((e) => e.username != random.username);
+      const index = mainList.indexOf(randomStream.userid);
+      if (index > -1) {
+        mainList.splice(index, 1);
+      }
       return await getRandomStream();
     }
   } catch (error) {

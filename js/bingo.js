@@ -168,10 +168,10 @@ async function getMainList() {
     },
   };
   try {
-    let response = await fetch(`https://api.okayeg.com/guess?dank=${Date.now()}`, requestOptions);
-    let list = await response.json();
-    mainList = list.guess.guess;
-    elements.infoTime.innerHTML = `Channel list updated on ${new Date(list.guess.time)}`;
+    let response = await fetch(`https://guessr.donk.workers.dev/list?dank=${Date.now()}`, requestOptions);
+    let result = await response.json();
+    mainList = result.list;
+    elements.infoTime.innerHTML = `Channel list updated on ${new Date(result.time)}`;
   } catch (error) {
     console.log(error);
     showToast("Could not load channel list :(", "danger", "5000");
@@ -196,8 +196,8 @@ async function nextStream() {
   }
 
   let channel = mainList.pop();
-  //reroll if channel already seen or if it has the sexual label and the skip sexual option is checked
-  while (seenChannels.includes(channel.username) || (channel.sexual && skipSexual)) {
+  //reroll if channel already seen
+  while (seenChannels.includes(channel)) {
     channel = mainList.pop();
   }
   if (mainList.length == 0 || !channel) {
@@ -214,10 +214,19 @@ async function nextStream() {
 
   //update stream info
   try {
-    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${channel.userid}`);
+    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${channel}`);
     let stream = await response.json();
+    console.log(stream);
     if (!stream.data[0]) {
       retryLimit++;
+      return nextStream();
+    }
+
+    let response2 = await fetch(`https://helper.guessr.tv/twitch/channels?broadcaster_id=${channel}`);
+    let result2 = await response2.json();
+    console.log(result2);
+    //get a new stream if skip sexual is checked
+    if (result2?.data[0]?.content_classification_labels?.includes("SexualThemes") && skipSexual) {
       return nextStream();
     }
 
@@ -225,7 +234,7 @@ async function nextStream() {
     let options = {
       width: "100%",
       height: "100%",
-      channel: channel.username,
+      channel: stream.data[0].user_login,
       layout: "video-with-chat",
       theme: "dark",
       parent: ["guessr.tv", "127.0.0.1"],
@@ -233,14 +242,14 @@ async function nextStream() {
     if (!player) {
       player = new Twitch.Embed("twitchEmbed", options);
     } else {
-      player.setChannel(channel.username);
+      player.setChannel(stream.data[0].user_login);
     }
-    previousChannels.push(channel.username);
-    seenChannels.push(channel.username);
+    previousChannels.push(stream.data[0].user_login);
+    seenChannels.push(channel);
     localforage.setItem("seenChannels", JSON.stringify(seenChannels));
     elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
 
-    if (channel.username == channelName) {
+    if (stream.data[0].user_login == channelName) {
       showConfetti(2);
       sendUsername(" - dank ⚠️ ⚠️ ⚠️");
     }

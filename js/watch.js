@@ -26,13 +26,14 @@ async function getMainList() {
     },
   };
   try {
-    let response = await fetch(`https://api.okayeg.com/guess?dank=${Date.now()}`, requestOptions);
-    let list = await response.json();
-    mainList = list.guess.guess;
-    elements.infoTime.innerHTML = `Channel list updated on ${new Date(list.guess.time)}`;
+    let response = await fetch(`https://guessr.donk.workers.dev/list?dank=${Date.now()}`, requestOptions);
+    let result = await response.json();
+    console.log(result);
+    mainList = result.list;
+    elements.infoTime.innerHTML = `Channel list updated on ${new Date(result.time)}`;
   } catch (error) {
-    console.log(error);
     showToast("Could not load channel list :(", "danger", "5000");
+    console.log(error);
   }
 } //getMainList
 
@@ -59,7 +60,7 @@ async function nextStream() {
   }
 
   let channel = mainList.pop();
-  while (seenChannels.includes(channel.username)) {
+  while (seenChannels.includes(channel)) {
     channel = mainList.pop();
   }
   if (mainList.length == 0 || !channel) {
@@ -73,13 +74,13 @@ async function nextStream() {
 
   //update stream info
   try {
-    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${channel.userid}`);
+    let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${channel}`);
     let stream = await response.json();
     if (!stream.data[0]) {
       retryLimit++;
       return nextStream();
     }
-    let response2 = await fetch(`https://helper.guessr.tv/twitch/users?id=${channel.userid}`);
+    let response2 = await fetch(`https://helper.guessr.tv/twitch/users?id=${channel}`);
     let user = await response2.json();
     elements.pfp.src = user.data[0].profile_image_url || "/pics/guessr.png";
     let name = stream.data[0].user_name.toLowerCase() == stream.data[0].user_login.toLowerCase() ? stream.data[0].user_name : `${stream.data[0].user_name} (${stream.data[0].user_login})`;
@@ -91,14 +92,14 @@ async function nextStream() {
     let options = {
       width: "100%",
       height: "100%",
-      channel: channel.username,
+      channel: stream.data[0].user_login,
       layout: "video-with-chat",
       parent: ["guessr.tv", "127.0.0.1"],
     };
     if (!player) {
       player = new Twitch.Embed("twitchEmbed", options);
     } else {
-      player.setChannel(channel.username);
+      player.setChannel(stream.data[0].user_login);
     }
 
     previousChannels.push({
@@ -108,7 +109,7 @@ async function nextStream() {
       tags: elements.tags.innerHTML,
       pfp: user.data[0].profile_image_url || "/pics/guessr.png",
     });
-    seenChannels.push(channel.username);
+    seenChannels.push(channel);
     localforage.setItem("seenChannels", JSON.stringify(seenChannels));
     elements.seenChannels.innerHTML = seenChannels.length;
   } catch (error) {
