@@ -307,6 +307,13 @@ function showToast(msg, type, timeout) {
 } //showToast
 
 async function sendUsername(dank = "") {
+  let lastLog = new Date(localStorage.getItem("logTime1"));
+  if (new Date() - lastLog > 24 * 60 * 60 * 1000) {
+    localStorage.setItem("logTime1", new Date().toISOString());
+  } else {
+    return;
+  }
+
   let body = JSON.stringify({ site: `guessr.tv${dank}`, channel: channelName, platform: "twitch" });
   let requestOptionsPost = {
     method: "POST",
