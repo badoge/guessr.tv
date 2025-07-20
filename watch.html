@@ -187,11 +187,9 @@
                     <div class="mb-3" id="selectedTags"><span class="text-body-secondary">None (will show all tags)</span></div>
                     <div class="input-group mb-3">
                       <span class="input-group-text"><i class="material-icons notranslate vertical-align-bottom">search</i></span>
-                      <input id="searchTags" type="text" class="form-control" placeholder="Search" />
-                      <button class="btn btn-outline-info" type="button" onclick="updateTags()">Search</button>
+                      <input id="searchTags" type="text" class="form-control" placeholder="Search" oninput="updateTags()" />
                     </div>
                     <hr />
-
                     <div id="tagsDiv">
                       <div class="spinner-border" role="status">
                         <span class="visually-hidden">Loading...</span>
