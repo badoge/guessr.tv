@@ -1,5 +1,4 @@
 const elements = {
-  infoTime: document.getElementById("infoTime"),
   seenChannels: document.getElementById("seenChannels"),
   resetSeenChannels: document.getElementById("resetSeenChannels"),
   toastContainer: document.getElementById("toastContainer"),
