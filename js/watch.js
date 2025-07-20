@@ -164,11 +164,9 @@ function updateLanguages() {
   let languages;
 
   if (search) {
-    languages = Array.from(languageCounts.entries())
-      .filter(([key, value]) => getLanguage(key).toLowerCase().includes(search))
-      .slice(0, 10);
+    languages = Array.from(languageCounts.entries()).filter(([key, value]) => getLanguage(key).toLowerCase().includes(search));
   } else {
-    languages = Array.from(languageCounts.entries()).slice(0, 10);
+    languages = Array.from(languageCounts.entries());
   }
 
   if (selected.length == 0) {
