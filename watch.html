@@ -136,34 +136,147 @@
           <div id="twitchEmbed"></div>
         </div>
       </div>
-      <div class="row mb-3 mt-2" id="bottomRow">
-        <div class="col-1"></div>
-        <div class="col-11">
-          <div class="card">
-            <div class="card-body container-fluid">
-              <div class="row">
-                <div class="col-10">
-                  <div class="hstack gap-3">
-                    <div><img src="/pics/guessr.png" id="pfp" /></div>
-                    <div id="username">
-                      <span class="placeholder-wave"><span class="placeholder" style="width: 200px"></span></span>
-                    </div>
-                    <div class="vr"></div>
-                    <div class="vstack">
-                      <div id="title">
-                        <span class="placeholder-wave"><span class="placeholder" style="width: 500px"></span></span>
-                      </div>
-                      <div id="tags">
-                        <span class="placeholder-wave"><span class="placeholder" style="width: 500px"></span></span>
-                      </div>
-                    </div>
+      <div class="row m-3" id="bottomRow">
+        <div class="container-fluid">
+          <div class="row gap-2 justify-content-end">
+            <div class="col border rounded p-1 bg-body-secondary align-self-center">
+              <div class="hstack gap-3">
+                <div><img src="/pics/guessr.png" id="pfp" /></div>
+                <div id="username">
+                  <span class="placeholder-wave"><span class="placeholder" style="width: 100px"></span></span>
+                </div>
+                <div class="vr"></div>
+                <div class="vstack">
+                  <div id="title">
+                    <span class="placeholder-wave"><span class="placeholder" style="width: 300px"></span></span>
+                  </div>
+                  <div id="tags">
+                    <span class="placeholder-wave"><span class="placeholder" style="width: 300px"></span></span>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <div class="col-2">
-                  <button type="button" id="nextStream" onclick="nextStream()" class="btn btn-lg btn-success float-end">
-                    <i class="material-icons notranslate">skip_next</i> Next stream
+            <div class="col-auto border rounded p-1 bg-body-secondary align-self-center">
+              <div class="hstack gap-2">
+                <span style="writing-mode: sideways-lr; text-orientation: mixed">Filters</span>
+                <div class="dropup">
+                  <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                    <i class="material-icons notranslate vertical-align-bottom">language</i>Languages<span id="languageFilterCount"></span>
                   </button>
+                  <form class="dropdown-menu p-4" style="height: 400px; width: 300px; overflow-y: auto">
+                    <h5>Selected languages:</h5>
+                    <div class="mb-3" id="selectedLanguages"><span class="text-body-secondary">None (will show all languages)</span></div>
+                    <div class="input-group mb-3">
+                      <span class="input-group-text"><i class="material-icons notranslate vertical-align-bottom">search</i></span>
+                      <input id="searchLanguages" type="text" class="form-control" placeholder="Search" oninput="updateLanguages()" />
+                    </div>
+                    <hr />
+                    <div id="languagesDiv">
+                      <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+                <div class="dropup">
+                  <button type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                    <i class="material-icons notranslate vertical-align-bottom">label</i>Tags<span id="tagFilterCount"></span>
+                  </button>
+                  <form class="dropdown-menu p-4" style="height: 400px; width: 300px; overflow-y: auto">
+                    <h5>Selected tags:</h5>
+                    <div class="mb-3" id="selectedTags"><span class="text-body-secondary">None (will show all tags)</span></div>
+                    <div class="input-group mb-3">
+                      <span class="input-group-text"><i class="material-icons notranslate vertical-align-bottom">search</i></span>
+                      <input id="searchTags" type="text" class="form-control" placeholder="Search" />
+                      <button class="btn btn-outline-info" type="button" onclick="updateTags()">Search</button>
+                    </div>
+                    <hr />
+
+                    <div id="tagsDiv">
+                      <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+                <div class="dropup">
+                  <button type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                    <i class="material-icons notranslate vertical-align-bottom">sports_esports</i>Categories<span id="categoryFilterCount"></span>
+                  </button>
+                  <form class="dropdown-menu p-4" style="height: 400px; width: 300px; overflow-y: auto">
+                    <h5>Selected categories:</h5>
+                    <div class="mb-3" id="selectedCategories"><span class="text-body-secondary">None (will show all categories)</span></div>
+                    <div class="input-group mb-3">
+                      <span class="input-group-text"><i class="material-icons notranslate vertical-align-bottom">search</i></span>
+                      <input id="searchCategories" type="text" class="form-control" placeholder="Search" oninput="updateCategories()" />
+                    </div>
+                    <hr />
+
+                    <div id="categoriesDiv">
+                      <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+                <div class="dropup">
+                  <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                    <svg
+                      class="vertical-align-bottom"
+                      style="filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(201deg) brightness(106%) contrast(106%)"
+                      width="24px"
+                      height="24px"
+                      version="1.1"
+                      viewBox="0 0 20 20"
+                      x="0px"
+                      y="0px"
+                    >
+                      <g>
+                        <path
+                          fill-rule="evenodd"
+                          d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
+                          clip-rule="evenodd"
+                        ></path>
+                      </g>
+                    </svg>
+                    View count
+                  </button>
+                  <form class="dropdown-menu p-4" style="height: 150px; width: 700px; overflow-y: auto">
+                    <div class="input-group">
+                      <div class="input-group-text p-1">
+                        <div class="form-check form-switch m-0 ms-1">
+                          <input class="form-check-input" type="checkbox" role="switch" id="enableMinFilter" />
+                        </div>
+                      </div>
+                      <span class="input-group-text">Minimum view count</span>
+                      <span class="input-group-text" style="width: 300px"><input disabled type="range" class="form-range" id="minFilterSlider" min="0" max="100" step="1" value="0" /></span>
+                      <input disabled id="minFilter" placeholder="0" type="number" aria-label="Minimum view count" class="form-control" />
+                    </div>
+                    <br />
+                    <div class="input-group">
+                      <div class="input-group-text p-1">
+                        <div class="form-check form-switch m-0 ms-1">
+                          <input class="form-check-input" type="checkbox" role="switch" id="enableMaxFilter" />
+                        </div>
+                      </div>
+                      <span class="input-group-text">Maximum view count</span>
+                      <span class="input-group-text" style="width: 300px"
+                        ><input disabled type="range" class="form-range" id="maxFilterSlider" min="0" max="100" step="1" value="100"
+                      /></span>
+                      <input disabled id="maxFilter" placeholder="0" type="number" aria-label="Maximum view count" class="form-control" />
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-auto p-1 align-self-center border rounded bg-body-secondary">
+              <div class="hstack">
+                <div class="vstack">
                   <button
                     disabled
                     type="button"
@@ -176,6 +289,18 @@
                   >
                     <i class="material-icons notranslate">skip_previous</i>
                   </button>
+                  <small class="text-body-secondary" id="seenCount">
+                    <span class="placeholder-wave"><span class="placeholder" style="width: 120px"></span></span>
+                  </small>
+                </div>
+
+                <div class="vstack">
+                  <button type="button" id="nextStream" onclick="nextStream()" class="btn btn-lg btn-success float-end">
+                    <i class="material-icons notranslate">skip_next</i> Next stream
+                  </button>
+                  <small class="text-body-secondary" id="remainingCount">
+                    <span class="placeholder-wave"><span class="placeholder" style="width: 120px"></span></span>
+                  </small>
                 </div>
               </div>
             </div>
