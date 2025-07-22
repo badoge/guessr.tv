@@ -1,3 +1,31 @@
+<script>
+  import { onMount } from "svelte";
+
+
+  let { data } = $props();
+
+  let channel = $state(data.slug.toLowerCase().replace(/\s/g, ""));
+
+  onMount(() => {
+  loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
+
+  TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
+  if (TWITCH?.access_token && !(await checkToken(TWITCH.access_token))) {
+    TWITCH.channel = "";
+    TWITCH.access_token = "";
+    loginExpiredModal.show();
+  }
+
+  if (TWITCH?.channel) {
+    loadInfo();
+    await join();
+    loadBoard();
+    elements.board.classList.remove("blur");
+  }
+
+  enableTooltips();
+  customBadges = await getCustomBadges();
+  });
 const elements = {
   leaderboardCount: document.getElementById("leaderboardCount"),
   leaderboard: document.getElementById("leaderboard"),
@@ -349,23 +377,115 @@ function hidePreview() {
   elements.previewDiv.style.display = "none";
 } //hidePreview
 
-window.onload = async function () {
-  loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
 
-  TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
-  if (TWITCH?.access_token && !(await checkToken(TWITCH.access_token))) {
-    TWITCH.channel = "";
-    TWITCH.access_token = "";
-    loginExpiredModal.show();
-  }
+</script>
 
-  if (TWITCH?.channel) {
-    loadInfo();
-    await join();
-    loadBoard();
-    elements.board.classList.remove("blur");
-  }
+<svelte:head>
+  <title>Emote {emoteID} info | OkayegBOT</title>
+  <meta name="description" content="Info about the Twitch emote {emoteID}" />
+  <meta property="og:title" content="Emote {emoteID} info | OkayegBOT" />
+  <meta property="og:url" content="https://okayeg.com/twitch/emote/{emoteID}" />
+  <meta property="og:image" content="https://static-cdn.jtvnw.net/emoticons/v2/{emoteID}/default/dark/3.0" />
+  <meta property="og:description" content="Info about the Twitch emote {emoteID}" />
+</svelte:head>
 
-  enableTooltips();
-  customBadges = await getCustomBadges();
-}; //onload
+<div class="modal" id="loginExpiredModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Login expired</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row justify-content-center">
+          Renew login:<br />
+          <button type="button" data-bs-dismiss="modal" onclick="login()" class="btn btn-twitch"><span class="twitch-icon"></span>Sign in with Twitch</button>
+          <br /><small class="text-body-secondary">Logins expire after 2 months.<br />Or after you change your password.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="logout()"><i class="material-icons notranslate">logout</i>Logout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ul class="nav nav-underline flex-column position-fixed">
+  <li class="nav-item">
+    <a class="nav-link site-link" target="_blank" rel="noopener noreferrer" href="https://guessr.tv/">
+      <img src="https://guessr.tv/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active site-link" aria-current="page" target="_blank" rel="noopener noreferrer" href="https://guessr.tv/bingo.html">
+      <i class="material-icons notranslate">grid_on</i> Bingo
+    </a>
+  </li>
+</ul>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasLeaderboard" aria-labelledby="offcanvasLeaderboardLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasLeaderboardLabel">lidlboard :) <small class="text-body-secondary">Click the green refresh button to update the leaderboard</small></h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <h4>Total players: <span id="leaderboardCount">0</span></h4>
+    <ul class="list-group" id="leaderboard"></ul>
+  </div>
+</div>
+
+<div id="previewDiv" style="top: 5%; right: 30%; display: none">
+  <div class="card">
+    <div class="card-header">
+      <h4 id="previewUsername" class="text-center"></h4>
+    </div>
+    <div class="card-body p-0">
+      <div id="previewBoard"></div>
+    </div>
+  </div>
+</div>
+
+<div aria-live="polite" aria-atomic="true" class="position-relative">
+  <div id="toastContainer" class="toast-container"></div>
+</div>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col text-center">
+      <h1>${data.title}</h1>
+      <h2 class="text-body-secondary mb-5">Playing with <a href="https://twitch.tv/${data.username}" target="_blank" id="channel">${data.username}</a></h2>
+
+      <a id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable the bingo board" class="btn btn-twitch" href="#" onclick="login()">
+        <span class="twitch-icon"></span> Sign in with Twitch
+      </a>
+
+      <div class="btn-group" id="loginInfo" style="display: none">
+        <button type="button" class="btn btn-success" id="refresh" onclick="refresh()" title="Refresh the board - 30s cooldown - temporary scuffed solution 🤙">
+          <i class="material-icons notranslate">refresh</i>
+        </button>
+        <button class="btn btn-info" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLeaderboard" aria-controls="offcanvasLeaderboard">
+          <i class="material-icons notranslate">leaderboard</i>
+          Chat leaderboard
+        </button>
+        <button type="button" class="btn btn-secondary pointer-events-none" id="username">Loading...</button>
+        <button type="button" class="btn btn-secondary pointer-events-none" id="score">Loading...</button>
+        <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+          <img id="loginInfoPFP" src="https://guessr.tv/pics/donk.png" alt="profile pic" style="height: 2em" />
+          <span class="visually-hidden">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" onclick="logout()" href="#"><i class="material-icons notranslate">logout</i>Log out</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="container-fluid mt-3" id="board" style="top: 6%; left: 6%">
+        <div class="placeholder-glow">
+          <span class="placeholder board-placeholder"></span>
+        </div>
+      </div>
+      <small class="text-body-secondary" id="time">Updated on: Loading...</small>
+    </div>
+  </div>
+</div>

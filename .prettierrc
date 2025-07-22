@@ -2,9 +2,12 @@
   "arrowParens": "always",
   "printWidth": 190,
   "singleQuote": false,
-  "trailingComma": "es5",
+  "trailingComma": "all",
   "semi": true,
   "endOfLine": "auto",
+  "plugins": ["prettier-plugin-svelte"],
+  "pluginSearchDirs": ["."],
+  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }],
   "useTabs": false,
   "tabWidth": 2
 }

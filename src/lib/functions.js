@@ -14,7 +14,7 @@ const spinner = `<div class="spinner-border" role="status">
 
 const CLIENT_ID = "ed2ch5dsxogpczmisjnbfnm92n4zps";
 
-function addBadges(badges, userid) {
+export function addBadges(badges, userid) {
   try {
     let badgesHTML = "";
     for (let index = 0; index < customBadges.length; index++) {
@@ -45,7 +45,7 @@ function addBadges(badges, userid) {
   }
 } //addBadges
 
-async function getTwitchUserId(username) {
+export async function getTwitchUserId(username) {
   try {
     let response = await fetch(`https://helper.donk.workers.dev/twitch/users?login=${username}`);
     let result = await response.json();
@@ -59,7 +59,7 @@ async function getTwitchUserId(username) {
   }
 } //getTwitchUserId
 
-async function getChannelBadges(username) {
+export async function getChannelBadges(username) {
   try {
     let twitchUserId = await getTwitchUserId(username);
     if (!twitchUserId) {
@@ -102,7 +102,7 @@ async function getChannelBadges(username) {
   }
 } //getChannelBadges
 
-async function getGlobalBadges() {
+export async function getGlobalBadges() {
   try {
     let response = await fetch(`https://helper.donk.workers.dev/twitch/chat/badges/global`);
     let result = await response.json();
@@ -122,7 +122,7 @@ async function getGlobalBadges() {
   }
 } //getGlobalBadges
 
-async function get7TVPFP(userID) {
+export async function get7TVPFP(userID) {
   if (!userID) {
     return "/pics/donk.png";
   }
@@ -143,7 +143,7 @@ async function get7TVPFP(userID) {
   }
 } //get7TVPFP
 
-async function getTwitchPFP(username, access_token) {
+export async function getTwitchPFP(username, access_token) {
   let requestOptions = {
     headers: {
       "client-id": CLIENT_ID,
@@ -160,7 +160,7 @@ async function getTwitchPFP(username, access_token) {
   }
 } //getTwitchPFP
 
-async function checkToken(access_token) {
+export async function checkToken(access_token) {
   let requestOptions = {
     headers: { Authorization: `OAuth ${access_token}` },
   };
@@ -181,7 +181,7 @@ async function checkToken(access_token) {
   }
 } //checkToken
 
-function changeSiteLinkTarget(target) {
+export function changeSiteLinkTarget(target) {
   let links = document.getElementsByClassName("site-link");
   for (let index = 0; index < links.length; index++) {
     links[index].setAttribute("target", target);
@@ -190,7 +190,7 @@ function changeSiteLinkTarget(target) {
 // changeSiteLinkTarget("_self");
 // changeSiteLinkTarget("_blank");
 
-function shuffleArray(array) {
+export function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
@@ -199,7 +199,7 @@ function shuffleArray(array) {
 } //shuffleArray
 
 // creates a random number generator function.
-function createRandomGenerator(seed) {
+export function createRandomGenerator(seed) {
   const a = 5486230734; // some big numbers
   const b = 6908969830;
   const m = 9853205067;
@@ -212,7 +212,7 @@ function createRandomGenerator(seed) {
   };
 }
 // function creates a 32bit hash of a string
-function stringTo32BitHash(str) {
+export function stringTo32BitHash(str) {
   let v = 0;
   for (let i = 0; i < str.length; i += 1) {
     v += str.charCodeAt(i) << i % 24;
@@ -220,7 +220,7 @@ function stringTo32BitHash(str) {
   return v % 0xffffffff;
 }
 // shuffle array using the str as a key.
-function shuffleArraySeed(array, seed) {
+export function shuffleArraySeed(array, seed) {
   let shuffled = [];
   let random = createRandomGenerator(stringTo32BitHash(seed));
   while (array.length > 1) {
@@ -230,7 +230,7 @@ function shuffleArraySeed(array, seed) {
   return shuffled;
 } //shuffleArraySeed
 
-function checkSimilarity(guess, answer) {
+export function checkSimilarity(guess, answer) {
   if (guess === -1) {
     // timer ran out and the user did not answer
     return false;
@@ -253,7 +253,7 @@ function checkSimilarity(guess, answer) {
   return distanceMatrix[answer.length][guess.length] <= 2;
 } //checkSimilarity
 
-function cleanString(s) {
+export function cleanString(s) {
   return s
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -261,17 +261,17 @@ function cleanString(s) {
     .toLowerCase();
 } //cleanString
 
-function enableTooltips() {
+export function enableTooltips() {
   const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
   const tooltipList = [...tooltipTriggerList].map(
     (tooltipTriggerEl) =>
       new bootstrap.Tooltip(tooltipTriggerEl, {
         trigger: "hover",
-      })
+      }),
   );
 } //enableTooltips
 
-function isInt(value) {
+export function isInt(value) {
   if (isNaN(value)) {
     return false;
   }
@@ -279,34 +279,11 @@ function isInt(value) {
   return (x | 0) === x;
 } //inInt
 
-function hasDuplicates(array) {
+export function hasDuplicates(array) {
   return new Set(array).size !== array.length;
 } //hasDuplicates
 
-function showToast(msg, type, timeout) {
-  let id = Date.now();
-  let toast = `<div id="${id}" class="toast align-items-center text-bg-${type} border-0" role="alert" data-bs-autohide="false" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-        <div class="toast-body" style="font-size:1.2em">${msg}</div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        </div>`;
-  elements.toastContainer.innerHTML += toast;
-  let toastElList = [].slice.call(document.querySelectorAll(".toast"));
-  let toastList = toastElList.map(function (toastEl) {
-    return new bootstrap.Toast(toastEl, {
-      animation: false,
-    });
-  });
-  toastList[toastList.length - 1].show();
-  //dismiss this way bcz built in dismiss wont work if there are multiple toasts FeelsDankMan
-  setTimeout(function () {
-    toastList[toastList.length - 1].hide();
-    document.getElementById(id).remove();
-  }, timeout);
-} //showToast
-
-async function sendUsername(dank = "") {
+export async function sendUsername(dank = "") {
   let lastLog = new Date(localStorage.getItem("logTime1"));
   if (new Date() - lastLog > 24 * 60 * 60 * 1000) {
     localStorage.setItem("logTime1", new Date().toISOString());
@@ -332,7 +309,7 @@ async function sendUsername(dank = "") {
   }
 } //sendUsername
 
-async function getCustomBadges() {
+export async function getCustomBadges() {
   try {
     let response = await fetch(`https://badges.donk.workers.dev`);
     let result = await response.json();
@@ -346,7 +323,7 @@ async function getCustomBadges() {
   }
 } //getCustomBadges
 
-async function getChannelId() {
+export async function getChannelId() {
   try {
     let response = await fetch(`https://helper.guessr.tv/twitch/users?login=${channelName}`);
     let result = await response.json();
@@ -357,7 +334,7 @@ async function getChannelId() {
   }
 } //getChannelId
 
-async function getStreamerColor() {
+export async function getStreamerColor() {
   try {
     let response = await fetch(`https://helper.guessr.tv/twitch/chat/color?user_id=${channelId}`);
     let result = await response.json();
@@ -368,7 +345,7 @@ async function getStreamerColor() {
   }
 } //getStreamerColor
 
-function showConfetti(level) {
+export function showConfetti(level) {
   let c, s, d;
   switch (parseInt(level, 10)) {
     case 1:
@@ -399,7 +376,7 @@ function showConfetti(level) {
   confetti.start(d);
 } //showConfetti
 
-function encodeHTML(str) {
+export function encodeHTML(str) {
   return str.replace(/[\u00A0-\u9999<>&]/g, function (i) {
     return `&#${i.charCodeAt(0)};`;
   });
@@ -408,7 +385,7 @@ function encodeHTML(str) {
 /**
  * @param {string} code
  */
-function getLanguage(code) {
+export function getLanguage(code) {
   const lang = new Intl.DisplayNames(["en"], { type: "language" });
   return lang.of(code);
 } //getLanguage
@@ -418,7 +395,7 @@ function getLanguage(code) {
  * @param {*} str
  * @returns {*}
  */
-function escapeString(str) {
+export function escapeString(str) {
   assertString(str);
   return str
     .replace(/&/g, "&amp;")
@@ -436,7 +413,7 @@ function escapeString(str) {
  * @param {*} str
  * @returns {*}
  */
-function unescapeString(str) {
+export function unescapeString(str) {
   assertString(str);
   return str
     .replace(/&quot;/g, '"')
@@ -452,7 +429,7 @@ function unescapeString(str) {
   // See: https://github.com/validatorjs/validator.js/issues/1827
 } //unescapeString
 
-function assertString(input) {
+export function assertString(input) {
   let isString = typeof input === "string" || input instanceof String;
   if (!isString) {
     let invalidType = _typeof(input);
