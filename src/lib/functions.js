@@ -14,6 +14,10 @@ const spinner = `<div class="spinner-border" role="status">
 
 const CLIENT_ID = "ed2ch5dsxogpczmisjnbfnm92n4zps";
 
+import { createToaster } from "@skeletonlabs/skeleton-svelte";
+
+export const toaster = createToaster();
+
 export function addBadges(badges, userid) {
   try {
     let badgesHTML = "";

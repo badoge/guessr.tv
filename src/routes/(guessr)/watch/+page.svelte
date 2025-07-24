@@ -1,5 +1,7 @@
 <script>
   import { onMount } from "svelte";
+  import localforage from "localforage";
+  import { toaster } from "$lib/functions";
 
   onMount(async () => {
     localforage.config({
@@ -18,7 +20,11 @@
       localforage.setItem("seenChannels", JSON.stringify([]));
       elements.seenChannels.innerHTML = 0;
       seenChannels = [];
-      showToast("Seen channels reset", "success", 2000);
+      toaster.create({
+        type: "success",
+        title: "Seen channels reset",
+        duration: 2000,
+      });
     };
 
     await getMainList();
@@ -85,46 +91,48 @@
       updateFilteredCount();
     };
     enableTooltips();
+
+    elements = {
+      seenChannels: document.getElementById("seenChannels"),
+      resetSeenChannels: document.getElementById("resetSeenChannels"),
+      toastContainer: document.getElementById("toastContainer"),
+      twitchEmbed: document.getElementById("twitchEmbed"),
+      nextStream: document.getElementById("nextStream"),
+      previousStream: document.getElementById("previousStream"),
+      pfp: document.getElementById("pfp"),
+      username: document.getElementById("username"),
+      title: document.getElementById("title"),
+      tags: document.getElementById("tags"),
+
+      selectedLanguages: document.getElementById("selectedLanguages"),
+      searchLanguages: document.getElementById("searchLanguages"),
+      languagesDiv: document.getElementById("languagesDiv"),
+
+      selectedTags: document.getElementById("selectedTags"),
+      searchTags: document.getElementById("searchTags"),
+      tagsDiv: document.getElementById("tagsDiv"),
+
+      selectedCategories: document.getElementById("selectedCategories"),
+      searchCategories: document.getElementById("searchCategories"),
+      categoriesDiv: document.getElementById("categoriesDiv"),
+
+      seenCount: document.getElementById("seenCount"),
+      remainingCount: document.getElementById("remainingCount"),
+
+      languageFilterCount: document.getElementById("languageFilterCount"),
+      tagFilterCount: document.getElementById("tagFilterCount"),
+      categoryFilterCount: document.getElementById("categoryFilterCount"),
+
+      enableMinFilter: document.getElementById("enableMinFilter"),
+      enableMaxFilter: document.getElementById("enableMaxFilter"),
+      minFilterSlider: document.getElementById("minFilterSlider"),
+      maxFilterSlider: document.getElementById("maxFilterSlider"),
+      minFilter: document.getElementById("minFilter"),
+      maxFilter: document.getElementById("maxFilter"),
+    };
   });
 
-  const elements = {
-    seenChannels: document.getElementById("seenChannels"),
-    resetSeenChannels: document.getElementById("resetSeenChannels"),
-    toastContainer: document.getElementById("toastContainer"),
-    twitchEmbed: document.getElementById("twitchEmbed"),
-    nextStream: document.getElementById("nextStream"),
-    previousStream: document.getElementById("previousStream"),
-    pfp: document.getElementById("pfp"),
-    username: document.getElementById("username"),
-    title: document.getElementById("title"),
-    tags: document.getElementById("tags"),
-
-    selectedLanguages: document.getElementById("selectedLanguages"),
-    searchLanguages: document.getElementById("searchLanguages"),
-    languagesDiv: document.getElementById("languagesDiv"),
-
-    selectedTags: document.getElementById("selectedTags"),
-    searchTags: document.getElementById("searchTags"),
-    tagsDiv: document.getElementById("tagsDiv"),
-
-    selectedCategories: document.getElementById("selectedCategories"),
-    searchCategories: document.getElementById("searchCategories"),
-    categoriesDiv: document.getElementById("categoriesDiv"),
-
-    seenCount: document.getElementById("seenCount"),
-    remainingCount: document.getElementById("remainingCount"),
-
-    languageFilterCount: document.getElementById("languageFilterCount"),
-    tagFilterCount: document.getElementById("tagFilterCount"),
-    categoryFilterCount: document.getElementById("categoryFilterCount"),
-
-    enableMinFilter: document.getElementById("enableMinFilter"),
-    enableMaxFilter: document.getElementById("enableMaxFilter"),
-    minFilterSlider: document.getElementById("minFilterSlider"),
-    maxFilterSlider: document.getElementById("maxFilterSlider"),
-    minFilter: document.getElementById("minFilter"),
-    maxFilter: document.getElementById("maxFilter"),
-  };
+  let elements;
 
   let mainList = new Map();
   let filteredList = new Map();
@@ -160,7 +168,11 @@
       filteredList = new Map(mainList);
       elements.maxFilter.placeholder = maxViewCount;
     } catch (error) {
-      showToast("Could not load channel list :(", "danger", "5000");
+      toaster.create({
+        type: "error",
+        title: "Could not load channel list :(",
+        duration: 5000,
+      });
       console.log(error);
     }
   } //getMainList
@@ -492,11 +504,19 @@
     }
 
     if (filteredList.size == 0 || !channelID) {
-      showToast("No more channels left on the list, change your filters or refresh to get a new list", "danger", "4000");
+      toaster.create({
+        type: "error",
+        title: "No more channels left on the list, change your filters or refresh to get a new list",
+        duration: 4000,
+      });
       return;
     }
     if (retryLimit > 5) {
-      showToast("Too many retries, something might be wrong :(", "danger", "3000");
+      toaster.create({
+        type: "error",
+        title: "Too many retries, something might be wrong :(",
+        duration: 3000,
+      });
       return;
     }
 
@@ -553,7 +573,11 @@
     let currentChannel = player.getChannel();
     let currentIndex = previousChannels.findIndex((x) => x.username == currentChannel);
     if (currentIndex == 0) {
-      showToast("Can't go further back", "danger", "3000");
+      toaster.create({
+        type: "error",
+        title: "Can't go further back",
+        duration: 3000,
+      });
       return;
     }
     showPreviousStream(currentIndex, false);
@@ -707,7 +731,7 @@
                 <div class="mb-3" id="selectedLanguages"><span class="text-body-secondary">None (will show all languages)</span></div>
                 <div class="input-group mb-3">
                   <span class="input-group-text"><i class="material-icons notranslate vertical-align-bottom">search</i></span>
-                  <input id="searchLanguages" type="text" class="form-control" placeholder="Search" oninput="updateLanguages()" />
+                  <input id="searchLanguages" type="text" class="form-control" placeholder="Search" oninput={updateLanguages} />
                 </div>
                 <hr />
                 <div id="languagesDiv">
@@ -727,7 +751,7 @@
                 <div class="mb-3" id="selectedTags"><span class="text-body-secondary">None (will show all tags)</span></div>
                 <div class="input-group mb-3">
                   <span class="input-group-text"><i class="material-icons notranslate vertical-align-bottom">search</i></span>
-                  <input id="searchTags" type="text" class="form-control" placeholder="Search" oninput="updateTags()" />
+                  <input id="searchTags" type="text" class="form-control" placeholder="Search" oninput={updateTags} />
                 </div>
                 <hr />
                 <div id="tagsDiv">
@@ -747,7 +771,7 @@
                 <div class="mb-3" id="selectedCategories"><span class="text-body-secondary">None (will show all categories)</span></div>
                 <div class="input-group mb-3">
                   <span class="input-group-text"><i class="material-icons notranslate vertical-align-bottom">search</i></span>
-                  <input id="searchCategories" type="text" class="form-control" placeholder="Search" oninput="updateCategories()" />
+                  <input id="searchCategories" type="text" class="form-control" placeholder="Search" oninput={updateCategories} />
                 </div>
                 <hr />
 
@@ -815,7 +839,7 @@
                 disabled
                 type="button"
                 id="previousStream"
-                onclick="previousStream()"
+                onclick={previousStream}
                 class="btn btn-lg btn-secondary float-end me-2"
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"
@@ -829,7 +853,7 @@
             </div>
 
             <div class="vstack">
-              <button type="button" id="nextStream" onclick="nextStream()" class="btn btn-lg btn-success float-end">
+              <button type="button" id="nextStream" onclick={nextStream} class="btn btn-lg btn-success float-end">
                 <i class="material-icons notranslate">skip_next</i> Next stream
               </button>
               <small class="text-body-secondary" id="remainingCount">

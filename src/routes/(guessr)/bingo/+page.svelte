@@ -1,7 +1,63 @@
 <script>
   import { onMount } from "svelte";
+  import localforage from "localforage";
+  import { toaster } from "$lib/functions";
 
   onMount(async () => {
+    elements = {
+      leaderboardCount: document.getElementById("leaderboardCount"),
+      leaderboard: document.getElementById("leaderboard"),
+      infoTime: document.getElementById("infoTime"),
+      skipSexual: document.getElementById("skipSexual"),
+      unloadWarningBingo: document.getElementById("unloadWarningBingo"),
+      seenChannels: document.getElementById("seenChannels"),
+      resetSeenChannels: document.getElementById("resetSeenChannels"),
+      loginExpiredModal: document.getElementById("loginExpiredModal"),
+      packsModal: document.getElementById("packsModal"),
+      packEditorSelect: document.getElementById("packEditorSelect"),
+      packEditorName: document.getElementById("packEditorName"),
+      packEditorItems: document.getElementById("packEditorItems"),
+      deletePackButton: document.getElementById("deletePackButton"),
+      packSwitchesDiv: document.getElementById("packSwitchesDiv"),
+      packDropdownButton: document.getElementById("packDropdownButton"),
+      allowDiagonals: document.getElementById("allowDiagonals"),
+      twitchBingo: document.getElementById("twitchBingo"),
+      customBingo: document.getElementById("customBingo"),
+      bingoTypeDescription: document.getElementById("bingoTypeDescription"),
+      customBingoName: document.getElementById("customBingoName"),
+      customBingoNameDiv: document.getElementById("customBingoNameDiv"),
+      bingoSize: document.getElementById("bingoSize"),
+      bingoSizeLabel: document.getElementById("bingoSizeLabel"),
+      boardInputs: document.getElementById("boardInputs"),
+      board: document.getElementById("board"),
+      boardSearch: document.getElementById("board-search"),
+      boardSearchBar: document.getElementById("board-search-bar"),
+      boardSearchToggle: document.getElementById("board-search-toggle"),
+      bingoStats: document.getElementById("bingoStats"),
+      bingoStatsTooltip: document.getElementById("bingoStatsTooltip"),
+      boardContent: document.getElementById("board-inner"),
+      previewDiv: document.getElementById("previewDiv"),
+      previewBoard: document.getElementById("previewBoard"),
+      previewUsername: document.getElementById("previewUsername"),
+      toastContainer: document.getElementById("toastContainer"),
+      settingsCard: document.getElementById("settingsCard"),
+      start: document.getElementById("start"),
+      mainCard: document.getElementById("mainCard"),
+      twitchEmbedDiv: document.getElementById("twitchEmbedDiv"),
+      twitchEmbed: document.getElementById("twitchEmbed"),
+      boardSize: document.getElementById("boardSize"),
+      boardOpacity: document.getElementById("boardOpacity"),
+      loginButton: document.getElementById("loginButton"),
+      loginInfo: document.getElementById("loginInfo"),
+      loginDescription: document.getElementById("loginDescription"),
+      loginInfoPFP: document.getElementById("loginInfoPFP"),
+      bingoLink: document.getElementById("bingoLink"),
+      copyButton: document.getElementById("copyButton"),
+      previousStream: document.getElementById("previousStream"),
+      bingoPopover: document.getElementById("bingoPopover"),
+      nextStream: document.getElementById("nextStream"),
+    };
+
     localforage.config({
       driver: localforage.INDEXEDDB,
       name: "guessr.tv/bingo",
@@ -25,7 +81,11 @@
       localforage.setItem("seenChannels", JSON.stringify([]));
       elements.seenChannels.innerHTML = 0;
       seenChannels = [];
-      showToast("Seen channels reset", "success", 2000);
+      toaster.create({
+        type: "success",
+        title: "Seen channels reset",
+        duration: 2000,
+      });
     };
 
     enableTooltips();
@@ -218,59 +278,7 @@
   let selectedPacks = [0];
   let currentItems = [];
 
-  const elements = {
-    leaderboardCount: document.getElementById("leaderboardCount"),
-    leaderboard: document.getElementById("leaderboard"),
-    infoTime: document.getElementById("infoTime"),
-    skipSexual: document.getElementById("skipSexual"),
-    unloadWarningBingo: document.getElementById("unloadWarningBingo"),
-    seenChannels: document.getElementById("seenChannels"),
-    resetSeenChannels: document.getElementById("resetSeenChannels"),
-    loginExpiredModal: document.getElementById("loginExpiredModal"),
-    packsModal: document.getElementById("packsModal"),
-    packEditorSelect: document.getElementById("packEditorSelect"),
-    packEditorName: document.getElementById("packEditorName"),
-    packEditorItems: document.getElementById("packEditorItems"),
-    deletePackButton: document.getElementById("deletePackButton"),
-    packSwitchesDiv: document.getElementById("packSwitchesDiv"),
-    packDropdownButton: document.getElementById("packDropdownButton"),
-    allowDiagonals: document.getElementById("allowDiagonals"),
-    twitchBingo: document.getElementById("twitchBingo"),
-    customBingo: document.getElementById("customBingo"),
-    bingoTypeDescription: document.getElementById("bingoTypeDescription"),
-    customBingoName: document.getElementById("customBingoName"),
-    customBingoNameDiv: document.getElementById("customBingoNameDiv"),
-    bingoSize: document.getElementById("bingoSize"),
-    bingoSizeLabel: document.getElementById("bingoSizeLabel"),
-    boardInputs: document.getElementById("boardInputs"),
-    board: document.getElementById("board"),
-    boardSearch: document.getElementById("board-search"),
-    boardSearchBar: document.getElementById("board-search-bar"),
-    boardSearchToggle: document.getElementById("board-search-toggle"),
-    bingoStats: document.getElementById("bingoStats"),
-    bingoStatsTooltip: document.getElementById("bingoStatsTooltip"),
-    boardContent: document.getElementById("board-inner"),
-    previewDiv: document.getElementById("previewDiv"),
-    previewBoard: document.getElementById("previewBoard"),
-    previewUsername: document.getElementById("previewUsername"),
-    toastContainer: document.getElementById("toastContainer"),
-    settingsCard: document.getElementById("settingsCard"),
-    start: document.getElementById("start"),
-    mainCard: document.getElementById("mainCard"),
-    twitchEmbedDiv: document.getElementById("twitchEmbedDiv"),
-    twitchEmbed: document.getElementById("twitchEmbed"),
-    boardSize: document.getElementById("boardSize"),
-    boardOpacity: document.getElementById("boardOpacity"),
-    loginButton: document.getElementById("loginButton"),
-    loginInfo: document.getElementById("loginInfo"),
-    loginDescription: document.getElementById("loginDescription"),
-    loginInfoPFP: document.getElementById("loginInfoPFP"),
-    bingoLink: document.getElementById("bingoLink"),
-    copyButton: document.getElementById("copyButton"),
-    previousStream: document.getElementById("previousStream"),
-    bingoPopover: document.getElementById("bingoPopover"),
-    nextStream: document.getElementById("nextStream"),
-  };
+  let elements;
 
   let TWITCH = {
     channel: "",
@@ -315,7 +323,11 @@
       elements.infoTime.innerHTML = `Channel list updated on ${new Date(result.time)}`;
     } catch (error) {
       console.log(error);
-      showToast("Could not load channel list :(", "danger", "5000");
+      toaster.create({
+        type: "error",
+        title: "Could not load channel list :(",
+        duration: 5000,
+      });
     }
   } //getMainList
 
@@ -342,14 +354,22 @@
       channel = mainList.pop();
     }
     if (mainList.length == 0 || !channel) {
-      showToast("No more channels left on the list ...getting new list", "danger", "3000");
+      toaster.create({
+        type: "error",
+        title: "No more channels left on the list ...getting new list",
+        duration: 3000,
+      });
       await getMainList();
       shuffleArray(mainList);
       nextStream();
       return;
     }
     if (retryLimit > 5) {
-      showToast("Too many retries, something might be wrong :(", "danger", "3000");
+      toaster.create({
+        type: "error",
+        title: "Too many retries, something might be wrong :(",
+        duration: 3000,
+      });
       return;
     }
 
@@ -406,7 +426,11 @@
     let currentChannel = player.getChannel();
     let currentIndex = previousChannels.findIndex((x) => x == currentChannel);
     if (currentIndex == 0) {
-      showToast("Can't go further back", "danger", "3000");
+      toaster.create({
+        type: "error",
+        title: "Can't go further back",
+        duration: 3000,
+      });
       return;
     }
     showPreviousStream(currentIndex, false);
@@ -445,7 +469,11 @@
     const taken = [...bingoItems].map((x) => x.value).filter(Boolean);
     let random = currentItems[Math.floor(Math.random() * currentItems.length)];
     if (taken.length >= currentItems.length) {
-      showToast("No more presets left", "danger", 3000);
+      toaster.create({
+        type: "error",
+        title: "No more presets left",
+        duration: 3000,
+      });
       return;
     }
     while (taken.includes(random)) {
@@ -462,7 +490,11 @@
     const bingoItems = document.querySelectorAll(".bingo-item");
 
     if (![...bingoItems].map((e) => e.value).includes("")) {
-      showToast("Board is full", "warning", 2000);
+      toaster.create({
+        type: "warning",
+        title: "Board is full",
+        duration: 3000,
+      });
       return;
     }
 
@@ -470,7 +502,11 @@
     for (let index = 0; index < bingoItems.length; index++) {
       let option = options.pop();
       if (!option) {
-        showToast("No more presets left", "danger", 3000);
+        toaster.create({
+          type: "error",
+          title: "No more presets left",
+          duration: 3000,
+        });
         break;
       }
       if (!bingoItems[index].value) {
@@ -715,13 +751,21 @@
     }
 
     if (itemValues.includes("")) {
-      showToast("Board must be full", "warning", 2000);
+      toaster.create({
+        type: "warning",
+        title: "Board must be full",
+        duration: 2000,
+      });
       return;
     }
     const values = board.map((item) => item.value.toLowerCase());
     const duplicates = new Set(values.filter((v) => values.indexOf(v) !== values.lastIndexOf(v)));
     if (duplicates.size > 0) {
-      showToast("Board must not have duplicates", "warning", 2000);
+      toaster.create({
+        type: "warning",
+        title: "Board must not have duplicates",
+        duration: 2000,
+      });
       return;
     }
 
@@ -762,9 +806,17 @@
         if (response.status == 200) {
           boardCreated = true;
         }
-        showToast(result.message, "info", 3000);
+        toaster.create({
+          type: "info",
+          title: result.message,
+          duration: 3000,
+        });
       } catch (error) {
-        showToast("Could not upload board", "danger", 3000);
+        toaster.create({
+          type: "error",
+          title: "Could not upload board",
+          duration: 3000,
+        });
         console.log("save error", error);
       }
     } else {
@@ -979,7 +1031,11 @@
         );
       }
     } catch (error) {
-      showToast("Could not refresh leaderboard", "danger", 3000);
+      toaster.create({
+        type: "error",
+        title: "Could not refresh leaderboard",
+        duration: 3000,
+      });
       console.log("updateLeaderboard error", error);
     }
   } //updateLeaderboard
@@ -1235,11 +1291,19 @@
     itemPacks[id].items = packItems;
 
     if (itemPacks.filter((e) => e.name === packName).length > 1) {
-      showToast("Pack name already exists", "warning", 2000);
+      toaster.create({
+        type: "warning",
+        title: "Pack name already exists",
+        duration: 2000,
+      });
     }
 
     if (new Set(packItems.map((x) => x.toLowerCase())).size !== packItems.length) {
-      showToast("Pack has duplicates", "danger", 2000);
+      toaster.create({
+        type: "warning",
+        title: "Pack has duplicates",
+        duration: 2000,
+      });
     }
 
     loadPacks(id);
@@ -1258,12 +1322,12 @@
     localforage.setItem("itemPacks", JSON.stringify(itemPacks.slice(1)));
   } //deletePack
 
-  window.onbeforeunload = function () {
-    if (unloadWarningBingo && userInteracted) {
-      return "Unload warning enabled. You can turn it off in the settings.";
-    }
-    return null;
-  }; //onbeforeunload
+  // window.onbeforeunload = function () {
+  //   if (unloadWarningBingo && userInteracted) {
+  //     return "Unload warning enabled. You can turn it off in the settings.";
+  //   }
+  //   return null;
+  // }; //onbeforeunload
 </script>
 
 <svelte:head>
@@ -1370,12 +1434,12 @@
       <div class="modal-body">
         <div class="row justify-content-center">
           Renew login:<br />
-          <button type="button" data-bs-dismiss="modal" onclick="login()" class="btn btn-twitch"><span class="twitch-icon"></span>Sign in with Twitch</button>
+          <button type="button" data-bs-dismiss="modal" onclick={login} class="btn btn-twitch"><span class="twitch-icon"></span>Sign in with Twitch</button>
           <br /><small class="text-body-secondary">Logins expire after 2 months.<br />Or after you change your password.</small>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="logout()"><i class="material-icons notranslate">logout</i>Logout</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick={logout}><i class="material-icons notranslate">logout</i>Logout</button>
       </div>
     </div>
   </div>
@@ -1415,12 +1479,12 @@
       <div class="modal-body">
         <div class="hstack gap-3 mb-3">
           <div class="form-floating" style="width: 100%">
-            <select class="form-select" id="packEditorSelect" onchange="changePack(this)" aria-label="Select a pack to edit">
+            <select class="form-select" id="packEditorSelect" onchange={() => changePack(this)} aria-label="Select a pack to edit">
               <option value="0" disabled selected>Loading...</option>
             </select>
             <label for="packEditorSelect">Select a pack to edit</label>
           </div>
-          <button id="createPack" onclick="createPack()" type="button" class="btn btn-success" data-bs-toggle="tooltip" data-bs-title="Create a new pack">
+          <button id="createPack" onclick={createPack} type="button" class="btn btn-success" data-bs-toggle="tooltip" data-bs-title="Create a new pack">
             <i class="material-icons notranslate">add</i>
           </button>
         </div>
@@ -1428,14 +1492,14 @@
         <div class="card">
           <div class="card-body">
             <form class="form-floating mb-3">
-              <input type="text" class="form-control" id="packEditorName" onchange="savePacks()" placeholder="Custom pack" />
+              <input type="text" class="form-control" id="packEditorName" onchange={savePacks} placeholder="Custom pack" />
               <label for="packEditorName">Pack name</label>
             </form>
             <div class="form-floating">
-              <textarea class="form-control" placeholder="Leave a comment here" id="packEditorItems" onchange="savePacks()" style="height: 500px"></textarea>
+              <textarea class="form-control" placeholder="Leave a comment here" id="packEditorItems" onchange={savePacks} style="height: 500px"></textarea>
               <label for="packEditorItems">Items (one per line)</label>
             </div>
-            <button id="deletePackButton" type="button" class="btn btn-danger mt-3" onclick="deletePack()">Delete pack</button>
+            <button id="deletePackButton" type="button" class="btn btn-danger mt-3" onclick={deletePack}>Delete pack</button>
           </div>
         </div>
       </div>
@@ -1491,7 +1555,7 @@
   <div id="board-search">
     <button
       class="btn btn-secondary"
-      onclick="toggleSearchBar()"
+      onclick={toggleSearchBar}
       type="button"
       data-bs-toggle="tooltip"
       data-bs-title="Search board (F3 / CTRL + F)"
@@ -1500,7 +1564,7 @@
     >
       <i class="material-icons notranslate pointer-events-none">search</i>
     </button>
-    <input type="text" class="form-control" id="board-search-bar" placeholder="Quick search" oninput="doBoardSearch()" />
+    <input type="text" class="form-control" id="board-search-bar" placeholder="Quick search" oninput={doBoardSearch} />
   </div>
 
   <div id="bingoStats">
@@ -1543,7 +1607,7 @@
                   <i class="material-icons notranslate">help_outline</i> How to play
                 </button>
                 <br />
-                <button id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable sharing with viewers" class="btn btn-twitch" onclick="login()">
+                <button id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable sharing with viewers" class="btn btn-twitch" onclick={login}>
                   <span class="twitch-icon"></span> Sign in with Twitch
                 </button>
                 <br />
@@ -1594,16 +1658,16 @@
                       <h6 class="dropdown-header">Pick 1 or more packs</h6>
                       <div id="packSwitchesDiv">Loading...</div>
                     </form>
-                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit item packs" onclick="editPacks()">
+                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit item packs" onclick={editPacks}>
                       <i class="material-icons notranslate pointer-events-none">edit</i>
                     </button>
                   </div>
 
                   <div class="btn-group" role="group" aria-label="text input controls">
-                    <button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Randomize all" onclick="randomizeAll()">
+                    <button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Randomize all" onclick={randomizeAll}>
                       <i class="material-icons notranslate pointer-events-none">casino</i>
                     </button>
-                    <button type="button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear all" onclick="clearAll()">
+                    <button type="button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear all" onclick={clearAll}>
                       <i class="material-icons notranslate pointer-events-none">delete_forever</i>
                     </button>
                   </div>
@@ -1694,7 +1758,7 @@
         </div>
         <div class="card-footer text-body-secondary text-end">
           <small class="text-body-secondary"> Don't forget to share the bingo link with your viewers if you logged in with Twitch :)</small>
-          <button type="button" class="btn btn-success btn-lg" onclick="start()" id="start"><i class="material-icons notranslate">celebration</i> Start!</button>
+          <button type="button" class="btn btn-success btn-lg" onclick={start} id="start"><i class="material-icons notranslate">celebration</i> Start!</button>
         </div>
       </div>
     </div>
@@ -1748,7 +1812,7 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                   <li>
-                    <a class="dropdown-item" href="#" onclick="logout()"><i class="material-icons notranslate">logout</i>Logout</a>
+                    <a class="dropdown-item" href="#" onclick={logout}><i class="material-icons notranslate">logout</i>Logout</a>
                   </li>
                 </ul>
                 <input readonly value="asd" id="bingoLink" type="text" class="form-control" aria-label="Bingo share link" />
@@ -1760,7 +1824,7 @@
                   data-bs-trigger="manual"
                   data-bs-placement="top"
                   data-bs-content="Link copied :)"
-                  onclick="copyLink()"
+                  onclick={copyLink}
                 >
                   <i class="material-icons notranslate">content_copy</i>
                 </button>
@@ -1782,14 +1846,14 @@
             </div>
 
             <div class="col">
-              <button disabled type="button" id="nextStream" onclick="nextStream()" class="btn btn-lg btn-success float-end">
+              <button disabled type="button" id="nextStream" onclick={nextStream} class="btn btn-lg btn-success float-end">
                 <i class="material-icons notranslate">skip_next</i> Next stream
               </button>
               <button
                 disabled
                 type="button"
                 id="previousStream"
-                onclick="previousStream()"
+                onclick={previousStream}
                 class="btn btn-lg btn-secondary float-end me-2"
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"

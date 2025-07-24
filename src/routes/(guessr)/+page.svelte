@@ -1,95 +1,11 @@
 <script>
   import { onMount } from "svelte";
+  import localforage from "localforage";
+  import { toaster } from "$lib/functions";
 
-  const elements = {
-    toastContainer: document.getElementById("toastContainer"),
-    reset: document.getElementById("reset"),
-    menuContainer: document.getElementById("menuContainer"),
-    gameContainer: document.getElementById("gameContainer"),
-    twitchEmbed: document.getElementById("twitchEmbed"),
-    mainCard: document.getElementById("mainCard"),
+  let elements;
 
-    sliderDiv: document.getElementById("sliderDiv"),
-    guessRangeLabel: document.getElementById("guessRangeLabel"),
-    guessRange: document.getElementById("guessRange"),
-    guessLabel: document.getElementById("guessLabel"),
-    guessNumber: document.getElementById("guessNumber"),
-
-    multiChoiceDiv: document.getElementById("multiChoiceDiv"),
-    multiChoiceLabel: document.getElementById("multiChoiceLabel"),
-    multiChoice1: document.getElementById("multiChoice1"),
-    multiChoice2: document.getElementById("multiChoice2"),
-    multiChoice3: document.getElementById("multiChoice3"),
-    multiChoice4: document.getElementById("multiChoice4"),
-    multiChoice5: document.getElementById("multiChoice5"),
-
-    gameNameDiv: document.getElementById("gameNameDiv"),
-    gameInput: document.getElementById("gameInput"),
-    gameList: document.getElementById("gameList"),
-
-    higherlowerDiv: document.getElementById("higherlowerDiv"),
-    higherlowerLabel: document.getElementById("higherlowerLabel"),
-    higher: document.getElementById("higher"),
-    lower: document.getElementById("lower"),
-
-    irlDiv: document.getElementById("irlDiv"),
-
-    resultsDiv: document.getElementById("resultsDiv"),
-    nextRound: document.getElementById("nextRound"),
-    endButtons: document.getElementById("endButtons"),
-    playAgain: document.getElementById("playAgain"),
-    breakdown: document.getElementById("breakdown"),
-    scoreProgressBarLabel: document.getElementById("scoreProgressBarLabel"),
-    progress: document.getElementById("progress"),
-    progressBar: document.getElementById("progressBar"),
-    gameEndText: document.getElementById("gameEndText"),
-
-    correction: document.getElementById("correction"),
-
-    scoreDiv: document.getElementById("scoreDiv"),
-    round: document.getElementById("round"),
-    score: document.getElementById("score"),
-    timerDiv: document.getElementById("timerDiv"),
-    timer: document.getElementById("timer"),
-    infoTime: document.getElementById("infoTime"),
-    streamCover: document.getElementById("streamCover"),
-    clipCover: document.getElementById("clipCover"),
-
-    skipSexual: document.getElementById("skipSexual"),
-    unloadWarning: document.getElementById("unloadWarning"),
-    viewersHS: document.getElementById("viewersHS"),
-    gameStreak: document.getElementById("gameStreak"),
-    emoteStreak: document.getElementById("emoteStreak"),
-    viewersHigherlowerStreak: document.getElementById("viewersHigherlowerStreak"),
-
-    resetSeenChannels: document.getElementById("resetSeenChannels"),
-    seenChannels: document.getElementById("seenChannels"),
-    resetSeenClips: document.getElementById("resetSeenClips"),
-    seenClips: document.getElementById("seenClips"),
-
-    resetGameModal: document.getElementById("resetGameModal"),
-
-    gameSettingsModal: document.getElementById("gameSettingsModal"),
-    streamsVideoType: document.getElementById("streamsVideoType"),
-    clipsVideoType: document.getElementById("clipsVideoType"),
-    clipCollectionDiv: document.getElementById("clipCollectionDiv"),
-    clipCollection: document.getElementById("clipCollection"),
-    videoTypeDesc: document.getElementById("videoTypeDesc"),
-    timerValue: document.getElementById("timerValue"),
-    channelName: document.getElementById("channelName"),
-    //drops: document.getElementById("drops"),
-    disclaimer: document.getElementById("disclaimer"),
-    getSettingsButton: document.getElementById("getSettingsButton"),
-    leaderboard: document.getElementById("leaderboard"),
-    leaderboardTabs: document.getElementById("leaderboardTabs"),
-    totalTab: document.getElementById("totalTab"),
-    roundTab: document.getElementById("roundTab"),
-    leaderboardList: document.getElementById("leaderboardList"),
-    leaderboardListRound: document.getElementById("leaderboardListRound"),
-    chatHint: document.getElementById("chatHint"),
-  };
-
-  const { animate, utils } = anime;
+  import { animate, utils } from "animejs";
 
   let channelBadges = { subscriber: [], bits: [] };
   let globalBadges = {};
@@ -355,7 +271,11 @@
               let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
               while (!(await checkEmote(emote))) {
                 if (++tries > 3) {
-                  showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
+                  toaster.create({
+                    type: "error",
+                    title: "Something went wrong while fetching the channel's emotes :(",
+                    duration: 3000,
+                  });
                   console.log(error);
                   return await getRandomStream();
                 }
@@ -363,11 +283,19 @@
               }
               randomStream.emote = emote;
             } else {
-              showToast("Channel has no emotes, getting new channel...", "info", 3000);
+              toaster.create({
+                type: "info",
+                title: "Channel has no emotes, getting new channel...",
+                duration: 3000,
+              });
               return await getRandomStream();
             }
           } catch (error) {
-            showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
+            toaster.create({
+              type: "error",
+              title: "Something went wrong while fetching the channel's emotes :(",
+              duration: 3000,
+            });
             console.log(error);
             return await getRandomStream();
           }
@@ -398,7 +326,11 @@
         return await getRandomStream();
       }
     } catch (error) {
-      showToast("Something went wrong while updating the view count :(", "danger", 3000);
+      toaster.create({
+        type: "error",
+        title: "Something went wrong while updating the view count :(",
+        duration: 3000,
+      });
       console.log(error);
       return await getRandomStream();
     }
@@ -410,7 +342,11 @@
     try {
       let response = await fetch(`https://helper.guessr.tv/twitch/clips?id=${ids.join(",")}`);
       if (response.status != 200) {
-        showToast("Something went wrong while updating clip view counts :(", "danger", 3000);
+        toaster.create({
+          type: "error",
+          title: "Something went wrong while updating clip view counts :(",
+          duration: 3000,
+        });
         // await getClipsGuessList();
         return;
       }
@@ -424,14 +360,22 @@
       //remove deleted clips
       guessList = mainList.filter((n) => clips.data.some((n2) => n.id == n2.id));
       if (guessList.length < 5) {
-        showToast("Clip set contains deleted clips, getting new set...", "info", 2000);
+        toaster.create({
+          type: "info",
+          title: "Clip set contains deleted clips, getting new set...",
+          duration: 2000,
+        });
         return await getClipsGuessList();
       }
 
       //remove seen clips
       guessList = guessList.filter((n) => !seenClips.includes(n.id));
       if (guessList.length < 5) {
-        showToast("Clip set contains already seen clips, getting new set...", "info", 2000);
+        toaster.create({
+          type: "info",
+          title: "Clip set contains already seen clips, getting new set...",
+          duration: 2000,
+        });
         return await getClipsGuessList();
       }
 
@@ -444,7 +388,11 @@
         await getClipsEmotes();
       }
     } catch (error) {
-      showToast("Something went wrong while updating clip view counts :(", "danger", 3000);
+      toaster.create({
+        type: "error",
+        title: "Something went wrong while updating clip view counts :(",
+        duration: 3000,
+      });
       //await getClipsGuessList();
       console.log(error);
     }
@@ -457,7 +405,11 @@
       try {
         let response = await fetch(`https://helper.guessr.tv/twitch/chat/emotes?broadcaster_id=${guessList[index].userid}`);
         if (response.status != 200) {
-          showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
+          toaster.create({
+            type: "error",
+            title: "Something went wrong while fetching the channel's emotes :(",
+            duration: 3000,
+          });
           return;
         }
         let emotes = await response.json();
@@ -465,7 +417,11 @@
           let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
           while (!(await checkEmote(emote))) {
             if (++tries > 3) {
-              showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
+              toaster.create({
+                type: "error",
+                title: "Something went wrong while fetching the channel's emotes :(",
+                duration: 3000,
+              });
               console.log(error);
               return await getClipsGuessList();
             }
@@ -474,17 +430,29 @@
           guessList[index].emote = emote;
           fetched++;
         } else {
-          showToast("Channel has no emotes, getting new clip set...", "info", 3000);
+          toaster.create({
+            type: "info",
+            title: "Channel has no emotes, getting new clip set...",
+            duration: 3000,
+          });
           return await getClipsGuessList();
         }
       } catch (error) {
-        showToast("Something went wrong while fetching the channel's emotes :(", "danger", 3000);
+        toaster.create({
+          type: "error",
+          title: "Something went wrong while fetching the channel's emotes :(",
+          duration: 3000,
+        });
         console.log(error);
       }
     }
     if (fetched < 5) {
       guessList = [];
-      showToast("Clip set contains deleted clips, getting new set...", "info", 2000);
+      toaster.create({
+        type: "info",
+        title: "Clip set contains deleted clips, getting new set...",
+        duration: 2000,
+      });
       return await getClipsGuessList();
     }
   } //getClipsEmotes
@@ -712,7 +680,11 @@
 
     if (gameSettings.mode == "irl") {
       if (!markerAnswer) {
-        showToast("No location selected", "warning", 2000);
+        toaster.create({
+          type: "warning",
+          title: "No location selected",
+          duration: 2000,
+        });
         return;
       }
 
@@ -755,13 +727,21 @@
         answer = cleanString(elements.gameInput.value);
         //show warning if no answer is provided but only if timer is not over
         if (!answer && !timeUp) {
-          showToast("Invalid answer", "warning", 2000);
+          toaster.create({
+            type: "warning",
+            title: "Invalid answer",
+            duration: 2000,
+          });
           elements.gameInput.value = "";
           return;
         }
         //show warning if answer does not exist in the game list
         if (!gameList.some((x) => cleanString(x.name) === answer) && !timeUp) {
-          showToast("Answer must be from the suggestions list", "warning", 2000);
+          toaster.create({
+            type: "warning",
+            title: "Answer must be from the suggestions list",
+            duration: 2000,
+          });
           elements.gameInput.value = "";
           return;
         }
@@ -778,7 +758,11 @@
 
     //show warning if no answer is selected
     if ((isNaN(answer) || answer === null) && gameSettings.mode !== "game" && gameSettings.mode !== "higherlower" && !timeUp) {
-      showToast("Invalid answer", "warning", 2000);
+      toaster.create({
+        type: "warning",
+        title: "Invalid answer",
+        duration: 2000,
+      });
       return;
     }
 
@@ -1310,12 +1294,20 @@
     gameSettings.collection = elements.clipCollection.value || "random";
 
     if (gameSettings.mode == "game" && gameSettings.collection == "hottub" && gameSettings.clips) {
-      showToast("Hmmm today I'll pick game guessr mode then pick a clip collection that has 1 category only 🤙", "info", 5000);
+      toaster.create({
+        type: "info",
+        title: "Hmmm today I'll pick game guessr mode then pick a clip collection that has 1 category only 🤙",
+        duration: 5000,
+      });
       reset();
       return;
     }
     if (gameSettings.mode == "emote" && gameSettings.collection == "forsen" && gameSettings.clips) {
-      showToast("Hmmm today I'll pick emote guessr mode then pick a clip collection that has 1 channel only 🤙", "info", 5000);
+      toaster.create({
+        type: "info",
+        title: "Hmmm today I'll pick emote guessr mode then pick a clip collection that has 1 channel only 🤙",
+        duration: 5000,
+      });
       reset();
       return;
     }
@@ -1339,7 +1331,11 @@
     channelName = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
 
     if (channelName.includes("://") || channelName.includes(".")) {
-      showToast("Invalid username. Input your username only not the link", "warning", 3000);
+      toaster.create({
+        type: "warning",
+        title: "Invalid username. Input your username only not the link",
+        duration: 3000,
+      });
       reset();
       return;
     }
@@ -1348,7 +1344,11 @@
       irlid = parseInt(document.getElementById("channelId").value, 10);
 
       if (!irlid) {
-        showToast("no irl channel id provided", "danger", 2000);
+        toaster.create({
+          type: "error",
+          title: "no irl channel id provided",
+          duration: 3000,
+        });
         reset();
         return;
       }
@@ -1356,7 +1356,11 @@
       let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${irlid}`);
       let stream = await response.json();
       if (!stream?.data[0] || !stream?.data[0]?.user_login) {
-        showToast("stream not found/offline", "warning", 2000);
+        toaster.create({
+          type: "warning",
+          title: "stream offline/not found",
+          duration: 3000,
+        });
         reset();
         return;
       }
@@ -1485,15 +1489,27 @@
       if (!usernameSent && channelName) {
         sendUsername();
       }
-      showToast(`Connected to ${channelName}`, "success", 2000);
+      toaster.create({
+        type: "success",
+        title: `Connected to ${channelName}`,
+        duration: 2000,
+      });
     }); //connected
 
     client.on("disconnected", (reason) => {
-      showToast(`Disconnected: ${reason}`, "danger", 2000);
+      toaster.create({
+        type: "error",
+        title: `Disconnected: ${reason}`,
+        duration: 2000,
+      });
     }); //disconnected
 
     client.on("notice", (channel, msgid, message) => {
-      showToast(`Disconnected: ${message}`, "danger", 2000);
+      toaster.create({
+        type: "error",
+        title: `Disconnected: ${message}`,
+        duration: 2000,
+      });
     }); //notice
 
     client.connect().catch(console.error);
@@ -1762,6 +1778,94 @@
   let dankdank;
 
   onMount(async () => {
+    elements = {
+      toastContainer: document.getElementById("toastContainer"),
+      reset: document.getElementById("reset"),
+      menuContainer: document.getElementById("menuContainer"),
+      gameContainer: document.getElementById("gameContainer"),
+      twitchEmbed: document.getElementById("twitchEmbed"),
+      mainCard: document.getElementById("mainCard"),
+
+      sliderDiv: document.getElementById("sliderDiv"),
+      guessRangeLabel: document.getElementById("guessRangeLabel"),
+      guessRange: document.getElementById("guessRange"),
+      guessLabel: document.getElementById("guessLabel"),
+      guessNumber: document.getElementById("guessNumber"),
+
+      multiChoiceDiv: document.getElementById("multiChoiceDiv"),
+      multiChoiceLabel: document.getElementById("multiChoiceLabel"),
+      multiChoice1: document.getElementById("multiChoice1"),
+      multiChoice2: document.getElementById("multiChoice2"),
+      multiChoice3: document.getElementById("multiChoice3"),
+      multiChoice4: document.getElementById("multiChoice4"),
+      multiChoice5: document.getElementById("multiChoice5"),
+
+      gameNameDiv: document.getElementById("gameNameDiv"),
+      gameInput: document.getElementById("gameInput"),
+      gameList: document.getElementById("gameList"),
+
+      higherlowerDiv: document.getElementById("higherlowerDiv"),
+      higherlowerLabel: document.getElementById("higherlowerLabel"),
+      higher: document.getElementById("higher"),
+      lower: document.getElementById("lower"),
+
+      irlDiv: document.getElementById("irlDiv"),
+
+      resultsDiv: document.getElementById("resultsDiv"),
+      nextRound: document.getElementById("nextRound"),
+      endButtons: document.getElementById("endButtons"),
+      playAgain: document.getElementById("playAgain"),
+      breakdown: document.getElementById("breakdown"),
+      scoreProgressBarLabel: document.getElementById("scoreProgressBarLabel"),
+      progress: document.getElementById("progress"),
+      progressBar: document.getElementById("progressBar"),
+      gameEndText: document.getElementById("gameEndText"),
+
+      correction: document.getElementById("correction"),
+
+      scoreDiv: document.getElementById("scoreDiv"),
+      round: document.getElementById("round"),
+      score: document.getElementById("score"),
+      timerDiv: document.getElementById("timerDiv"),
+      timer: document.getElementById("timer"),
+      infoTime: document.getElementById("infoTime"),
+      streamCover: document.getElementById("streamCover"),
+      clipCover: document.getElementById("clipCover"),
+
+      skipSexual: document.getElementById("skipSexual"),
+      unloadWarning: document.getElementById("unloadWarning"),
+      viewersHS: document.getElementById("viewersHS"),
+      gameStreak: document.getElementById("gameStreak"),
+      emoteStreak: document.getElementById("emoteStreak"),
+      viewersHigherlowerStreak: document.getElementById("viewersHigherlowerStreak"),
+
+      resetSeenChannels: document.getElementById("resetSeenChannels"),
+      seenChannels: document.getElementById("seenChannels"),
+      resetSeenClips: document.getElementById("resetSeenClips"),
+      seenClips: document.getElementById("seenClips"),
+
+      resetGameModal: document.getElementById("resetGameModal"),
+
+      gameSettingsModal: document.getElementById("gameSettingsModal"),
+      streamsVideoType: document.getElementById("streamsVideoType"),
+      clipsVideoType: document.getElementById("clipsVideoType"),
+      clipCollectionDiv: document.getElementById("clipCollectionDiv"),
+      clipCollection: document.getElementById("clipCollection"),
+      videoTypeDesc: document.getElementById("videoTypeDesc"),
+      timerValue: document.getElementById("timerValue"),
+      channelName: document.getElementById("channelName"),
+      //drops: document.getElementById("drops"),
+      disclaimer: document.getElementById("disclaimer"),
+      getSettingsButton: document.getElementById("getSettingsButton"),
+      leaderboard: document.getElementById("leaderboard"),
+      leaderboardTabs: document.getElementById("leaderboardTabs"),
+      totalTab: document.getElementById("totalTab"),
+      roundTab: document.getElementById("roundTab"),
+      leaderboardList: document.getElementById("leaderboardList"),
+      leaderboardListRound: document.getElementById("leaderboardListRound"),
+      chatHint: document.getElementById("chatHint"),
+    };
+
     localforage.config({
       driver: localforage.INDEXEDDB,
       name: "guessr.tv",
@@ -1860,13 +1964,21 @@
       localforage.setItem("seenChannels", JSON.stringify([]));
       seenChannels = [];
       elements.seenChannels.innerHTML = 0;
-      showToast("Seen channels reset", "success", 2000);
+      toaster.create({
+        type: "success",
+        title: "Seen channels reset",
+        duration: 2000,
+      });
     };
     elements.resetSeenClips.onclick = function () {
       localforage.setItem("seenClips", JSON.stringify([]));
       seenClips = [];
       elements.seenClips.innerHTML = 0;
-      showToast("Seen clips reset", "success", 2000);
+      toaster.create({
+        type: "success",
+        title: "Seen clips reset",
+        duration: 2000,
+      });
     };
 
     const queryString = window.location.search;
@@ -1877,12 +1989,12 @@
     }
   });
 
-  window.onbeforeunload = function () {
-    if (unloadWarning && gameRunning) {
-      return "Unload warning enabled. You can turn it off in the settings.";
-    }
-    return null;
-  }; //onbeforeunload
+  // window.onbeforeunload = function () {
+  //   if (unloadWarning && gameRunning) {
+  //     return "Unload warning enabled. You can turn it off in the settings.";
+  //   }
+  //   return null;
+  // }; //onbeforeunload
 </script>
 
 <svelte:head>
@@ -1918,22 +2030,22 @@
         <div class="input-group mb-3">
           <span class="input-group-text">Viewers mode high score</span>
           <span class="input-group-text" id="viewersHS">0</span>
-          <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('viewersHS')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+          <button class="btn btn-outline-warning" type="button" onclick={() => resetHighScore("viewersHS")}><i class="material-icons notranslate">restart_alt</i>Reset</button>
         </div>
         <div class="input-group mb-3">
           <span class="input-group-text">Higher Lower mode high score</span>
           <span class="input-group-text" id="viewersHigherlowerStreak">0</span>
-          <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('viewersHigherlowerStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+          <button class="btn btn-outline-warning" type="button" onclick={() => resetHighScore("viewersHigherlowerStreak")}><i class="material-icons notranslate">restart_alt</i>Reset</button>
         </div>
         <div class="input-group mb-3">
           <span class="input-group-text">Game name mode high score</span>
           <span class="input-group-text" id="gameStreak">0</span>
-          <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('gameStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+          <button class="btn btn-outline-warning" type="button" onclick={() => resetHighScore("gameStreak")}><i class="material-icons notranslate">restart_alt</i>Reset</button>
         </div>
         <div class="input-group mb-3">
           <span class="input-group-text">Emote mode high score</span>
           <span class="input-group-text" id="emoteStreak">0</span>
-          <button class="btn btn-outline-warning" type="button" onclick="resetHighScore('emoteStreak')"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+          <button class="btn btn-outline-warning" type="button" onclick={() => resetHighScore("emoteStreak")}><i class="material-icons notranslate">restart_alt</i>Reset</button>
         </div>
 
         <hr />
@@ -2101,7 +2213,7 @@
       </div>
       <div class="modal-body text-center">Your progress will be lost</div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-warning" onclick="reset()" data-bs-dismiss="modal">Reset</button>
+        <button type="button" class="btn btn-warning" onclick={() => reset()} data-bs-dismiss="modal">Reset</button>
       </div>
     </div>
   </div>
@@ -2119,7 +2231,7 @@
 
 <ul class="nav nav-underline flex-column position-fixed">
   <li class="nav-item">
-    <a class="nav-link active" aria-current="page" id="reset" onclick="reset(true)">
+    <a class="nav-link active" aria-current="page" id="reset" onclick={() => reset(true)}>
       <img src="/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
     </a>
   </li>
@@ -2148,7 +2260,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col">
-            <div class="card game-card cursor-pointer bg-body-tertiary" onclick="showSettings('viewers')">
+            <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("viewers")}>
               <div class="card-body">
                 <h2>
                   <svg class="viewers-svg" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
@@ -2168,7 +2280,7 @@
           </div>
 
           <div class="col">
-            <div class="card game-card cursor-pointer bg-body-tertiary" onclick="showSettings('higherlower')">
+            <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("higherlower")}>
               <div class="card-body">
                 <h2>
                   <i class="material-icons notranslate mp-icon">import_export</i>
@@ -2182,7 +2294,7 @@
         <hr />
         <div class="row">
           <div class="col">
-            <div class="card game-card cursor-pointer bg-body-tertiary" onclick="showSettings('game')">
+            <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("game")}>
               <div class="card-body">
                 <h2>
                   <i class="material-icons notranslate mp-icon">sports_esports</i>
@@ -2193,7 +2305,7 @@
             </div>
           </div>
           <div class="col">
-            <div class="card game-card cursor-pointer bg-body-tertiary" onclick="showSettings('emote')">
+            <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("emote")}>
               <div class="card-body">
                 <h2>
                   <i class="material-icons notranslate mp-icon">emoji_emotions</i>
@@ -2208,7 +2320,7 @@
         <div class="row mt-3" id="irl" style="display: none">
           <hr />
           <div class="col">
-            <div class="card game-card cursor-pointer bg-body-tertiary" onclick="showSettings('irl')">
+            <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("irl")}>
               <div class="card-body">
                 <h2>
                   <i class="material-icons notranslate mp-icon">public</i>
@@ -2291,20 +2403,20 @@
               </div>
             </div>
             <div class="col-3">
-              <button type="button" onclick="guess('slider',false)" class="btn btn-lg btn-success guess">Guess</button>
+              <button type="button" onclick={() => guess("slider", false)} class="btn btn-lg btn-success guess">Guess</button>
             </div>
           </div>
 
           <div id="multiChoiceDiv" class="row align-items-center" style="display: none">
             <div class="col-xl-2">
               <div class="d-flex flex-column gap-1" id="multiChoicePowerupCard">
-                <button class="btn btn-outline-primary btn-powerup" onclick="usePowerup('pSkip')">
+                <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("pSkip")}>
                   <div><i class="material-icons notranslate">skip_next</i> Skip</div>
                   <div class="flex-grow-1"></div>
                   <div class="powerup-added powerup-pSkip-added"></div>
                   <div class="powerup-count powerup-pSkip-count">0</div>
                 </button>
-                <button class="btn btn-outline-primary btn-powerup" onclick="usePowerup('p5050')">
+                <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("p5050")}>
                   <div><i class="material-icons notranslate">theater_comedy</i> 50/50</div>
                   <div class="flex-grow-1"></div>
                   <div class="powerup-added powerup-p5050-added"></div>
@@ -2314,11 +2426,11 @@
             </div>
             <div class="col-xl"><label id="multiChoiceLabel" class="form-label">How many viewers does this stream have?</label></div>
             <div class="col-xl-auto">
-              <button type="button" onclick="guess(1,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice1">????????</button>
-              <button type="button" onclick="guess(2,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice2">????????</button>
-              <button type="button" onclick="guess(3,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice3">????????</button>
-              <button type="button" onclick="guess(4,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice4">????????</button>
-              <button type="button" onclick="guess(5,false)" class="btn btn-outline-success multiChoice-btn" id="multiChoice5">????????</button>
+              <button type="button" onclick={() => guess(1, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice1">????????</button>
+              <button type="button" onclick={() => guess(2, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice2">????????</button>
+              <button type="button" onclick={() => guess(3, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice3">????????</button>
+              <button type="button" onclick={() => guess(4, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice4">????????</button>
+              <button type="button" onclick={() => guess(5, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice5">????????</button>
             </div>
           </div>
 
@@ -2329,20 +2441,20 @@
               <datalist id="gameList"></datalist>
             </div>
             <div class="col-3">
-              <button type="button" onclick="guess('game',false)" class="btn btn-lg btn-success guess">Guess</button>
+              <button type="button" onclick={() => guess("game", false)} class="btn btn-lg btn-success guess">Guess</button>
             </div>
           </div>
 
           <div id="higherlowerDiv" class="row align-items-center" style="display: none">
             <div class="col-2">
               <div class="d-flex flex-column gap-1" id="higherLowerPowerupCard">
-                <button class="btn btn-outline-primary btn-powerup" onclick="usePowerup('pSkip')">
+                <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("pSkip")}>
                   <div><i class="material-icons notranslate">skip_next</i> Skip</div>
                   <div class="flex-grow-1"></div>
                   <div class="powerup-added powerup-pSkip-added"></div>
                   <div class="powerup-count powerup-pSkip-count">0</div>
                 </button>
-                <button class="btn btn-outline-primary btn-powerup" onclick="usePowerup('p5050')" disabled>
+                <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("p5050")} disabled>
                   <div><i class="material-icons notranslate">theater_comedy</i> 50/50</div>
                   <div class="flex-grow-1"></div>
                   <div class="powerup-added powerup-p5050-added visually-hidden"></div>
@@ -2352,8 +2464,8 @@
             </div>
             <div class="col-5"><label id="higherlowerLabel" class="form-label">Does this stream have a higher or lower view count than</label><br /></div>
             <div class="col-5">
-              <button type="button" onclick="guess('higher',false)" class="btn btn-outline-success multiChoice-btn me-5" id="higher">Higher</button>
-              <button type="button" onclick="guess('lower',false)" class="btn btn-outline-danger multiChoice-btn" id="lower">Lower</button>
+              <button type="button" onclick={() => guess("higher", false)} class="btn btn-outline-success multiChoice-btn me-5" id="higher">Higher</button>
+              <button type="button" onclick={() => guess("lower", false)} class="btn btn-outline-danger multiChoice-btn" id="lower">Lower</button>
             </div>
           </div>
 
@@ -2365,7 +2477,7 @@
             <div class="col-3">
               <p id="irlCorrection">Where is this streamer?</p>
               <br />
-              <button type="button" onclick="guess('map',false)" class="btn btn-lg btn-success guess">Guess</button>
+              <button type="button" onclick={() => guess("map", false)} class="btn btn-lg btn-success guess">Guess</button>
             </div>
           </div>
 
@@ -2373,9 +2485,9 @@
             <div class="col-3">
               <button type="button" id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
               <div id="endButtons" style="display: none">
-                <button type="button" id="playAgain" class="btn btn-lg btn-warning" onclick="playAgain()">Play Again</button>
-                <button type="button" id="changeMode" class="btn btn-lg btn-secondary mt-1" onclick="reset()">Change mode</button>
-                <button type="button" id="breakdown" class="btn btn-lg btn-success mt-1" onclick="showBreakdown()">Breakdown</button>
+                <button type="button" id="playAgain" class="btn btn-lg btn-warning" onclick={() => playAgain()}>Play Again</button>
+                <button type="button" id="changeMode" class="btn btn-lg btn-secondary mt-1" onclick={() => reset()}>Change mode</button>
+                <button type="button" id="breakdown" class="btn btn-lg btn-success mt-1" onclick={() => showBreakdown()}>Breakdown</button>
               </div>
             </div>
             <div class="col-6">

@@ -1,11 +1,31 @@
 <script>
   import { onMount } from "svelte";
+  import { toaster } from "$lib/functions";
 
   let { data } = $props();
 
   let channel = $state(data.slug.toLowerCase().replace(/\s/g, ""));
 
   onMount(async () => {
+    elements = {
+      leaderboardCount: document.getElementById("leaderboardCount"),
+      leaderboard: document.getElementById("leaderboard"),
+      toastContainer: document.getElementById("toastContainer"),
+      loginExpiredModal: document.getElementById("loginExpiredModal"),
+      loginButton: document.getElementById("loginButton"),
+      loginInfo: document.getElementById("loginInfo"),
+      username: document.getElementById("username"),
+      score: document.getElementById("score"),
+      refresh: document.getElementById("refresh"),
+      loginInfoPFP: document.getElementById("loginInfoPFP"),
+      board: document.getElementById("board"),
+      previewDiv: document.getElementById("previewDiv"),
+      previewBoard: document.getElementById("previewBoard"),
+      previewUsername: document.getElementById("previewUsername"),
+      channel: document.getElementById("channel"),
+      time: document.getElementById("time"),
+    };
+
     loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
 
     TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
@@ -25,24 +45,7 @@
     enableTooltips();
     customBadges = await getCustomBadges();
   });
-  const elements = {
-    leaderboardCount: document.getElementById("leaderboardCount"),
-    leaderboard: document.getElementById("leaderboard"),
-    toastContainer: document.getElementById("toastContainer"),
-    loginExpiredModal: document.getElementById("loginExpiredModal"),
-    loginButton: document.getElementById("loginButton"),
-    loginInfo: document.getElementById("loginInfo"),
-    username: document.getElementById("username"),
-    score: document.getElementById("score"),
-    refresh: document.getElementById("refresh"),
-    loginInfoPFP: document.getElementById("loginInfoPFP"),
-    board: document.getElementById("board"),
-    previewDiv: document.getElementById("previewDiv"),
-    previewBoard: document.getElementById("previewBoard"),
-    previewUsername: document.getElementById("previewUsername"),
-    channel: document.getElementById("channel"),
-    time: document.getElementById("time"),
-  };
+  let elements;
 
   let TWITCH = {
     channel: "",
@@ -200,13 +203,21 @@
       loadBoard();
       updateLeaderboard(result.users);
 
-      showToast("Board & leaderboard refreshed", "info", 3000);
+      toaster.create({
+        type: "info",
+        title: "Board & leaderboard refreshed",
+        duration: 3000,
+      });
       elements.refresh.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
       setTimeout(() => {
         elements.refresh.disabled = false;
       }, 30000);
     } catch (error) {
-      showToast("Could not refresh board", "danger", 3000);
+      toaster.create({
+        type: "error",
+        title: "Could not refresh board",
+        duration: 3000,
+      });
       console.log("refresh error", error);
       elements.refresh.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
       setTimeout(() => {
@@ -336,9 +347,17 @@
       console.log(result);
       board = result.data.board;
       allowDiagonals = result.data.allowDiagonals;
-      showToast(result.message, "info", 3000);
+      toaster.create({
+        type: "info",
+        title: result.message,
+        duration: 3000,
+      });
     } catch (error) {
-      showToast("Could not join game", "danger", 3000);
+      toaster.create({
+        type: "error",
+        title: "Could not join game",
+        duration: 3000,
+      });
       console.log("join error", error);
     }
   } //join
@@ -377,15 +396,6 @@
   } //hidePreview
 </script>
 
-<svelte:head>
-  <title>Emote {emoteID} info | OkayegBOT</title>
-  <meta name="description" content="Info about the Twitch emote {emoteID}" />
-  <meta property="og:title" content="Emote {emoteID} info | OkayegBOT" />
-  <meta property="og:url" content="https://okayeg.com/twitch/emote/{emoteID}" />
-  <meta property="og:image" content="https://static-cdn.jtvnw.net/emoticons/v2/{emoteID}/default/dark/3.0" />
-  <meta property="og:description" content="Info about the Twitch emote {emoteID}" />
-</svelte:head>
-
 <div class="modal" id="loginExpiredModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -396,12 +406,12 @@
       <div class="modal-body">
         <div class="row justify-content-center">
           Renew login:<br />
-          <button type="button" data-bs-dismiss="modal" onclick="login()" class="btn btn-twitch"><span class="twitch-icon"></span>Sign in with Twitch</button>
+          <button type="button" data-bs-dismiss="modal" onclick={login} class="btn btn-twitch"><span class="twitch-icon"></span>Sign in with Twitch</button>
           <br /><small class="text-body-secondary">Logins expire after 2 months.<br />Or after you change your password.</small>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="logout()"><i class="material-icons notranslate">logout</i>Logout</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick={logout}><i class="material-icons notranslate">logout</i>Logout</button>
       </div>
     </div>
   </div>
@@ -452,12 +462,12 @@
       <h1>${data.title}</h1>
       <h2 class="text-body-secondary mb-5">Playing with <a href="https://twitch.tv/${data.username}" target="_blank" id="channel">${data.username}</a></h2>
 
-      <a id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable the bingo board" class="btn btn-twitch" href="#" onclick="login()">
+      <a id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable the bingo board" class="btn btn-twitch" href="#" onclick={login}>
         <span class="twitch-icon"></span> Sign in with Twitch
       </a>
 
       <div class="btn-group" id="loginInfo" style="display: none">
-        <button type="button" class="btn btn-success" id="refresh" onclick="refresh()" title="Refresh the board - 30s cooldown - temporary scuffed solution 🤙">
+        <button type="button" class="btn btn-success" id="refresh" onclick={refresh} title="Refresh the board - 30s cooldown - temporary scuffed solution 🤙">
           <i class="material-icons notranslate">refresh</i>
         </button>
         <button class="btn btn-info" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLeaderboard" aria-controls="offcanvasLeaderboard">
@@ -472,7 +482,7 @@
         </button>
         <ul class="dropdown-menu">
           <li>
-            <a class="dropdown-item" onclick="logout()" href="#"><i class="material-icons notranslate">logout</i>Log out</a>
+            <a class="dropdown-item" onclick={logout} href="#"><i class="material-icons notranslate">logout</i>Log out</a>
           </li>
         </ul>
       </div>
