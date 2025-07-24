@@ -865,7 +865,7 @@
   } //checkWin
 
   function login() {
-    elements.loginInfoPFP.src = "/pics/donk.png";
+    elements.loginInfoPFP.src = "/donk.png";
     elements.bingoLink.value = `Loading...`;
     elements.loginButton.innerHTML = spinner;
     window.open("/prompt.html", "loginWindow", "toolbar=0,status=0,scrollbars=0,width=500px,height=800px");
@@ -884,13 +884,13 @@
     elements.loginButton.innerHTML = `<span class="twitch-icon"></span> Sign in with Twitch`;
     elements.loginDescription.style.display = "";
     elements.loginInfo.style.display = "none";
-    elements.loginInfoPFP.src = "/pics/donk.png";
+    elements.loginInfoPFP.src = "/donk.png";
     elements.bingoLink.value = `https://bingo.guessr.tv`;
   } //logout
 
   async function loadPFP() {
     let pfpURL = await get7TVPFP(TWITCH.userID);
-    if (pfpURL == "/pics/donk.png" && TWITCH.access_token) {
+    if (pfpURL == "/donk.png" && TWITCH.access_token) {
       pfpURL = await getTwitchPFP(TWITCH.channel, TWITCH.access_token);
     }
     elements.loginInfoPFP.src = pfpURL;
@@ -1449,7 +1449,7 @@
 <ul class="nav nav-underline flex-column position-fixed">
   <li class="nav-item">
     <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/">
-      <img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
+      <img src="/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
     </a>
   </li>
   <li class="nav-item">
@@ -1534,7 +1534,7 @@
     <div class="col-5"></div>
     <div class="col-7 position-relative">
       <div class="card" id="settingsCard">
-        <div class="card-header text-center"><img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv Bingo</div>
+        <div class="card-header text-center"><img src="/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv Bingo</div>
         <div class="card-body">
           <div class="container-fluid p-0">
             <div class="row">
@@ -1744,7 +1744,7 @@
             <div class="col-auto">
               <div class="input-group" id="loginInfo" style="display: none">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <img id="loginInfoPFP" src="/pics/donk.png" alt="profile pic" style="height: 2em" />
+                  <img id="loginInfoPFP" src="/donk.png" alt="profile pic" style="height: 2em" />
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                   <li>

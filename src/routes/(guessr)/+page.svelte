@@ -2120,7 +2120,7 @@
 <ul class="nav nav-underline flex-column position-fixed">
   <li class="nav-item">
     <a class="nav-link active" aria-current="page" id="reset" onclick="reset(true)">
-      <img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
+      <img src="/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
     </a>
   </li>
   <li class="nav-item">

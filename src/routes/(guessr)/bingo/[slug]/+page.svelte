@@ -60,7 +60,7 @@ let customBadges = [];
 let streamerID;
 
 function login() {
-  elements.loginInfoPFP.src = "https://guessr.tv/pics/donk.png";
+  elements.loginInfoPFP.src = "https://guessr.tv/donk.png";
   elements.loginButton.innerHTML = spinner;
   window.open("https://bingo.guessr.tv/prompt", "loginWindow", "toolbar=0,status=0,scrollbars=0,width=500px,height=800px");
   return false;
@@ -77,7 +77,7 @@ function logout() {
   elements.loginInfo.style.display = "none";
   elements.username.innerText = "Loading...";
   elements.score.innerText = "Loading...";
-  elements.loginInfoPFP.src = "https://guessr.tv/pics/donk.png";
+  elements.loginInfoPFP.src = "https://guessr.tv/donk.png";
 } //logout
 
 async function loadInfo() {
@@ -310,7 +310,7 @@ function checkWin(board, streamer = false) {
 
 async function loadPFP() {
   let pfpURL = await get7TVPFP(TWITCH.userID);
-  if (pfpURL == "/pics/donk.png" && TWITCH.access_token) {
+  if (pfpURL == "/donk.png" && TWITCH.access_token) {
     pfpURL = await getTwitchPFP(TWITCH.channel, TWITCH.access_token);
   }
   elements.loginInfoPFP.src = pfpURL;
@@ -413,7 +413,7 @@ function hidePreview() {
 <ul class="nav nav-underline flex-column position-fixed">
   <li class="nav-item">
     <a class="nav-link site-link" target="_blank" rel="noopener noreferrer" href="https://guessr.tv/">
-      <img src="https://guessr.tv/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
+      <img src="https://guessr.tv/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
     </a>
   </li>
   <li class="nav-item">
@@ -470,7 +470,7 @@ function hidePreview() {
         <button type="button" class="btn btn-secondary pointer-events-none" id="username">Loading...</button>
         <button type="button" class="btn btn-secondary pointer-events-none" id="score">Loading...</button>
         <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-          <img id="loginInfoPFP" src="https://guessr.tv/pics/donk.png" alt="profile pic" style="height: 2em" />
+          <img id="loginInfoPFP" src="https://guessr.tv/donk.png" alt="profile pic" style="height: 2em" />
           <span class="visually-hidden">Toggle Dropdown</span>
         </button>
         <ul class="dropdown-menu">

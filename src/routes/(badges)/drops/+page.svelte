@@ -52,7 +52,7 @@
 <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
   <header class="mb-auto">
     <div>
-      <h3 class="float-md-start mb-0"><img src="/pics/guessr.png" alt="Guessr.tv" height="40px" /> Guessr.tv</h3>
+      <h3 class="float-md-start mb-0"><img src="/guessr.png" alt="Guessr.tv" height="40px" /> Guessr.tv</h3>
       <nav class="nav nav-masthead justify-content-center float-md-end">
         <a class="nav-link fw-bold py-1 px-0" href="/">Guessr.tv<i class="material-icons notranslate">outbound</i></a>
         <div class="vr py-1 px-0 mx-3"></div>
@@ -89,11 +89,11 @@
         <ul>
           <li class="mb-5">
             Your stream must be in the <a href="https://www.twitch.tv/directory/category/guessr-tv" target="_blank" rel="noopener noreferrer">Guessr.tv</a> Twitch category <br />
-            <img src="/pics/category.png" alt="twitch category" style="height: 40vh" />
+            <img src="/category.png" alt="twitch category" style="height: 40vh" />
           </li>
           <li class="mb-5">
             You should fill in your Twitch username in the Play with chat section in the Game settings<br />
-            <img src="/pics/username.png" alt="play with chat settings" style="height: 50vh" />
+            <img src="/username.png" alt="play with chat settings" style="height: 50vh" />
           </li>
         </ul>
       </li>
@@ -101,7 +101,7 @@
     <h4>What will I earn</h4>
     <p class="lead">
       Streamers/Viewers that stream/watch for 30 minutes will earn a special Donk badge <img src="https://chat.vote/badges/donk.png" height="24px" /> that will show up on the Guessr.tv chat
-      leaderboard while playing. <br /><img src="/pics/example1.png" height="60px" />
+      leaderboard while playing. <br /><img src="/example1.png" height="60px" />
     </p>
     <small>You will need to refresh the site to see the badge after claiming the drop</small>
     <br />
@@ -148,7 +148,7 @@
     display: inline-block;
     width: 22px;
     height: 26px;
-    background-image: url(/pics/twitch.png);
+    background-image: url(/twitch.png);
     margin: 0 5px -8px 0;
   }
 

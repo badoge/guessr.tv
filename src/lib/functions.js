@@ -124,22 +124,22 @@ export async function getGlobalBadges() {
 
 export async function get7TVPFP(userID) {
   if (!userID) {
-    return "/pics/donk.png";
+    return "/donk.png";
   }
   try {
     let response = await fetch(`https://7tv.io/v3/users/twitch/${userID}`);
     if (response.status !== 200) {
-      return "/pics/donk.png";
+      return "/donk.png";
     }
     let result = await response.json();
     if (!result?.user?.avatar_url) {
-      return "/pics/donk.png";
+      return "/donk.png";
     } else {
       return result.user.avatar_url;
     }
   } catch (error) {
     console.log("getprofilepic 7tv error", error);
-    return "/pics/donk.png";
+    return "/donk.png";
   }
 } //get7TVPFP
 
@@ -156,7 +156,7 @@ export async function getTwitchPFP(username, access_token) {
     return result.data[0].profile_image_url;
   } catch (error) {
     console.log("getprofilepic twitch error", error);
-    return "/pics/donk.png";
+    return "/donk.png";
   }
 } //getTwitchPFP
 

@@ -4,7 +4,7 @@
 <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
   <header class="mb-auto">
     <div>
-      <h3 class="float-md-start mb-0"><img src="/pics/guessr.png" alt="Guessr.tv" height="40px" /> Guessr.tv</h3>
+      <h3 class="float-md-start mb-0"><img src="/guessr.png" alt="Guessr.tv" height="40px" /> Guessr.tv</h3>
       <nav class="nav nav-masthead justify-content-center float-md-end">
         <a class="nav-link fw-bold py-1 px-0" href="/">Guessr.tv<i class="material-icons notranslate">outbound</i></a>
         <div class="vr py-1 px-0 mx-3"></div>
@@ -51,7 +51,7 @@
     display: inline-block;
     width: 22px;
     height: 26px;
-    background-image: url(/pics/twitch.png);
+    background-image: url(/twitch.png);
     margin: 0 5px -8px 0;
   }
 

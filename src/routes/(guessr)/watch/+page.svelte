@@ -466,7 +466,7 @@
       return;
     }
 
-    elements.pfp.src = "/pics/guessr.png";
+    elements.pfp.src = "/guessr.png";
     elements.username.innerHTML = `<span class="placeholder-wave"><span class="placeholder" style="width: 200px"></span></span>`;
     elements.title.innerHTML = `<span class="placeholder-wave"><span class="placeholder" style="width: 500px"></span></span>`;
     elements.tags.innerHTML = `<span class="placeholder-wave"><span class="placeholder" style="width: 500px"></span></span>`;
@@ -510,7 +510,7 @@
       }
       let response2 = await fetch(`https://helper.guessr.tv/twitch/users?id=${channelID}`);
       let user = await response2.json();
-      elements.pfp.src = user.data[0].profile_image_url || "/pics/guessr.png";
+      elements.pfp.src = user.data[0].profile_image_url || "/guessr.png";
       let name = stream.data[0].user_name.toLowerCase() == stream.data[0].user_login.toLowerCase() ? stream.data[0].user_name : `${stream.data[0].user_name} (${stream.data[0].user_login})`;
       elements.username.innerHTML = `<a target="_blank" rel="noopener noreferrer" href="https://twitch.tv/${stream.data[0].user_login}">${name}</a>`;
       elements.title.innerText = stream.data[0]?.title || "no title";
@@ -535,7 +535,7 @@
         displayname: stream.data[0].user_name,
         title: stream.data[0].title,
         tags: elements.tags.innerHTML,
-        pfp: user.data[0].profile_image_url || "/pics/guessr.png",
+        pfp: user.data[0].profile_image_url || "/guessr.png",
       });
       seenChannels.push(channelID);
       localforage.setItem("seenChannels", JSON.stringify(seenChannels));
@@ -561,7 +561,7 @@
 
   function showPreviousStream(currentIndex, forward) {
     let channel = previousChannels[(currentIndex += forward ? 1 : -1)];
-    elements.pfp.src = channel.pfp || "/pics/guessr.png";
+    elements.pfp.src = channel.pfp || "/guessr.png";
     let name = channel.displayname.toLowerCase() == channel.username.toLowerCase() ? channel.displayname : `${channel.displayname} (${channel.username})`;
     elements.username.innerHTML = `<a target="_blank" rel="noopener noreferrer" href="https://twitch.tv/${channel.username}">${name}</a>`;
     elements.title.innerText = channel.title;
@@ -645,7 +645,7 @@
 <ul class="nav nav-underline flex-column position-fixed mt-2">
   <li class="nav-item">
     <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/">
-      <img src="/pics/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
+      <img src="/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
     </a>
   </li>
   <li class="nav-item">
@@ -679,7 +679,7 @@
       <div class="row gap-2 justify-content-end">
         <div class="col border rounded p-1 bg-body-secondary align-self-center">
           <div class="hstack gap-3">
-            <div><img src="/pics/guessr.png" id="pfp" /></div>
+            <div><img src="/guessr.png" id="pfp" /></div>
             <div id="username">
               <span class="placeholder-wave"><span class="placeholder" style="width: 100px"></span></span>
             </div>
