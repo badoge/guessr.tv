@@ -265,16 +265,6 @@ export function cleanString(s) {
     .toLowerCase();
 } //cleanString
 
-export function enableTooltips() {
-  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-  const tooltipList = [...tooltipTriggerList].map(
-    (tooltipTriggerEl) =>
-      new bootstrap.Tooltip(tooltipTriggerEl, {
-        trigger: "hover",
-      }),
-  );
-} //enableTooltips
-
 export function isInt(value) {
   if (isNaN(value)) {
     return false;

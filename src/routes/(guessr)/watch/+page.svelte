@@ -2,6 +2,31 @@
   import { onMount } from "svelte";
   import localforage from "localforage";
   import { toaster } from "$lib/functions";
+  import { Popover } from "@skeletonlabs/skeleton-svelte";
+  import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
+  import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
+  import IcBaselineSearch from "~icons/ic/baseline-search";
+  import IcBaselineLanguage from "~icons/ic/baseline-language";
+  import IcBaselineLabel from "~icons/ic/baseline-label";
+  import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
+
+  let openStateLanguage = $state(false);
+  let openStateTags = $state(false);
+  let openStateCategory = $state(false);
+  let openStateViewCount = $state(false);
+
+  function languagePopoverClose() {
+    openStateLanguage = false;
+  }
+  function tagsPopoverClose() {
+    openStateTags = false;
+  }
+  function categroyPopoverClose() {
+    openStateCategory = false;
+  }
+  function viewCountPopoverClose() {
+    openStateViewCount = false;
+  }
 
   onMount(async () => {
     localforage.config({
@@ -95,7 +120,6 @@
     elements = {
       seenChannels: document.getElementById("seenChannels"),
       resetSeenChannels: document.getElementById("resetSeenChannels"),
-      toastContainer: document.getElementById("toastContainer"),
       twitchEmbed: document.getElementById("twitchEmbed"),
       nextStream: document.getElementById("nextStream"),
       previousStream: document.getElementById("previousStream"),
@@ -598,271 +622,221 @@
   <script src="https://embed.twitch.tv/embed/v1.js" async></script>
 </svelte:head>
 
-<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="settingsModalLabel">Settings</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="input-group mt-3">
-          <span class="input-group-text">Seen Channels:</span>
-          <span class="input-group-text" id="seenChannels">0</span>
-          <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><i class="material-icons notranslate">restart_alt</i>Reset</button>
-        </div>
-        <small>Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
+<div class="grid h-screen grid-rows-[auto_1fr_auto]">
+  <main class="p-4 space-y-4 h-200">
+    <div id="twitchEmbed"></div>
+  </main>
 
-<div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="aboutModalLabel">About</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="card border mb-3">
-          <div class="card-header">About this page</div>
-          <div class="card-body">
-            If you like finding new random streams by playing on Guessr.tv but don't like having to guess each round then this page is for you :)<br />
-            More info <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#readme">here</a><br /><br />
+  <footer class="sticky bottom-2 z-10 backdrop-blur-sm p-4 h-30">
+    <div class="flex flex-row">
+      <div class="flex flex-row">
+        <div><div class="placeholder-circle size-16 animate-pulse"></div></div>
 
-            <br />
-            You might encounter a "Preparing your stream..." screen when clicking Next stream, to get rid of the screen you can subscribe to Twitch Turbo or get a better Adblocker :)<br />
-            If you have Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. If you use Firefox you will need to
-            <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow cross-site tracking cookies</a>
-            <hr />
-            If you want to optout from being randomly picked you can use the<kbd>=optout guessr</kbd> command in
-            <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
-          </div>
-        </div>
-        <div class="card border">
-          <div class="card-header">Contact info</div>
-          <div class="card-body">
-            Site by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/badoge">badoge</a> :) <br />
-            <p>
-              If you find any issues or if you have suggestions or questions, you can contact me: <br /><a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://www.twitch.tv/popout/badoge/chat?popout=">in this chat</a
-              >
-              <br />or on <a target="_blank" rel="noopener noreferrer" href="https://discord.gg/FR8bgQdPUT">discord</a> <br />or by
-              <a href="mailto:help@guessr.tv">email</a>
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<ul class="nav nav-underline flex-column position-fixed mt-2">
-  <li class="nav-item">
-    <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/">
-      <img src="/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/bingo.html"><i class="material-icons notranslate">grid_on</i> Bingo</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link active site-link" aria-current="page" target="_self" rel="noopener noreferrer" href="/watch.html"><i class="material-icons notranslate">live_tv</i> Watch </a>
-  </li>
-  <hr class="m-0" />
-  <li class="nav-item">
-    <a class="nav-link" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="material-icons notranslate">settings</i> Settings</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" data-bs-toggle="modal" data-bs-target="#aboutModal"><i class="material-icons notranslate">help_outline</i> About</a>
-  </li>
-</ul>
-
-<div class="container-fluid text-center pt-3">
-  <div class="row">
-    <div class="col-1">
-      <div aria-live="polite" aria-atomic="true" class="position-relative">
-        <div id="toastContainer" class="toast-container"></div>
-      </div>
-    </div>
-    <div class="col-11 position-relative">
-      <div id="twitchEmbed"></div>
-    </div>
-  </div>
-  <div class="row m-3" id="bottomRow">
-    <div class="container-fluid">
-      <div class="row gap-2 justify-content-end">
-        <div class="col border rounded p-1 bg-body-secondary align-self-center">
-          <div class="hstack gap-3">
-            <div><img src="/guessr.png" id="pfp" /></div>
+        <div class="flex flex-col">
+          <div>
             <div id="username">
-              <span class="placeholder-wave"><span class="placeholder" style="width: 100px"></span></span>
-            </div>
-            <div class="vr"></div>
-            <div class="vstack">
-              <div id="title">
-                <span class="placeholder-wave"><span class="placeholder" style="width: 300px"></span></span>
-              </div>
-              <div id="tags">
-                <span class="placeholder-wave"><span class="placeholder" style="width: 300px"></span></span>
-              </div>
+              <div class="placeholder animate-pulse w-50"></div>
             </div>
           </div>
-        </div>
-
-        <div class="col-auto border rounded p-1 bg-body-secondary align-self-center">
-          <div class="hstack gap-2">
-            <span style="writing-mode: sideways-lr; text-orientation: mixed">Filters</span>
-            <div class="dropup">
-              <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                <i class="material-icons notranslate vertical-align-bottom">language</i>Languages<span id="languageFilterCount"></span>
-              </button>
-              <form class="dropdown-menu p-4" style="height: 400px; width: 300px; overflow-y: auto">
-                <h5>Selected languages:</h5>
-                <div class="mb-3" id="selectedLanguages"><span class="text-body-secondary">None (will show all languages)</span></div>
-                <div class="input-group mb-3">
-                  <span class="input-group-text"><i class="material-icons notranslate vertical-align-bottom">search</i></span>
-                  <input id="searchLanguages" type="text" class="form-control" placeholder="Search" oninput={updateLanguages} />
-                </div>
-                <hr />
-                <div id="languagesDiv">
-                  <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            <div class="dropup">
-              <button type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                <i class="material-icons notranslate vertical-align-bottom">label</i>Tags<span id="tagFilterCount"></span>
-              </button>
-              <form class="dropdown-menu p-4" style="height: 400px; width: 300px; overflow-y: auto">
-                <h5>Selected tags:</h5>
-                <div class="mb-3" id="selectedTags"><span class="text-body-secondary">None (will show all tags)</span></div>
-                <div class="input-group mb-3">
-                  <span class="input-group-text"><i class="material-icons notranslate vertical-align-bottom">search</i></span>
-                  <input id="searchTags" type="text" class="form-control" placeholder="Search" oninput={updateTags} />
-                </div>
-                <hr />
-                <div id="tagsDiv">
-                  <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            <div class="dropup">
-              <button type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                <i class="material-icons notranslate vertical-align-bottom">sports_esports</i>Categories<span id="categoryFilterCount"></span>
-              </button>
-              <form class="dropdown-menu p-4" style="height: 400px; width: 300px; overflow-y: auto">
-                <h5>Selected categories:</h5>
-                <div class="mb-3" id="selectedCategories"><span class="text-body-secondary">None (will show all categories)</span></div>
-                <div class="input-group mb-3">
-                  <span class="input-group-text"><i class="material-icons notranslate vertical-align-bottom">search</i></span>
-                  <input id="searchCategories" type="text" class="form-control" placeholder="Search" oninput={updateCategories} />
-                </div>
-                <hr />
-
-                <div id="categoriesDiv">
-                  <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            <div class="dropup">
-              <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                <svg
-                  class="vertical-align-bottom"
-                  style="filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(201deg) brightness(106%) contrast(106%)"
-                  width="24px"
-                  height="24px"
-                  version="1.1"
-                  viewBox="0 0 20 20"
-                  x="0px"
-                  y="0px"
-                >
-                  <g>
-                    <path
-                      fill-rule="evenodd"
-                      d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
-                      clip-rule="evenodd"
-                    ></path>
-                  </g>
-                </svg>
-                View count
-              </button>
-              <form class="dropdown-menu p-4" style="height: 150px; width: 700px; overflow-y: auto">
-                <div class="input-group">
-                  <div class="input-group-text p-1">
-                    <div class="form-check form-switch m-0 ms-1">
-                      <input class="form-check-input" type="checkbox" role="switch" id="enableMinFilter" />
-                    </div>
-                  </div>
-                  <span class="input-group-text">Minimum view count</span>
-                  <span class="input-group-text" style="width: 300px"><input disabled type="range" class="form-range" id="minFilterSlider" min="0" max="100" step="1" value="0" /></span>
-                  <input disabled id="minFilter" placeholder="0" type="number" aria-label="Minimum view count" class="form-control" />
-                </div>
-                <br />
-                <div class="input-group">
-                  <div class="input-group-text p-1">
-                    <div class="form-check form-switch m-0 ms-1">
-                      <input class="form-check-input" type="checkbox" role="switch" id="enableMaxFilter" />
-                    </div>
-                  </div>
-                  <span class="input-group-text">Maximum view count</span>
-                  <span class="input-group-text" style="width: 300px"><input disabled type="range" class="form-range" id="maxFilterSlider" min="0" max="100" step="1" value="100" /></span>
-                  <input disabled id="maxFilter" placeholder="0" type="number" aria-label="Maximum view count" class="form-control" />
-                </div>
-              </form>
+          <div>
+            <div id="title">
+              <div class="placeholder animate-pulse w-50"></div>
             </div>
           </div>
-        </div>
-
-        <div class="col-auto p-1 align-self-center border rounded bg-body-secondary">
-          <div class="hstack">
-            <div class="vstack">
-              <button
-                disabled
-                type="button"
-                id="previousStream"
-                onclick={previousStream}
-                class="btn btn-lg btn-secondary float-end me-2"
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                data-bs-title="Previous stream"
-              >
-                <i class="material-icons notranslate">skip_previous</i>
-              </button>
-              <small class="text-body-secondary" id="seenCount">
-                <span class="placeholder-wave"><span class="placeholder" style="width: 120px"></span></span>
-              </small>
-            </div>
-
-            <div class="vstack">
-              <button type="button" id="nextStream" onclick={nextStream} class="btn btn-lg btn-success float-end">
-                <i class="material-icons notranslate">skip_next</i> Next stream
-              </button>
-              <small class="text-body-secondary" id="remainingCount">
-                <span class="placeholder-wave"><span class="placeholder" style="width: 120px"></span></span>
-              </small>
+          <div>
+            <div id="tags">
+              <div class="placeholder animate-pulse w-50"></div>
             </div>
           </div>
         </div>
       </div>
+
+      <div class="flex flex-row">
+        <span style="writing-mode: sideways-lr; text-orientation: mixed">Filters</span>
+
+        <Popover
+          open={openStateLanguage}
+          onOpenChange={(e) => (openStateLanguage = e.open)}
+          positioning={{ placement: "top" }}
+          triggerBase="btn preset-tonal"
+          contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
+          arrow
+          arrowBackground="!bg-surface-200 dark:!bg-surface-800"
+        >
+          {#snippet trigger()}<IcBaselineLanguage />Languages<span id="languageFilterCount"></span>{/snippet}
+          {#snippet content()}
+            <header class="flex justify-between">
+              <p class="font-bold text-xl">Popover Example</p>
+              <button class="btn-icon hover:preset-tonal" onclick={languagePopoverClose}>x</button>
+            </header>
+            <article style="height: 400px; width: 300px; overflow-y: auto">
+              <h5>Selected languages:</h5>
+              <div class="mb-3" id="selectedLanguages"><span class="text-body-secondary">None (will show all languages)</span></div>
+              <div class="input-group mb-3">
+                <span class="input-group-text"><IcBaselineSearch /></span>
+                <input id="searchLanguages" type="text" class="form-control" placeholder="Search" oninput={updateLanguages} />
+              </div>
+              <hr />
+              <div id="languagesDiv">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </article>
+          {/snippet}
+        </Popover>
+
+        <Popover
+          open={openStateTags}
+          onOpenChange={(e) => (openStateTags = e.open)}
+          positioning={{ placement: "top" }}
+          triggerBase="btn preset-tonal"
+          contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
+          arrow
+          arrowBackground="!bg-surface-200 dark:!bg-surface-800"
+        >
+          {#snippet trigger()}<IcBaselineLabel />Tags<span id="tagFilterCount"></span>{/snippet}
+          {#snippet content()}
+            <header class="flex justify-between">
+              <p class="font-bold text-xl">Popover Example</p>
+              <button class="btn-icon hover:preset-tonal" onclick={tagsPopoverClose}>x</button>
+            </header>
+            <article style="height: 400px; width: 300px; overflow-y: auto">
+              <h5>Selected tags:</h5>
+              <div class="mb-3" id="selectedTags"><span class="text-body-secondary">None (will show all tags)</span></div>
+              <div class="input-group mb-3">
+                <span class="input-group-text"><IcBaselineSearch /></span>
+                <input id="searchTags" type="text" class="form-control" placeholder="Search" oninput={updateTags} />
+              </div>
+              <hr />
+              <div id="tagsDiv">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </article>
+          {/snippet}
+        </Popover>
+
+        <Popover
+          open={openStateCategory}
+          onOpenChange={(e) => (openStateCategory = e.open)}
+          positioning={{ placement: "top" }}
+          triggerBase="btn preset-tonal"
+          contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
+          arrow
+          arrowBackground="!bg-surface-200 dark:!bg-surface-800"
+        >
+          {#snippet trigger()}<IcBaselineSportsEsports />Categories<span id="categoryFilterCount"></span>{/snippet}
+          {#snippet content()}
+            <header class="flex justify-between">
+              <p class="font-bold text-xl">Popover Example</p>
+              <button class="btn-icon hover:preset-tonal" onclick={categroyPopoverClose}>x</button>
+            </header>
+            <article style="height: 400px; width: 300px; overflow-y: auto">
+              <h5>Selected categories:</h5>
+              <div class="mb-3" id="selectedCategories"><span class="text-body-secondary">None (will show all categories)</span></div>
+              <div class="input-group mb-3">
+                <span class="input-group-text"><IcBaselineSearch /></span>
+                <input id="searchCategories" type="text" class="form-control" placeholder="Search" oninput={updateCategories} />
+              </div>
+              <hr />
+
+              <div id="categoriesDiv">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </article>
+          {/snippet}
+        </Popover>
+
+        <Popover
+          open={openStateViewCount}
+          onOpenChange={(e) => (openStateViewCount = e.open)}
+          positioning={{ placement: "top" }}
+          triggerBase="btn preset-tonal"
+          contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[720px]"
+          arrow
+          arrowBackground="!bg-surface-200 dark:!bg-surface-800"
+        >
+          {#snippet trigger()}<svg
+              style="filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(201deg) brightness(106%) contrast(106%)"
+              class="viewers-svg"
+              width="24px"
+              height="24px"
+              version="1.1"
+              viewBox="0 0 20 20"
+              x="0px"
+              y="0px"
+            >
+              <g>
+                <path
+                  fill-rule="evenodd"
+                  d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
+                  clip-rule="evenodd"
+                ></path>
+              </g>
+            </svg>View count{/snippet}
+          {#snippet content()}
+            <header class="flex justify-between">
+              <p class="font-bold text-xl">Popover Example</p>
+              <button class="btn-icon hover:preset-tonal" onclick={viewCountPopoverClose}>x</button>
+            </header>
+            <article style="height: 150px; width: 700px; overflow-y: auto">
+              <div class="input-group">
+                <div class="input-group-text p-1">
+                  <div class="form-check form-switch m-0 ms-1">
+                    <input class="form-check-input" type="checkbox" role="switch" id="enableMinFilter" />
+                  </div>
+                </div>
+                <span class="input-group-text">Minimum view count</span>
+                <span class="input-group-text" style="width: 300px"><input disabled type="range" class="form-range" id="minFilterSlider" min="0" max="100" step="1" value="0" /></span>
+                <input disabled id="minFilter" placeholder="0" type="number" aria-label="Minimum view count" class="form-control" />
+              </div>
+              <br />
+              <div class="input-group">
+                <div class="input-group-text p-1">
+                  <div class="form-check form-switch m-0 ms-1">
+                    <input class="form-check-input" type="checkbox" role="switch" id="enableMaxFilter" />
+                  </div>
+                </div>
+                <span class="input-group-text">Maximum view count</span>
+                <span class="input-group-text" style="width: 300px"><input disabled type="range" class="form-range" id="maxFilterSlider" min="0" max="100" step="1" value="100" /></span>
+                <input disabled id="maxFilter" placeholder="0" type="number" aria-label="Maximum view count" class="form-control" />
+              </div>
+            </article>
+          {/snippet}
+        </Popover>
+      </div>
+
+      <div class="flex flex-row">
+        <div class="flex flex-col">
+          <button
+            disabled
+            type="button"
+            id="previousStream"
+            onclick={previousStream}
+            class="btn btn-lg btn-secondary float-end"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            data-bs-title="Previous stream"
+          >
+            <IcBaselineSkipPrevious />
+          </button>
+          <small class="text-body-secondary" id="seenCount">
+            <div class="placeholder animate-pulse"></div>
+          </small>
+        </div>
+        <div class="flex flex-col">
+          <button type="button" id="nextStream" onclick={nextStream} class="btn btn-lg btn-success float-end">
+            <IcBaselineSkipNext /> Next stream
+          </button>
+          <small class="text-body-secondary" id="remainingCount">
+            <div class="placeholder animate-pulse"></div>
+          </small>
+        </div>
+      </div>
     </div>
-  </div>
+  </footer>
 </div>

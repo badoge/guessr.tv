@@ -2,6 +2,17 @@
   import { onMount } from "svelte";
   import localforage from "localforage";
   import { toaster } from "$lib/functions";
+  import { Modal } from "@skeletonlabs/skeleton-svelte";
+  import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
+  import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
+  import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
+  import IcBaselineSearch from "~icons/ic/baseline-search";
+  import IcBaselineContentCopy from "~icons/ic/baseline-content-copy";
+  let drawerState = $state(false);
+
+  function drawerClose() {
+    drawerState = false;
+  }
 
   onMount(async () => {
     elements = {
@@ -39,7 +50,6 @@
       previewDiv: document.getElementById("previewDiv"),
       previewBoard: document.getElementById("previewBoard"),
       previewUsername: document.getElementById("previewUsername"),
-      toastContainer: document.getElementById("toastContainer"),
       settingsCard: document.getElementById("settingsCard"),
       start: document.getElementById("start"),
       mainCard: document.getElementById("mainCard"),
@@ -54,7 +64,6 @@
       bingoLink: document.getElementById("bingoLink"),
       copyButton: document.getElementById("copyButton"),
       previousStream: document.getElementById("previousStream"),
-      bingoPopover: document.getElementById("bingoPopover"),
       nextStream: document.getElementById("nextStream"),
     };
 
@@ -89,12 +98,6 @@
     };
 
     enableTooltips();
-
-    loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
-    packsModal = new bootstrap.Modal(elements.packsModal);
-    bingoStatsTooltip = new bootstrap.Tooltip(elements.bingoStatsTooltip);
-    copyButton = new bootstrap.Popover(elements.copyButton);
-    bingoPopover = new bootstrap.Popover(elements.bingoPopover);
 
     TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
     if (TWITCH?.access_token && !(await checkToken(TWITCH.access_token))) {
@@ -301,7 +304,6 @@
   let skipSexual = true;
   let unloadWarningBingo = true;
   let userInteracted = false;
-  let bingoPopover;
   let bingoType = "twitch";
   let bingoSize = 5;
 
@@ -1012,10 +1014,10 @@
       for (let index = 0; index < users.length; index++) {
         if (!chatWinner && users[index].result.bingos > 0) {
           chatWinner = true;
-          bingoPopover.show();
-          setTimeout(() => {
-            bingoPopover.hide();
-          }, 3000);
+          // bingoPopover.show();
+          // setTimeout(() => {
+          //   bingoPopover.hide();
+          // }, 3000);
         }
         elements.leaderboard.insertAdjacentHTML(
           "afterbegin",
@@ -1334,7 +1336,7 @@
   <script src="https://embed.twitch.tv/embed/v1.js" async></script>
 </svelte:head>
 
-<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -1508,43 +1510,7 @@
       </div>
     </div>
   </div>
-</div>
-
-<ul class="nav nav-underline flex-column position-fixed">
-  <li class="nav-item">
-    <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/">
-      <img src="/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link active site-link" aria-current="page" target="_self" rel="noopener noreferrer" href="/bingo.html"><i class="material-icons notranslate">grid_on</i> Bingo</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/watch.html"><i class="material-icons notranslate">live_tv</i> Watch</a>
-  </li>
-  <hr class="m-0" />
-  <li class="nav-item">
-    <a class="nav-link" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="material-icons notranslate">settings</i> Settings</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" data-bs-toggle="modal" data-bs-target="#aboutModal"><i class="material-icons notranslate">help_outline</i> About</a>
-  </li>
-</ul>
-
-<div aria-live="polite" aria-atomic="true" class="position-relative m-2">
-  <div id="toastContainer" class="toast-container"></div>
-</div>
-
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasLeaderboard" aria-labelledby="offcanvasLeaderboardLabel">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasLeaderboardLabel">lidlboard :)</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
-  <div class="offcanvas-body">
-    <h4>Total players: <span id="leaderboardCount">0</span></h4>
-    <ul class="list-group" id="leaderboard"></ul>
-  </div>
-</div>
+</div> -->
 
 <div class="container-fluid" id="board" style="top: 6%; left: 6%">
   <div class="container-fluid p-0" id="board-inner">
@@ -1562,7 +1528,7 @@
       data-bs-placement="top"
       id="board-search-toggle"
     >
-      <i class="material-icons notranslate pointer-events-none">search</i>
+      <IcBaselineSearch />
     </button>
     <input type="text" class="form-control" id="board-search-bar" placeholder="Quick search" oninput={doBoardSearch} />
   </div>
@@ -1826,28 +1792,37 @@
                   data-bs-content="Link copied :)"
                   onclick={copyLink}
                 >
-                  <i class="material-icons notranslate">content_copy</i>
+                  <IcBaselineContentCopy />
                 </button>
-                <button class="btn btn-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLeaderboard" aria-controls="offcanvasLeaderboard">
-                  <i
-                    class="material-icons notranslate"
-                    id="bingoPopover"
-                    data-bs-toggle="popover"
-                    data-bs-trigger="manual"
-                    data-bs-placement="top"
-                    data-bs-title="BINGO!"
-                    data-bs-content="A viewer got a BINGO!"
-                  >
-                    leaderboard
-                  </i>
-                  Chat leaderboard
-                </button>
+
+                <Modal
+                  open={drawerState}
+                  onOpenChange={(e) => (drawerState = e.open)}
+                  triggerBase="btn preset-tonal"
+                  contentBase="bg-surface-100-900 p-4 space-y-4 shadow-xl w-[480px] h-screen"
+                  positionerJustify="justify-end"
+                  positionerAlign=""
+                  positionerPadding=""
+                  transitionsPositionerIn={{ x: 480, duration: 200 }}
+                  transitionsPositionerOut={{ x: 480, duration: 200 }}
+                >
+                  {#snippet trigger()}<IcBaselineLeaderboard />Chat leaderboard{/snippet}
+                  {#snippet content()}
+                    <header class="flex justify-between">
+                      <h2 class="h2">Bingo leaderboard</h2>
+                    </header>
+                    <article>
+                      <h4>Total players: <span id="leaderboardCount">0</span></h4>
+                      <ul class="list-group" id="leaderboard"></ul>
+                    </article>
+                  {/snippet}
+                </Modal>
               </div>
             </div>
 
             <div class="col">
               <button disabled type="button" id="nextStream" onclick={nextStream} class="btn btn-lg btn-success float-end">
-                <i class="material-icons notranslate">skip_next</i> Next stream
+                <IcBaselineSkipNext /> Next stream
               </button>
               <button
                 disabled
@@ -1859,7 +1834,7 @@
                 data-bs-placement="top"
                 data-bs-title="Previous stream"
               >
-                <i class="material-icons notranslate">skip_previous</i>
+                <IcBaselineSkipPrevious />
               </button>
             </div>
           </div>

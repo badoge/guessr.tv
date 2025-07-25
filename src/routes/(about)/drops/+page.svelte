@@ -76,11 +76,11 @@
   <blockquote class="blockquote">Who is eligible?</blockquote>
 
   <p>
-    Any streamer can enable this drop for their viewers by streaming <a href="https://guessr.tv" target="_blank" rel="noopener noreferrer">Guessr.tv</a> for 30 minutes.
+    Any streamer can enable this drop for their viewers by streaming <a class="anchor" href="https://guessr.tv" target="_blank" rel="noopener noreferrer">Guessr.tv</a> for 30 minutes.
   </p>
   <ul class="list-inside list-disc space-y-2">
     <li class="mb-5">
-      Your stream must be in the <a class="anchor" href="https://www.twitch.tv/directory/category/guessr-tv" target="_blank" rel="noopener noreferrer">Guessr.tv</a> Twitch category <br />
+      Your stream must be in the <a class="anchor" href="https://www.twitch.tv/directory/category/guessr-tv" target="_blank" rel="noopener noreferrer">Guessr.tv Twitch category</a> <br />
       <img src="/category.png" alt="twitch category" class="h-100 ms-6" />
     </li>
     <li class="mb-5">

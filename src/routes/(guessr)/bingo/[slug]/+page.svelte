@@ -1,7 +1,9 @@
 <script>
   import { onMount } from "svelte";
   import { toaster } from "$lib/functions";
-
+  import IcBaselineLogout from "~icons/ic/baseline-logout";
+  import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
+  import IcBaselineRefresh from "~icons/ic/baseline-refresh";
   let { data } = $props();
 
   let channel = $state(data.slug.toLowerCase().replace(/\s/g, ""));
@@ -10,7 +12,6 @@
     elements = {
       leaderboardCount: document.getElementById("leaderboardCount"),
       leaderboard: document.getElementById("leaderboard"),
-      toastContainer: document.getElementById("toastContainer"),
       loginExpiredModal: document.getElementById("loginExpiredModal"),
       loginButton: document.getElementById("loginButton"),
       loginInfo: document.getElementById("loginInfo"),
@@ -25,8 +26,6 @@
       channel: document.getElementById("channel"),
       time: document.getElementById("time"),
     };
-
-    loginExpiredModal = new bootstrap.Modal(elements.loginExpiredModal);
 
     TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
     if (TWITCH?.access_token && !(await checkToken(TWITCH.access_token))) {
@@ -411,24 +410,11 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick={logout}><i class="material-icons notranslate">logout</i>Logout</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick={logout}><IcBaselineLogout />Logout</button>
       </div>
     </div>
   </div>
 </div>
-
-<ul class="nav nav-underline flex-column position-fixed">
-  <li class="nav-item">
-    <a class="nav-link site-link" target="_blank" rel="noopener noreferrer" href="https://guessr.tv/">
-      <img src="https://guessr.tv/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link active site-link" aria-current="page" target="_blank" rel="noopener noreferrer" href="https://guessr.tv/bingo.html">
-      <i class="material-icons notranslate">grid_on</i> Bingo
-    </a>
-  </li>
-</ul>
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasLeaderboard" aria-labelledby="offcanvasLeaderboardLabel">
   <div class="offcanvas-header">
@@ -452,10 +438,6 @@
   </div>
 </div>
 
-<div aria-live="polite" aria-atomic="true" class="position-relative">
-  <div id="toastContainer" class="toast-container"></div>
-</div>
-
 <div class="container-fluid">
   <div class="row">
     <div class="col text-center">
@@ -468,10 +450,10 @@
 
       <div class="btn-group" id="loginInfo" style="display: none">
         <button type="button" class="btn btn-success" id="refresh" onclick={refresh} title="Refresh the board - 30s cooldown - temporary scuffed solution 🤙">
-          <i class="material-icons notranslate">refresh</i>
+          <IcBaselineRefresh />
         </button>
         <button class="btn btn-info" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLeaderboard" aria-controls="offcanvasLeaderboard">
-          <i class="material-icons notranslate">leaderboard</i>
+          <IcBaselineLeaderboard />
           Chat leaderboard
         </button>
         <button type="button" class="btn btn-secondary pointer-events-none" id="username">Loading...</button>
@@ -482,7 +464,7 @@
         </button>
         <ul class="dropdown-menu">
           <li>
-            <a class="dropdown-item" onclick={logout} href="#"><i class="material-icons notranslate">logout</i>Log out</a>
+            <a class="dropdown-item" onclick={logout} href="#"><IcBaselineLogout />Log out</a>
           </li>
         </ul>
       </div>

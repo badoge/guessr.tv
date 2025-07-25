@@ -2,7 +2,12 @@
   import { onMount } from "svelte";
   import localforage from "localforage";
   import { toaster } from "$lib/functions";
-
+  import IcBaselineTheaterComedy from "~icons/ic/baseline-theater-comedy";
+  import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
+  import IcBaselinePublic from "~icons/ic/baseline-public";
+  import IcBaselineEmojiEmotions from "~icons/ic/baseline-emoji-emotions";
+  import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
+  import IcBaselineImportExport from "~icons/ic/baseline-import-export";
   let elements;
 
   import { animate, utils } from "animejs";
@@ -1779,7 +1784,6 @@
 
   onMount(async () => {
     elements = {
-      toastContainer: document.getElementById("toastContainer"),
       reset: document.getElementById("reset"),
       menuContainer: document.getElementById("menuContainer"),
       gameContainer: document.getElementById("gameContainer"),
@@ -1900,12 +1904,6 @@
     elements.emoteStreak.innerHTML = highscores.emoteStreak.toLocaleString();
     elements.viewersHigherlowerStreak.innerHTML = highscores.viewersHigherlowerStreak.toLocaleString();
 
-    gameSettingsModal = new bootstrap.Modal(elements.gameSettingsModal);
-    resetGameModal = new bootstrap.Modal(elements.resetGameModal);
-
-    totalTab = new bootstrap.Tab(elements.totalTab);
-    roundTab = new bootstrap.Tab(elements.roundTab);
-
     elements.skipSexual.onchange = function () {
       skipSexual = this.checked;
       localStorage.setItem("skipSexual", skipSexual);
@@ -2003,7 +2001,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@rtirl/api@latest/lib/index.min.js" async></script>
 </svelte:head>
 
-<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -2120,9 +2118,9 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
-<div class="modal fade" id="gameSettingsModal" tabindex="-1" aria-labelledby="gameSettingsModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="gameSettingsModal" tabindex="-1" aria-labelledby="gameSettingsModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -2187,13 +2185,13 @@
           </small>
         </div>
 
-        <!-- <div id="drops" class="alert alert-info mt-3" role="alert" style="display: none">
+        <div id="drops" class="alert alert-info mt-3" role="alert" style="display: none">
               <span class="badge text-bg-success">NEW</span>
               Stream in the <a href="https://www.twitch.tv/directory/category/guessr-tv" target="_blank" rel="noopener noreferrer">Guessr.tv</a> Twitch category for 30 minutes to earn a
               special Donk badge! <img src="https://chat.vote/badges/donk.png" height="24px" /> <a href="/drops.html" target="_blank" rel="noopener noreferrer">More info</a>
               <br />
               <small class="text-danger">Not a Twitch chat badge, the badge will only show up on this site</small>
-            </div> -->
+            </div> 
 
         <div id="disclaimer" class="alert alert-warning mt-3" role="alert" style="display: none"></div>
       </div>
@@ -2202,9 +2200,9 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
-<div class="modal fade" id="resetGameModal" tabindex="-1" aria-labelledby="resetGameModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="resetGameModal" tabindex="-1" aria-labelledby="resetGameModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -2217,7 +2215,7 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
 <div id="scoreDiv" class="bg-body-tertiary" style="display: none">
   <span id="round">Round <br />1/5</span>
@@ -2227,31 +2225,6 @@
 <div id="timerDiv" class="bg-body-tertiary" style="display: none">
   <span>Round ends in</span>
   <span id="timer">0</span>
-</div>
-
-<ul class="nav nav-underline flex-column position-fixed">
-  <li class="nav-item">
-    <a class="nav-link active" aria-current="page" id="reset" onclick={() => reset(true)}>
-      <img src="/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv
-    </a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/bingo.html"><i class="material-icons notranslate">grid_on</i> Bingo</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link site-link" target="_self" rel="noopener noreferrer" href="/watch.html"><i class="material-icons notranslate">live_tv</i> Watch</a>
-  </li>
-  <hr class="m-0" />
-  <li class="nav-item">
-    <a class="nav-link" data-bs-toggle="modal" data-bs-target="#settingsModal"><i class="material-icons notranslate">settings</i> Settings</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" data-bs-toggle="modal" data-bs-target="#aboutModal"><i class="material-icons notranslate">help_outline</i> About</a>
-  </li>
-</ul>
-
-<div aria-live="polite" aria-atomic="true" class="position-relative m-2">
-  <div id="toastContainer" class="toast-container"></div>
 </div>
 
 <div class="container text-center pt-5" id="menuContainer">
@@ -2283,7 +2256,7 @@
             <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("higherlower")}>
               <div class="card-body">
                 <h2>
-                  <i class="material-icons notranslate mp-icon">import_export</i>
+                  <IcBaselineImportExport />
                   Higher Lower
                 </h2>
                 <div class="hidden">Guess if the streamer has a higher or lower view count than the previous one</div>
@@ -2297,7 +2270,7 @@
             <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("game")}>
               <div class="card-body">
                 <h2>
-                  <i class="material-icons notranslate mp-icon">sports_esports</i>
+                  <IcBaselineSportsEsports />
                   Game
                 </h2>
                 <div class="hidden">Guess what game the random streamer is playing</div>
@@ -2308,7 +2281,7 @@
             <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("emote")}>
               <div class="card-body">
                 <h2>
-                  <i class="material-icons notranslate mp-icon">emoji_emotions</i>
+                  <IcBaselineEmojiEmotions />
                   Emote
                 </h2>
                 <div class="hidden">Guess which emote belongs to the random streamer</div>
@@ -2323,7 +2296,7 @@
             <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("irl")}>
               <div class="card-body">
                 <h2>
-                  <i class="material-icons notranslate mp-icon">public</i>
+                  <IcBaselinePublic />
                   IRL streams
                 </h2>
                 <div class="hidden">Guess where the streamer is</div>
@@ -2411,13 +2384,13 @@
             <div class="col-xl-2">
               <div class="d-flex flex-column gap-1" id="multiChoicePowerupCard">
                 <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("pSkip")}>
-                  <div><i class="material-icons notranslate">skip_next</i> Skip</div>
+                  <div><IcBaselineSkipNext /> Skip</div>
                   <div class="flex-grow-1"></div>
                   <div class="powerup-added powerup-pSkip-added"></div>
                   <div class="powerup-count powerup-pSkip-count">0</div>
                 </button>
                 <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("p5050")}>
-                  <div><i class="material-icons notranslate">theater_comedy</i> 50/50</div>
+                  <div><IcBaselineTheaterComedy /> 50/50</div>
                   <div class="flex-grow-1"></div>
                   <div class="powerup-added powerup-p5050-added"></div>
                   <div class="powerup-count powerup-p5050-count">0</div>
@@ -2449,13 +2422,13 @@
             <div class="col-2">
               <div class="d-flex flex-column gap-1" id="higherLowerPowerupCard">
                 <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("pSkip")}>
-                  <div><i class="material-icons notranslate">skip_next</i> Skip</div>
+                  <div><IcBaselineSkipNext /> Skip</div>
                   <div class="flex-grow-1"></div>
                   <div class="powerup-added powerup-pSkip-added"></div>
                   <div class="powerup-count powerup-pSkip-count">0</div>
                 </button>
                 <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("p5050")} disabled>
-                  <div><i class="material-icons notranslate">theater_comedy</i> 50/50</div>
+                  <div><IcBaselineTheaterComedy /> 50/50</div>
                   <div class="flex-grow-1"></div>
                   <div class="powerup-added powerup-p5050-added visually-hidden"></div>
                   <div class="powerup-count powerup-p5050-count visually-hidden">0</div>
