@@ -115,7 +115,6 @@
     elements.enableMaxFilter.onchange = function () {
       updateFilteredCount();
     };
-    enableTooltips();
 
     elements = {
       seenChannels: document.getElementById("seenChannels"),

@@ -543,7 +543,6 @@
         elements.higherlowerLabel.innerHTML = `
       Does this ${gameSettings.clips ? "clip" : "stream"} have a higher or lower view count than <span class="previous-number">${previousNumber.toLocaleString()}?</span> 
       <i style="vertical-align: text-top;" class="material-icons notranslate" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="The first round has a random starting number, later rounds will be compared to the previous round">info</i>`;
-        enableTooltips();
       } else {
         elements.higherlowerLabel.innerHTML = `
       Does this ${gameSettings.clips ? "clip" : "stream"} have a higher or lower view count than the previous ${

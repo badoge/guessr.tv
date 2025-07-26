@@ -6,9 +6,13 @@
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
-  import IcBaselineSearch from "~icons/ic/baseline-search";
   import IcBaselineContentCopy from "~icons/ic/baseline-content-copy";
+  import IcBaselineCasino from "~icons/ic/baseline-casino";
+
+  import BingoBoard from "$lib/BingoBoard.svelte";
+
   let drawerState = $state(false);
+  let bingoSize = $state(5);
 
   function drawerClose() {
     drawerState = false;
@@ -37,16 +41,12 @@
       bingoTypeDescription: document.getElementById("bingoTypeDescription"),
       customBingoName: document.getElementById("customBingoName"),
       customBingoNameDiv: document.getElementById("customBingoNameDiv"),
-      bingoSize: document.getElementById("bingoSize"),
-      bingoSizeLabel: document.getElementById("bingoSizeLabel"),
-      boardInputs: document.getElementById("boardInputs"),
       board: document.getElementById("board"),
       boardSearch: document.getElementById("board-search"),
       boardSearchBar: document.getElementById("board-search-bar"),
       boardSearchToggle: document.getElementById("board-search-toggle"),
       bingoStats: document.getElementById("bingoStats"),
       bingoStatsTooltip: document.getElementById("bingoStatsTooltip"),
-      boardContent: document.getElementById("board-inner"),
       previewDiv: document.getElementById("previewDiv"),
       previewBoard: document.getElementById("previewBoard"),
       previewUsername: document.getElementById("previewUsername"),
@@ -97,8 +97,6 @@
       });
     };
 
-    enableTooltips();
-
     TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
     if (TWITCH?.access_token && !(await checkToken(TWITCH.access_token))) {
       TWITCH.channel = "";
@@ -146,8 +144,6 @@
         default:
           elements.previewDiv.style.scale = 1;
       }
-      loadInputs(bingoItems);
-      loadBoard(bingoItems);
     };
 
     elements.skipSexual.onchange = function () {
@@ -182,22 +178,7 @@
       }
     });
 
-    window.addEventListener("keydown", (event) => {
-      if (event.code === "F3" || ((event.ctrlKey || event.metaKey) && event.code === "KeyF")) {
-        event.preventDefault();
-        toggleSearchBar();
-      }
-
-      if (event.code === "KeyR" && document.activeElement.tagName !== "INPUT") {
-        elements.board.style = "top: 6%; left: 6%; scale: 1;";
-        mouseUpHandler();
-        hidePreview();
-      }
-    });
-
     elements.board.addEventListener("mousedown", mouseDownHandler);
-    loadInputs();
-    loadBoard();
     loadPacks();
     customBadges = await getCustomBadges();
   });
@@ -305,7 +286,6 @@
   let unloadWarningBingo = true;
   let userInteracted = false;
   let bingoType = "twitch";
-  let bingoSize = 5;
 
   let board = [];
   let won = false;
@@ -589,7 +569,7 @@
     checkDuplicatesOnBoard();
   } //updateSingleItem
 
-  function move(event) {
+  function moveCursor(event) {
     let currentId = parseInt(event.target.dataset.itemId, 10);
     switch (event.key) {
       case "ArrowLeft": {
@@ -701,43 +681,6 @@
       document.querySelectorAll(".bingo-cell").forEach((c) => c.classList.remove("duplicate"));
     }
   } //checkDuplicatesOnBoard
-
-  function doBoardSearch() {
-    const value = (elements.boardSearchBar.value || "").trim().toLowerCase();
-    const cells = document.querySelectorAll(".bingo-cell");
-
-    if (value) {
-      for (let i = 0; i < board.length; i++) {
-        const isMatching = board[i].value && board[i].value.toLowerCase().includes(value);
-        cells[i].classList.toggle("matching", isMatching);
-      }
-    }
-
-    if (elements.boardSearchBar.value) {
-      elements.boardSearchToggle.querySelector("i").innerText = "clear";
-    } else {
-      hideSearchBar();
-    }
-  } //doBoardSearch
-
-  function toggleSearchBar() {
-    elements.boardSearchBar.value = "";
-    if (elements.boardSearchToggle.querySelector("i").innerText == "search") {
-      elements.boardSearchToggle.querySelector("i").innerText = "clear";
-      elements.boardSearchBar.classList.add("expanded");
-      elements.boardSearchBar.focus();
-      elements.boardSearchBar.select();
-    } else {
-      hideSearchBar();
-    }
-  } //toggleSearchBar
-
-  function hideSearchBar() {
-    elements.boardSearchToggle.querySelector("i").innerText = "search";
-    elements.boardSearchBar.classList.remove("expanded");
-    elements.boardSearchBar.blur();
-    document.querySelectorAll(".bingo-cell").forEach((c) => c.classList.remove("matching"));
-  } //hideSearchBar
 
   async function uploadBoard() {
     let itemValues = [];
@@ -1085,109 +1028,12 @@
   } //hidePreview
 
   function loadInputs(bingoItems = []) {
-    elements.boardInputs.innerHTML = "";
     board = [];
     let size = bingoSize * bingoSize || 25;
     for (let index = 0; index < size; index++) {
       board.push({ filled: false, value: "" });
-
-      elements.boardInputs.insertAdjacentHTML(
-        "beforeend",
-        `<div class="input-group mb-1 w-50 pe-1">
-        <input type="text" class="form-control bingo-item"
-        onfocus="activateCellById(this)" onblur="deactivateCellById(this)" oninput="updateSingleItem(this)" onkeydown="move(event)" 
-        placeholder="Bingo item #${index + 1}" data-item-id="${index + 1}" aria-label="Bingo item #${index + 1}" value="${bingoItems[index] || ""}" />
-        <button class="btn btn-outline-secondary" onclick="randomize(event)" data-item-id="${index + 1}" type="button" title="Fill with random item">
-          <i class="material-icons notranslate pointer-events-none">casino</i>
-        </button>
-      </div>`,
-      );
     }
   } //loadInputs
-
-  function loadBoard(bingoItems = []) {
-    elements.boardContent.innerHTML = "";
-    elements.previewBoard.innerHTML = "";
-    elements.board.style.top = "6%";
-    elements.board.style.left = "6%";
-    elements.board.style.scale = 1;
-
-    let size = bingoSize || 5;
-    let order = 0;
-    for (let index = 0; index < size; index++) {
-      let row = "";
-      let romPreview = "";
-      for (let index2 = 0; index2 < size; index2++) {
-        order++;
-        let extraStyle = "";
-        // :)
-        if (index == 0 && index2 == 0) {
-          extraStyle = `style="border-top-left-radius: 6px"`;
-        }
-        if (index == 0 && index2 == size - 1) {
-          extraStyle = `style="border-top-right-radius: 6px"`;
-        }
-        if (index == size - 1 && index2 == 0) {
-          extraStyle = `style="border-bottom-left-radius: 6px"`;
-        }
-        if (index == size - 1 && index2 == size - 1) {
-          extraStyle = `style="border-bottom-right-radius: 6px"`;
-        }
-        if (size == 1) {
-          extraStyle = `style="border-radius: 6px"`;
-        }
-
-        row += `
-      <div onclick="fillCell(event)" data-id="${order}" class="col bingo-cell" ${extraStyle}>
-      ${bingoItems[order - 1] || order}
-      </div>`;
-        romPreview += `
-      <div data-id="${order}" class="col bingo-cell-preview" ${extraStyle}>
-      ${order}
-      </div>`;
-      }
-
-      elements.boardContent.insertAdjacentHTML(
-        "beforeend",
-        `<div class="row m-0">
-      ${row}
-      </div>`,
-      );
-
-      elements.previewBoard.insertAdjacentHTML(
-        "beforeend",
-        `<div class="row m-0">
-      ${romPreview}
-      </div>`,
-      );
-    }
-  } //loadBoard
-
-  let x = 0;
-  let y = 0;
-  function mouseDownHandler(e) {
-    if (e.target.classList.contains("bingo-cell") && e.button !== 1) {
-      return;
-    }
-    elements.twitchEmbedDiv.style.pointerEvents = "none";
-    x = e.clientX;
-    y = e.clientY;
-    document.addEventListener("mousemove", mouseMoveHandler);
-    document.addEventListener("mouseup", mouseUpHandler);
-  } //mouseDownHandler
-
-  function mouseMoveHandler(e) {
-    elements.board.style.top = elements.board.offsetTop + e.clientY - y + "px";
-    elements.board.style.left = elements.board.offsetLeft + e.clientX - x + "px";
-    x = e.clientX;
-    y = e.clientY;
-  } //mouseMoveHandler
-
-  function mouseUpHandler() {
-    elements.twitchEmbedDiv.style.pointerEvents = "all";
-    document.removeEventListener("mousemove", mouseMoveHandler);
-    document.removeEventListener("mouseup", mouseUpHandler);
-  } //mouseUpHandler
 
   function loadPacks(selectedIndex = 0) {
     //remove Loading... placeholder or old options when updating the list
@@ -1512,41 +1358,7 @@
   </div>
 </div> -->
 
-<div class="container-fluid" id="board" style="top: 6%; left: 6%">
-  <div class="container-fluid p-0" id="board-inner">
-    <div class="placeholder-glow">
-      <span class="placeholder board-placeholder"></span>
-    </div>
-  </div>
-  <div id="board-search">
-    <button
-      class="btn btn-secondary"
-      onclick={toggleSearchBar}
-      type="button"
-      data-bs-toggle="tooltip"
-      data-bs-title="Search board (F3 / CTRL + F)"
-      data-bs-placement="top"
-      id="board-search-toggle"
-    >
-      <IcBaselineSearch />
-    </button>
-    <input type="text" class="form-control" id="board-search-bar" placeholder="Quick search" oninput={doBoardSearch} />
-  </div>
-
-  <div id="bingoStats">
-    <button
-      class="btn btn-secondary"
-      type="button"
-      data-bs-toggle="tooltip"
-      data-bs-html="true"
-      data-bs-title="<strong>Stats</strong><hr><em>Watched channels:</em> 0<br><em>BINGO score:</em> 0<br>"
-      data-bs-placement="top"
-      id="bingoStatsTooltip"
-    >
-      <i class="material-icons notranslate pointer-events-none">info_outline</i>
-    </button>
-  </div>
-</div>
+<BingoBoard size={bingoSize} />
 
 <div id="previewDiv" style="display: none">
   <div class="card">
@@ -1640,83 +1452,25 @@
                 </div>
 
                 <div class="container-fluid" style="height: 65vh; overflow: auto">
-                  <div class="row" id="boardInputs">
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
+                  {#each { length: bingoSize * bingoSize || 25 }, index}
+                    <div class="input-group mb-1 w-50 pe-1">
+                      <input
+                        type="text"
+                        class="form-control bingo-item"
+                        onfocus={activateCellById}
+                        onblur={deactivateCellById}
+                        oninput={updateSingleItem}
+                        onkeydown={moveCursor}
+                        placeholder="Bingo item #{index + 1}"
+                        data-item-id={index + 1}
+                        aria-label="Bingo item #{index + 1}"
+                        value={index}
+                      />
+                      <button class="btn btn-outline-secondary" onclick={randomize} data-item-id={index + 1} type="button" title="Fill with random item">
+                        <IcBaselineCasino />
+                      </button>
                     </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                    <div class="placeholder-wave item-input-placeholder mb-1 w-50 pe-1">
-                      <span class="placeholder col-12"></span>
-                    </div>
-                  </div>
+                  {/each}
                 </div>
               </div>
             </div>
@@ -1843,3 +1597,35 @@
     </div>
   </div>
 </div>
+
+<style>
+  #previewDiv {
+    position: fixed;
+    top: 2%;
+    left: 50%;
+    transform: translate(-800px);
+    z-index: 4000;
+    pointer-events: none;
+    box-shadow: 3px 3px 10px #000000;
+    border-radius: 6px;
+    transform-origin: top left;
+  }
+
+  #previewDiv > .card > .card-body {
+    background-color: var(--bs-secondary-border-subtle);
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    align-self: center;
+  }
+
+  #previewBoard {
+    width: max-content;
+    background-color: var(--bs-secondary-border-subtle);
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    padding: 20px;
+    z-index: 4000;
+    scale: 1;
+    pointer-events: none;
+  }
+</style>

@@ -41,7 +41,6 @@
       elements.board.classList.remove("blur");
     }
 
-    enableTooltips();
     customBadges = await getCustomBadges();
   });
   let elements;
