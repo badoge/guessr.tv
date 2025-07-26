@@ -14,6 +14,29 @@
   let openStateTags = $state(false);
   let openStateCategory = $state(false);
   let openStateViewCount = $state(false);
+  let nextStreamCooldown = $state(false);
+
+  let currentChannel = $state({
+    avatar: "",
+    username: "",
+    displayName: "",
+    title: "",
+    category: "",
+    tags: [],
+  });
+
+  let seenCount = $state(0);
+  let filteredList = $state(new Map());
+
+  let mainList = new Map();
+  let categoryCounts = new Map();
+  let languageCounts = new Map();
+  let tagCounts = new Map();
+  let seenChannels = [];
+  let previousChannels = [];
+  let player;
+  let retryLimit = 0;
+  let maxViewCount = 0;
 
   function languagePopoverClose() {
     openStateLanguage = false;
@@ -29,6 +52,37 @@
   }
 
   onMount(async () => {
+    elements = {
+      twitchEmbed: document.getElementById("twitchEmbed"),
+      previousStream: document.getElementById("previousStream"),
+      username: document.getElementById("username"),
+      title: document.getElementById("title"),
+      tags: document.getElementById("tags"),
+
+      selectedLanguages: document.getElementById("selectedLanguages"),
+      searchLanguages: document.getElementById("searchLanguages"),
+      languagesDiv: document.getElementById("languagesDiv"),
+
+      selectedTags: document.getElementById("selectedTags"),
+      searchTags: document.getElementById("searchTags"),
+      tagsDiv: document.getElementById("tagsDiv"),
+
+      selectedCategories: document.getElementById("selectedCategories"),
+      searchCategories: document.getElementById("searchCategories"),
+      categoriesDiv: document.getElementById("categoriesDiv"),
+
+      languageFilterCount: document.getElementById("languageFilterCount"),
+      tagFilterCount: document.getElementById("tagFilterCount"),
+      categoryFilterCount: document.getElementById("categoryFilterCount"),
+
+      enableMinFilter: document.getElementById("enableMinFilter"),
+      enableMaxFilter: document.getElementById("enableMaxFilter"),
+      minFilterSlider: document.getElementById("minFilterSlider"),
+      maxFilterSlider: document.getElementById("maxFilterSlider"),
+      minFilter: document.getElementById("minFilter"),
+      maxFilter: document.getElementById("maxFilter"),
+    };
+
     localforage.config({
       driver: localforage.INDEXEDDB,
       name: "guessr.tv/watch",
@@ -39,18 +93,17 @@
 
     seenChannels = JSON.parse(await localforage.getItem("seenChannels")) || [];
 
-    elements.seenChannels.innerHTML = seenChannels.length;
-
-    elements.resetSeenChannels.onclick = function () {
-      localforage.setItem("seenChannels", JSON.stringify([]));
-      elements.seenChannels.innerHTML = 0;
-      seenChannels = [];
-      toaster.create({
-        type: "success",
-        title: "Seen channels reset",
-        duration: 2000,
-      });
-    };
+    //elements.seenChannels.innerHTML = seenChannels.length;
+    // elements.resetSeenChannels.onclick = function () {
+    //   localforage.setItem("seenChannels", JSON.stringify([]));
+    //   elements.seenChannels.innerHTML = 0;
+    //   seenChannels = [];
+    //   toaster.create({
+    //     type: "success",
+    //     title: "Seen channels reset",
+    //     duration: 2000,
+    //   });
+    // };
 
     await getMainList();
     loadCounts();
@@ -115,59 +168,10 @@
     elements.enableMaxFilter.onchange = function () {
       updateFilteredCount();
     };
-
-    elements = {
-      seenChannels: document.getElementById("seenChannels"),
-      resetSeenChannels: document.getElementById("resetSeenChannels"),
-      twitchEmbed: document.getElementById("twitchEmbed"),
-      nextStream: document.getElementById("nextStream"),
-      previousStream: document.getElementById("previousStream"),
-      pfp: document.getElementById("pfp"),
-      username: document.getElementById("username"),
-      title: document.getElementById("title"),
-      tags: document.getElementById("tags"),
-
-      selectedLanguages: document.getElementById("selectedLanguages"),
-      searchLanguages: document.getElementById("searchLanguages"),
-      languagesDiv: document.getElementById("languagesDiv"),
-
-      selectedTags: document.getElementById("selectedTags"),
-      searchTags: document.getElementById("searchTags"),
-      tagsDiv: document.getElementById("tagsDiv"),
-
-      selectedCategories: document.getElementById("selectedCategories"),
-      searchCategories: document.getElementById("searchCategories"),
-      categoriesDiv: document.getElementById("categoriesDiv"),
-
-      seenCount: document.getElementById("seenCount"),
-      remainingCount: document.getElementById("remainingCount"),
-
-      languageFilterCount: document.getElementById("languageFilterCount"),
-      tagFilterCount: document.getElementById("tagFilterCount"),
-      categoryFilterCount: document.getElementById("categoryFilterCount"),
-
-      enableMinFilter: document.getElementById("enableMinFilter"),
-      enableMaxFilter: document.getElementById("enableMaxFilter"),
-      minFilterSlider: document.getElementById("minFilterSlider"),
-      maxFilterSlider: document.getElementById("maxFilterSlider"),
-      minFilter: document.getElementById("minFilter"),
-      maxFilter: document.getElementById("maxFilter"),
-    };
   });
 
   let elements;
 
-  let mainList = new Map();
-  let filteredList = new Map();
-  let categoryCounts = new Map();
-  let languageCounts = new Map();
-  let tagCounts = new Map();
-  let seenChannels = [];
-  let previousChannels = [];
-  let player;
-  let retryLimit = 0;
-  let seenCount = 0;
-  let maxViewCount = 0;
   async function getMainList() {
     let requestOptions = {
       headers: {
@@ -216,9 +220,6 @@
     languageCounts = new Map([...languageCounts.entries()].sort((a, b) => b[1] - a[1]));
     tagCounts = new Map([...tagCounts.entries()].sort((a, b) => b[1] - a[1]));
     categoryCounts = new Map([...categoryCounts.entries()].sort((a, b) => b[1] - a[1]));
-
-    elements.seenCount.innerHTML = `0 streams watched`;
-    elements.remainingCount.innerHTML = `${mainList.size.toLocaleString()} streams left`;
   } //loadCounts
 
   function loadFilters() {
@@ -236,7 +237,7 @@
       <div class="form-check">
         <input class="form-check-input language-filter" type="checkbox" value="${key}" id="${key}_language_checkbox" onchange="updateLanguages()">
         <label class="form-check-label" for="${key}_language_checkbox">
-          ${getLanguage(key)} <span class="text-body-secondary">(${value.toLocaleString()})</span>
+          ${getLanguage(key)} <span class="opacity-60">(${value.toLocaleString()})</span>
         </label>
       </div>`,
       );
@@ -249,14 +250,14 @@
       <div class="form-check">
         <input class="form-check-input tag-filter" type="checkbox" value="${topTags[index][0]}" id="${topTags[index][0]}_tag_checkbox" onchange="updateTags()">
         <label class="form-check-label" for="${topTags[index][0]}_tag_checkbox">
-          ${escapeString(topTags[index][0])} <span class="text-body-secondary">(${topTags[index][1].toLocaleString()})</span>
+          ${escapeString(topTags[index][0])} <span class="opacity-60">(${topTags[index][1].toLocaleString()})</span>
         </label>
       </div>`,
       );
     }
     elements.tagsDiv.insertAdjacentHTML(
       `beforeend`,
-      `<br><div class="text-body-secondary">${(tagCounts.size - topTags.length).toLocaleString()} more tags. Use the search box above to find more</div>`,
+      `<br><div class="opacity-60">${(tagCounts.size - topTags.length).toLocaleString()} more tags. Use the search box above to find more</div>`,
     );
 
     for (let index = 0; index < topCategories.length; index++) {
@@ -269,15 +270,15 @@
           "_",
         )}_category_checkbox" onchange="updateCategories()">
         <label class="form-check-label" for="${topCategories[index][0].replace(/\s+/g, "_")}_category_checkbox">
-          ${topCategories[index][0] == "No category" ? `<em class="text-body-secondary">No category</em>` : escapeString(topCategories[index][0])} 
-          <span class="text-body-secondary">(${topCategories[index][1].toLocaleString()})</span>
+          ${topCategories[index][0] == "No category" ? `<em class="opacity-60">No category</em>` : escapeString(topCategories[index][0])} 
+          <span class="opacity-60">(${topCategories[index][1].toLocaleString()})</span>
         </label>
       </div>`,
       );
     }
     elements.categoriesDiv.insertAdjacentHTML(
       `beforeend`,
-      `<br><div class="text-body-secondary">${(categoryCounts.size - topCategories.length).toLocaleString()} more categories. Use the search box above to find more</div>`,
+      `<br><div class="opacity-60">${(categoryCounts.size - topCategories.length).toLocaleString()} more categories. Use the search box above to find more</div>`,
     );
   } //loadFilters
 
@@ -293,7 +294,7 @@
     }
 
     if (selected.length == 0) {
-      elements.selectedLanguages.innerHTML = `<span class="text-body-secondary">None (will show all languages)</span>`;
+      elements.selectedLanguages.innerHTML = `<span class="opacity-60">None (will show all languages)</span>`;
     } else {
       elements.selectedLanguages.innerHTML = "";
     }
@@ -306,7 +307,7 @@
       <div class="form-check">
         <input checked class="form-check-input language-filter" type="checkbox" value="${selected[index]}" id="${selected[index]}_language_checkbox" onchange="updateLanguages()">
         <label class="form-check-label" for="${selected[index]}_language_checkbox">
-          ${getLanguage(selected[index])} <span class="text-body-secondary">(${languageCounts.get(selected[index]).toLocaleString()})</span>
+          ${getLanguage(selected[index])} <span class="opacity-60">(${languageCounts.get(selected[index]).toLocaleString()})</span>
         </label>
       </div>`,
       );
@@ -322,13 +323,13 @@
       <div class="form-check">
         <input class="form-check-input language-filter" type="checkbox" value="${languages[index][0]}" id="${languages[index][0]}_language_checkbox" onchange="updateLanguages()">
         <label class="form-check-label" for="${languages[index][0]}_language_checkbox">
-          ${getLanguage(languages[index][0])} <span class="text-body-secondary">(${languages[index][1].toLocaleString()})</span>
+          ${getLanguage(languages[index][0])} <span class="opacity-60">(${languages[index][1].toLocaleString()})</span>
         </label>
       </div>`,
       );
     }
     if (languages.length == 0) {
-      elements.languagesDiv.innerHTML = `<span class="text-body-secondary">No results</span>`;
+      elements.languagesDiv.innerHTML = `<span class="opacity-60">No results</span>`;
     }
 
     updateFilteredCount();
@@ -348,7 +349,7 @@
     }
 
     if (selected.length == 0) {
-      elements.selectedTags.innerHTML = `<span class="text-body-secondary">None (will show all tags)</span>`;
+      elements.selectedTags.innerHTML = `<span class="opacity-60">None (will show all tags)</span>`;
     } else {
       elements.selectedTags.innerHTML = "";
     }
@@ -361,7 +362,7 @@
       <div class="form-check">
         <input checked class="form-check-input tag-filter" type="checkbox" value="${selected[index]}" id="${selected[index]}_tag_checkbox" onchange="updateTags()">
         <label class="form-check-label" for="${selected[index]}_tag_checkbox">
-          ${selected[index]} <span class="text-body-secondary">(${tagCounts.get(selected[index]).toLocaleString()})</span>
+          ${selected[index]} <span class="opacity-60">(${tagCounts.get(selected[index]).toLocaleString()})</span>
         </label>
       </div>`,
       );
@@ -377,13 +378,13 @@
       <div class="form-check">
         <input class="form-check-input tag-filter" type="checkbox" value="${tags[index][0]}" id="${tags[index][0]}_tag_checkbox" onchange="updateTags()">
         <label class="form-check-label" for="${tags[index][0]}_tag_checkbox">
-          ${tags[index][0]} <span class="text-body-secondary">(${tags[index][1].toLocaleString()})</span>
+          ${tags[index][0]} <span class="opacity-60">(${tags[index][1].toLocaleString()})</span>
         </label>
       </div>`,
       );
     }
     if (tags.length == 0) {
-      elements.tagsDiv.innerHTML = `<span class="text-body-secondary">No results</span>`;
+      elements.tagsDiv.innerHTML = `<span class="opacity-60">No results</span>`;
     }
     updateFilteredCount();
   } //updateTags
@@ -402,7 +403,7 @@
     }
 
     if (selected.length == 0) {
-      elements.selectedCategories.innerHTML = `<span class="text-body-secondary">None (will show all categories)</span>`;
+      elements.selectedCategories.innerHTML = `<span class="opacity-60">None (will show all categories)</span>`;
     } else {
       elements.selectedCategories.innerHTML = "";
     }
@@ -418,7 +419,7 @@
           "_",
         )}_category_checkbox" onchange="updateCategories()">
         <label class="form-check-label" for="${selected[index].replace(/\s+/g, "_")}_category_checkbox">
-          ${selected[index] == "No category" ? `<em class="text-body-secondary">No category</em>` : escapeString(selected[index])} <span class="text-body-secondary">(${categoryCounts
+          ${selected[index] == "No category" ? `<em class="opacity-60">No category</em>` : escapeString(selected[index])} <span class="opacity-60">(${categoryCounts
             .get(selected[index])
             .toLocaleString()})</span>
         </label>
@@ -439,7 +440,7 @@
           "_",
         )}_category_checkbox" onchange="updateCategories()">
         <label class="form-check-label" for="${categories[index][0].replace(/\s+/g, "_")}_category_checkbox">
-          ${categories[index][0] == "No category" ? `<em class="text-body-secondary">No category</em>` : escapeString(categories[index][0])} <span class="text-body-secondary">(${categories[
+          ${categories[index][0] == "No category" ? `<em class="opacity-60">No category</em>` : escapeString(categories[index][0])} <span class="opacity-60">(${categories[
             index
           ][1].toLocaleString()})</span>
         </label>
@@ -447,7 +448,7 @@
       );
     }
     if (categories.length == 0) {
-      elements.categoriesDiv.innerHTML = `<span class="text-body-secondary">No results</span>`;
+      elements.categoriesDiv.innerHTML = `<span class="opacity-60">No results</span>`;
     }
     updateFilteredCount();
   } //updateCategories
@@ -488,11 +489,6 @@
     updateCounts();
   } //updateFilteredCount
 
-  function updateCounts() {
-    elements.seenCount.innerHTML = `${seenCount} ${seenCount == 1 ? "stream" : "streams"} watched`;
-    elements.remainingCount.innerHTML = `${filteredList.size.toLocaleString()} ${filteredList.size == 1 ? "stream" : "streams"} left`;
-  } //updateCounts
-
   async function nextStream() {
     let currentChannel = player?.getChannel() || 0;
     let currentIndex = previousChannels.findIndex((x) => x.username == currentChannel);
@@ -501,14 +497,15 @@
       return;
     }
 
-    elements.pfp.src = "/guessr.png";
-    elements.username.innerHTML = `<span class="placeholder-wave"><span class="placeholder" style="width: 200px"></span></span>`;
-    elements.title.innerHTML = `<span class="placeholder-wave"><span class="placeholder" style="width: 500px"></span></span>`;
-    elements.tags.innerHTML = `<span class="placeholder-wave"><span class="placeholder" style="width: 500px"></span></span>`;
+    currentChannel.avatar = "";
+    currentChannel.username = "";
+    currentChannel.displayName = "";
+    currentChannel.title = "";
+    currentChannel.tags = [];
 
-    elements.nextStream.disabled = true;
+    nextStreamCooldown = true;
     setTimeout(() => {
-      elements.nextStream.disabled = false;
+      nextStreamCooldown = false;
     }, 2000);
 
     if (previousChannels.length > 0) {
@@ -553,11 +550,12 @@
       }
       let response2 = await fetch(`https://helper.guessr.tv/twitch/users?id=${channelID}`);
       let user = await response2.json();
-      elements.pfp.src = user.data[0].profile_image_url || "/guessr.png";
-      let name = stream.data[0].user_name.toLowerCase() == stream.data[0].user_login.toLowerCase() ? stream.data[0].user_name : `${stream.data[0].user_name} (${stream.data[0].user_login})`;
-      elements.username.innerHTML = `<a target="_blank" rel="noopener noreferrer" href="https://twitch.tv/${stream.data[0].user_login}">${name}</a>`;
-      elements.title.innerText = stream.data[0]?.title || "no title";
-      elements.tags.innerHTML = stream.data[0]?.tags.map((tag) => `<span class="badge rounded-pill text-bg-secondary">${tag}</span>`).join(" ") || "no tags";
+      currentChannel.avatar = user.data[0]?.profile_image_url;
+      currentChannel.username = stream.data[0]?.user_login;
+      currentChannel.displayName = stream.data[0]?.user_name;
+      currentChannel.title = stream.data[0]?.title;
+      currentChannel.category = stream.data[0]?.game_name;
+      currentChannel.tags = stream.data[0]?.tags;
 
       retryLimit = 0;
       let options = {
@@ -573,16 +571,10 @@
         player.setChannel(stream.data[0].user_login);
       }
 
-      previousChannels.push({
-        username: stream.data[0].user_login,
-        displayname: stream.data[0].user_name,
-        title: stream.data[0].title,
-        tags: elements.tags.innerHTML,
-        pfp: user.data[0].profile_image_url || "/guessr.png",
-      });
+      previousChannels.push(currentChannel);
       seenChannels.push(channelID);
       localforage.setItem("seenChannels", JSON.stringify(seenChannels));
-      elements.seenChannels.innerHTML = seenChannels.length;
+      //elements.seenChannels.innerHTML = seenChannels.length;
       seenCount++;
       updateCounts();
     } catch (error) {
@@ -607,12 +599,7 @@
   } //previousStream
 
   function showPreviousStream(currentIndex, forward) {
-    let channel = previousChannels[(currentIndex += forward ? 1 : -1)];
-    elements.pfp.src = channel.pfp || "/guessr.png";
-    let name = channel.displayname.toLowerCase() == channel.username.toLowerCase() ? channel.displayname : `${channel.displayname} (${channel.username})`;
-    elements.username.innerHTML = `<a target="_blank" rel="noopener noreferrer" href="https://twitch.tv/${channel.username}">${name}</a>`;
-    elements.title.innerText = channel.title;
-    elements.tags.innerHTML = channel.tags;
+    currentChannel = previousChannels[(currentIndex += forward ? 1 : -1)];
     player.setChannel(channel.username);
   } //showPreviousStream
 </script>
@@ -670,7 +657,7 @@
             </header>
             <article style="height: 400px; width: 300px; overflow-y: auto">
               <h5>Selected languages:</h5>
-              <div class="mb-3" id="selectedLanguages"><span class="text-body-secondary">None (will show all languages)</span></div>
+              <div class="mb-3" id="selectedLanguages"><span class="opacity-60">None (will show all languages)</span></div>
               <div class="input-group mb-3">
                 <span class="input-group-text"><IcBaselineSearch /></span>
                 <input id="searchLanguages" type="text" class="form-control" placeholder="Search" oninput={updateLanguages} />
@@ -702,7 +689,7 @@
             </header>
             <article style="height: 400px; width: 300px; overflow-y: auto">
               <h5>Selected tags:</h5>
-              <div class="mb-3" id="selectedTags"><span class="text-body-secondary">None (will show all tags)</span></div>
+              <div class="mb-3" id="selectedTags"><span class="opacity-60">None (will show all tags)</span></div>
               <div class="input-group mb-3">
                 <span class="input-group-text"><IcBaselineSearch /></span>
                 <input id="searchTags" type="text" class="form-control" placeholder="Search" oninput={updateTags} />
@@ -734,7 +721,7 @@
             </header>
             <article style="height: 400px; width: 300px; overflow-y: auto">
               <h5>Selected categories:</h5>
-              <div class="mb-3" id="selectedCategories"><span class="text-body-secondary">None (will show all categories)</span></div>
+              <div class="mb-3" id="selectedCategories"><span class="opacity-60">None (will show all categories)</span></div>
               <div class="input-group mb-3">
                 <span class="input-group-text"><IcBaselineSearch /></span>
                 <input id="searchCategories" type="text" class="form-control" placeholder="Search" oninput={updateCategories} />
@@ -816,23 +803,25 @@
             type="button"
             id="previousStream"
             onclick={previousStream}
-            class="btn btn-lg btn-secondary float-end"
+            class="btn btn-lg preset-filled-surface-500"
             data-bs-toggle="tooltip"
             data-bs-placement="top"
             data-bs-title="Previous stream"
           >
-            <IcBaselineSkipPrevious />
+            <IcBaselineSkipPrevious class="align-top" />
           </button>
-          <small class="text-body-secondary" id="seenCount">
-            <div class="placeholder animate-pulse"></div>
+          <small class="opacity-60">
+            {seenCount}
+            {seenCount == 1 ? "stream" : "streams"} watched
           </small>
         </div>
         <div class="flex flex-col">
-          <button type="button" id="nextStream" onclick={nextStream} class="btn btn-lg btn-success float-end">
+          <button type="button" onclick={nextStream} class="btn btn-lg preset-filled-success-500" disabled={nextStreamCooldown}>
             <IcBaselineSkipNext /> Next stream
           </button>
-          <small class="text-body-secondary" id="remainingCount">
-            <div class="placeholder animate-pulse"></div>
+          <small class="opacity-60">
+            {filteredList.size.toLocaleString()}
+            {filteredList.size == 1 ? "stream" : "streams"} left
           </small>
         </div>
       </div>

@@ -1,0 +1,19 @@
+<div class="form-check form-switch mb-3">
+  <input class="form-check-input" type="checkbox" role="switch" id="skipSexual" checked />
+  <label class="form-check-label" for="skipSexual">
+    <i class="material-icons notranslate">18_up_rating</i><i class="material-icons notranslate">skip_next</i>Skip streams with the "Sexual Themes" Content Classification Label
+  </label>
+</div>
+<div class="form-check form-switch mb-3">
+  <input class="form-check-input" type="checkbox" role="switch" id="unloadWarningBingo" checked />
+  <label class="form-check-label" for="unloadWarningBingo">
+    <i class="material-icons notranslate">notification_important</i>Show a warning before quitting <br />
+    <small class="text-body-secondary">Prevents you from losing your game progress or board when leaving the site </small>
+  </label>
+</div>
+<div class="input-group mt-3">
+  <span class="input-group-text">Seen Channels</span>
+  <span class="input-group-text" id="seenChannels">0</span>
+  <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+</div>
+<small>Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>

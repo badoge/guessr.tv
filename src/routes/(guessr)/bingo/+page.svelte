@@ -1182,97 +1182,7 @@
   <script src="https://embed.twitch.tv/embed/v1.js" async></script>
 </svelte:head>
 
-<!-- <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="settingsLabel">Settings</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" role="switch" id="skipSexual" checked />
-          <label class="form-check-label" for="skipSexual">
-            <i class="material-icons notranslate">18_up_rating</i><i class="material-icons notranslate">skip_next</i>Skip streams with the "Sexual Themes" Content Classification Label
-          </label>
-        </div>
-        <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" role="switch" id="unloadWarningBingo" checked />
-          <label class="form-check-label" for="unloadWarningBingo">
-            <i class="material-icons notranslate">notification_important</i>Show a warning before quitting <br />
-            <small class="text-body-secondary">Prevents you from losing your game progress or board when leaving the site </small>
-          </label>
-        </div>
-        <div class="input-group mt-3">
-          <span class="input-group-text">Seen Channels</span>
-          <span class="input-group-text" id="seenChannels">0</span>
-          <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><i class="material-icons notranslate">restart_alt</i>Reset</button>
-        </div>
-        <small>Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="aboutModalLabel">About</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="card border mb-3">
-          <div class="card-header">About the site</div>
-          <div class="card-body">
-            <span class="text-info">
-              To use the shareable bingo cards: Login in with Twitch -> Edit the board -> Save the board -> share link with viewers :)
-              <br />
-              <br />
-              The streamer will fill in the viewers' boards, viewers just need to login using the shared bingo board link
-            </span>
-            <br />
-            <br />
-            You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of them you can subscribe to Twitch Turbo or get a better Adblocker :)<br />
-            If you have Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. If you use Firefox you will need to
-            <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow cross-site tracking cookies</a>
-            <br />
-            <br />
-            More info <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#readme">here</a>
-            <hr />
-            If you want to optout from being picked for the guess list you can use the<kbd>=optout guessr</kbd> command in
-            <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
-            <hr />
-            <span id="infoTime">Channel list updated on [updates when game starts]</span><br />
-          </div>
-        </div>
-        <div class="card border">
-          <div class="card-header">Contact info</div>
-          <div class="card-body">
-            Site by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/badoge">badoge</a> :) <br />
-            <p>
-              If you find any issues or if you have suggestions or questions, you can contact me: <br /><a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://www.twitch.tv/popout/badoge/chat?popout=">in this chat</a
-              >
-              <br />or on <a target="_blank" rel="noopener noreferrer" href="https://discord.gg/FR8bgQdPUT">discord</a> <br />or by
-              <a href="mailto:help@guessr.tv">email</a>
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="loginExpiredModal" tabindex="-1" aria-hidden="true">
+<!-- <div class="modal" id="loginExpiredModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -1291,9 +1201,9 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
-<div class="modal fade" id="howToPlayModal" tabindex="-1" aria-labelledby="howToPlayModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="howToPlayModal" tabindex="-1" aria-labelledby="howToPlayModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -1315,9 +1225,9 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
-<div class="modal fade" id="packsModal" tabindex="-1" aria-labelledby="packsModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="packsModal" tabindex="-1" aria-labelledby="packsModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">

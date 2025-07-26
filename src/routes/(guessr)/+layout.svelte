@@ -8,7 +8,14 @@
   import IcBaselineInfo from "~icons/ic/baseline-info";
   import IcBaselineSettings from "~icons/ic/baseline-settings";
   import IcBaselineQuestionMark from "~icons/ic/baseline-question-mark";
-  import IcBaselineRestartAlt from "~icons/ic/baseline-restart-alt";
+
+  import AboutModalGuessr from "$lib/modals/AboutModalGuessr.svelte";
+  import AboutModalBingo from "$lib/modals/AboutModalBingo.svelte";
+  import AboutModalWatch from "$lib/modals/AboutModalWatch.svelte";
+
+  import SettingsModalGuessr from "$lib/modals/SettingsModalGuessr.svelte";
+  import SettingsModalBingo from "$lib/modals/SettingsModalBingo.svelte";
+  import SettingsModalWatch from "$lib/modals/SettingsModalWatch.svelte";
 
   import { Modal } from "@skeletonlabs/skeleton-svelte";
   import { page } from "$app/state";
@@ -52,37 +59,15 @@
             <h2 class="h2">About</h2>
           </header>
           <article>
-            <div class="card border mb-3">
-              <div class="card-header">About this page</div>
-              <div class="card-body">
-                If you like finding new random streams by playing on Guessr.tv but don't like having to guess each round then this page is for you :)<br />
-                More info <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#readme">here</a><br /><br />
-
-                <br />
-                You might encounter a "Preparing your stream..." screen when clicking Next stream, to get rid of the screen you can subscribe to Twitch Turbo or get a better Adblocker :)<br
-                />
-                If you have Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. If you use Firefox you will need to
-                <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow cross-site tracking cookies</a>
-                <hr />
-                If you want to optout from being randomly picked you can use the<kbd>=optout guessr</kbd> command in
-                <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
-              </div>
-            </div>
-            <div class="card border">
-              <div class="card-header">Contact info</div>
-              <div class="card-body">
-                Site by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/badoge">badoge</a> :) <br />
-                <p>
-                  If you find any issues or if you have suggestions or questions, you can contact me: <br /><a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://www.twitch.tv/popout/badoge/chat?popout=">in this chat</a
-                  >
-                  <br />or on <a target="_blank" rel="noopener noreferrer" href="https://discord.gg/FR8bgQdPUT">discord</a> <br />or by
-                  <a href="mailto:help@guessr.tv">email</a>
-                </p>
-              </div>
-            </div>
+            {#if page.route.id === "/(guessr)"}
+              <AboutModalGuessr />
+            {:else if page.route.id === "/(guessr)/bingo"}
+              <AboutModalBingo />
+            {:else if page.route.id === "/(guessr)/watch"}
+              <AboutModalWatch />
+            {:else}
+              <p>Nothing here</p>
+            {/if}
           </article>
           <footer class="flex justify-end gap-4">
             <button type="button" class="btn preset-tonal" onclick={aboutModalClose}>Close</button>
@@ -104,14 +89,15 @@
             <h2 class="h2">Settings</h2>
           </header>
           <article>
-            <div class="modal-body">
-              <div class="input-group mt-3">
-                <span class="input-group-text">Seen Channels:</span>
-                <span class="input-group-text" id="seenChannels">0</span>
-                <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><IcBaselineRestartAlt />Reset</button>
-              </div>
-              <small>Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>
-            </div>
+            {#if page.route.id === "/(guessr)"}
+              <SettingsModalGuessr />
+            {:else if page.route.id === "/(guessr)/bingo"}
+              <SettingsModalBingo />
+            {:else if page.route.id === "/(guessr)/watch"}
+              <SettingsModalWatch />
+            {:else}
+              <p>Nothing here</p>
+            {/if}
           </article>
           <footer class="flex justify-end gap-4">
             <button type="button" class="btn preset-tonal" onclick={settingsModalClose}>Close</button>
