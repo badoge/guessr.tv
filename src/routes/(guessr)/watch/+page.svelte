@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import localforage from "localforage";
   import { toaster, getLanguage, escapeString } from "$lib/functions";
-  import { Popover, ProgressRing, Slider } from "@skeletonlabs/skeleton-svelte";
+  import { Popover, ProgressRing, Slider, Modal } from "@skeletonlabs/skeleton-svelte";
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
   import IcBaselineSearch from "~icons/ic/baseline-search";
@@ -34,6 +34,7 @@
     category: undefined,
     tags: [],
   });
+  let zoomAvatar = $state(false);
 
   let filteredList = $state(new Map());
 
@@ -516,7 +517,14 @@
       <div class="flex flex-row">
         <div class="shrink-0 me-2">
           {#if currentChannel?.avatar}
-            <img class="rounded-full size-18" src={currentChannel.avatar} alt="avatar" />
+            <Modal open={zoomAvatar} onOpenChange={(e) => (zoomAvatar = e.open)} contentBase="card bg-surface-100-900 p-4 space-y-4 shadow-xl" backdropClasses="backdrop-blur-sm">
+              {#snippet trigger()}
+                <img class="rounded-full size-18 cursor-zoom-in" src={currentChannel.avatar} alt="avatar" />
+              {/snippet}
+              {#snippet content()}
+                <img class="h-150 aspect-square" src={currentChannel.avatar} alt="avatar" />
+              {/snippet}
+            </Modal>
           {:else}
             <div class="placeholder-circle animate-pulse size-18"></div>
           {/if}
