@@ -35,7 +35,7 @@
 
 <div class="card sticky top-0 grid w-full h-screen grid-cols-[auto_1fr]">
   <!-- Component -->
-  <Navigation.Rail>
+  <Navigation.Rail width="w-18">
     {#snippet header()}
       <Navigation.Tile label="Guessr.tv beta" title="Guessr.tv" href="/"><img src="/guessr.png" alt="guessr" /></Navigation.Tile>
     {/snippet}

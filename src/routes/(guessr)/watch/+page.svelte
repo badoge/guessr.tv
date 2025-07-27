@@ -16,25 +16,47 @@
   let openStateViewCount = $state(false);
   let nextStreamCooldown = $state(false);
 
+  /**
+   * @typedef {Object} currentChannel
+   * @property {string} avatar
+   * @property {string} username
+   * @property {string} displayName
+   * @property {string} title
+   * @property {string} category
+   * @property {string[]} tags
+   *
+   */
   let currentChannel = $state({
-    avatar: "",
-    username: "",
-    displayName: "",
-    title: "",
-    category: "",
+    avatar: undefined,
+    username: undefined,
+    displayName: undefined,
+    title: undefined,
+    category: undefined,
     tags: [],
   });
 
-  let seenCount = $state(0);
   let filteredList = $state(new Map());
 
   let mainList = new Map();
   let categoryCounts = new Map();
   let languageCounts = new Map();
   let tagCounts = new Map();
+
+  /**
+   * @type {any[]}
+   */
   let seenChannels = [];
-  let previousChannels = [];
+
+  /**
+   * @type {any[]}
+   */
+  let previousChannels = $state([]);
+
+  /**
+   * @type {Twitch.Embed}
+   */
   let player;
+
   let retryLimit = 0;
   let maxViewCount = 0;
 
@@ -53,12 +75,6 @@
 
   onMount(async () => {
     elements = {
-      twitchEmbed: document.getElementById("twitchEmbed"),
-      previousStream: document.getElementById("previousStream"),
-      username: document.getElementById("username"),
-      title: document.getElementById("title"),
-      tags: document.getElementById("tags"),
-
       selectedLanguages: document.getElementById("selectedLanguages"),
       searchLanguages: document.getElementById("searchLanguages"),
       languagesDiv: document.getElementById("languagesDiv"),
@@ -106,68 +122,68 @@
     // };
 
     await getMainList();
-    loadCounts();
-    loadFilters();
+    //loadCounts();
+    //loadFilters();
     nextStream();
 
-    elements.enableMaxFilter.addEventListener("change", (event) => {
-      elements.maxFilter.disabled = !event.target.checked;
-      elements.maxFilterSlider.disabled = !event.target.checked;
-    });
+    // elements.enableMaxFilter.addEventListener("change", (event) => {
+    //   elements.maxFilter.disabled = !event.target.checked;
+    //   elements.maxFilterSlider.disabled = !event.target.checked;
+    // });
 
-    elements.enableMinFilter.addEventListener("change", (event) => {
-      elements.minFilter.disabled = !event.target.checked;
-      elements.minFilterSlider.disabled = !event.target.checked;
-    });
+    // elements.enableMinFilter.addEventListener("change", (event) => {
+    //   elements.minFilter.disabled = !event.target.checked;
+    //   elements.minFilterSlider.disabled = !event.target.checked;
+    // });
 
-    elements.minFilterSlider.oninput = function () {
-      let value = parseInt(this.value, 10);
-      elements.minFilter.value = Math.round(Math.exp((Math.log(maxViewCount) / 100) * value));
-      if (value == 0) {
-        elements.minFilter.value = 0;
-      }
-    };
-    elements.minFilter.oninput = function () {
-      let value = parseInt(this.value, 10);
-      elements.minFilterSlider.value = (100 * Math.log(value)) / Math.log(maxViewCount);
-      if (value == 0) {
-        elements.minFilterSlider.value = 0;
-      }
-    };
+    // elements.minFilterSlider.oninput = function () {
+    //   let value = parseInt(this.value, 10);
+    //   elements.minFilter.value = Math.round(Math.exp((Math.log(maxViewCount) / 100) * value));
+    //   if (value == 0) {
+    //     elements.minFilter.value = 0;
+    //   }
+    // };
+    // elements.minFilter.oninput = function () {
+    //   let value = parseInt(this.value, 10);
+    //   elements.minFilterSlider.value = (100 * Math.log(value)) / Math.log(maxViewCount);
+    //   if (value == 0) {
+    //     elements.minFilterSlider.value = 0;
+    //   }
+    // };
 
-    elements.maxFilterSlider.oninput = function () {
-      let value = parseInt(this.value, 10);
-      elements.maxFilter.value = Math.round(Math.exp((Math.log(maxViewCount) / 100) * value));
-      if (value == 0) {
-        elements.maxFilter.value = 0;
-      }
-    };
-    elements.maxFilter.oninput = function () {
-      let value = parseInt(this.value, 10);
-      elements.maxFilterSlider.value = (100 * Math.log(value)) / Math.log(maxViewCount);
-      if (value == 0) {
-        elements.maxFilterSlider.value = 0;
-      }
-    };
+    // elements.maxFilterSlider.oninput = function () {
+    //   let value = parseInt(this.value, 10);
+    //   elements.maxFilter.value = Math.round(Math.exp((Math.log(maxViewCount) / 100) * value));
+    //   if (value == 0) {
+    //     elements.maxFilter.value = 0;
+    //   }
+    // };
+    // elements.maxFilter.oninput = function () {
+    //   let value = parseInt(this.value, 10);
+    //   elements.maxFilterSlider.value = (100 * Math.log(value)) / Math.log(maxViewCount);
+    //   if (value == 0) {
+    //     elements.maxFilterSlider.value = 0;
+    //   }
+    // };
 
-    elements.minFilterSlider.onchange = function () {
-      updateFilteredCount();
-    };
-    elements.minFilter.onchange = function () {
-      updateFilteredCount();
-    };
-    elements.maxFilterSlider.onchange = function () {
-      updateFilteredCount();
-    };
-    elements.maxFilter.onchange = function () {
-      updateFilteredCount();
-    };
-    elements.enableMinFilter.onchange = function () {
-      updateFilteredCount();
-    };
-    elements.enableMaxFilter.onchange = function () {
-      updateFilteredCount();
-    };
+    // elements.minFilterSlider.onchange = function () {
+    //   updateFilteredCount();
+    // };
+    // elements.minFilter.onchange = function () {
+    //   updateFilteredCount();
+    // };
+    // elements.maxFilterSlider.onchange = function () {
+    //   updateFilteredCount();
+    // };
+    // elements.maxFilter.onchange = function () {
+    //   updateFilteredCount();
+    // };
+    // elements.enableMinFilter.onchange = function () {
+    //   updateFilteredCount();
+    // };
+    // elements.enableMaxFilter.onchange = function () {
+    //   updateFilteredCount();
+    // };
   });
 
   let elements;
@@ -193,7 +209,7 @@
 
       mainList = new Map(result);
       filteredList = new Map(mainList);
-      elements.maxFilter.placeholder = maxViewCount;
+      //elements.maxFilter.placeholder = maxViewCount;
     } catch (error) {
       toaster.create({
         type: "error",
@@ -485,22 +501,22 @@
     elements.languageFilterCount.innerHTML = selectedLanguages.length ? ` (${selectedLanguages.length})` : "";
     elements.tagFilterCount.innerHTML = selectedTags.length ? ` (${selectedTags.length})` : "";
     elements.categoryFilterCount.innerHTML = selectedCategories.length ? ` (${selectedCategories.length})` : "";
-
-    updateCounts();
   } //updateFilteredCount
 
   async function nextStream() {
-    let currentChannel = player?.getChannel() || 0;
-    let currentIndex = previousChannels.findIndex((x) => x.username == currentChannel);
+    let embeddedChannel = player?.getChannel() || 0;
+    let currentIndex = previousChannels.findIndex((x) => x.username == embeddedChannel);
+
     if (previousChannels[currentIndex + 1]) {
       showPreviousStream(currentIndex, true);
       return;
     }
 
-    currentChannel.avatar = "";
-    currentChannel.username = "";
-    currentChannel.displayName = "";
-    currentChannel.title = "";
+    currentChannel.avatar = undefined;
+    currentChannel.username = undefined;
+    currentChannel.displayName = undefined;
+    currentChannel.title = undefined;
+    currentChannel.category = undefined;
     currentChannel.tags = [];
 
     nextStreamCooldown = true;
@@ -508,19 +524,15 @@
       nextStreamCooldown = false;
     }, 2000);
 
-    if (previousChannels.length > 0) {
-      elements.previousStream.disabled = false;
-    }
-
     let channelIDs = Array.from(filteredList.keys());
     let randomIndex = Math.floor(Math.random() * channelIDs.length);
     let channelID = channelIDs[randomIndex];
     filteredList.delete(channelID);
-    updateCounts();
+    channelIDs.splice(randomIndex, 1);
     while (seenChannels.includes(channelID)) {
       channelID = Math.floor(Math.random() * channelIDs.length);
       filteredList.delete(channelID);
-      updateCounts();
+      channelIDs.splice(randomIndex, 1);
     }
 
     if (filteredList.size == 0 || !channelID) {
@@ -550,19 +562,21 @@
       }
       let response2 = await fetch(`https://helper.guessr.tv/twitch/users?id=${channelID}`);
       let user = await response2.json();
-      currentChannel.avatar = user.data[0]?.profile_image_url;
-      currentChannel.username = stream.data[0]?.user_login;
-      currentChannel.displayName = stream.data[0]?.user_name;
-      currentChannel.title = stream.data[0]?.title;
-      currentChannel.category = stream.data[0]?.game_name;
-      currentChannel.tags = stream.data[0]?.tags;
+      currentChannel.avatar = user.data[0]?.profile_image_url || "/guessr.png";
+      currentChannel.username = stream.data[0]?.user_login || "";
+      currentChannel.displayName = stream.data[0]?.user_name || "";
+      currentChannel.title = stream.data[0]?.title || "";
+      currentChannel.category = stream.data[0]?.game_name || "";
+      currentChannel.tags = stream.data[0]?.tags || [];
 
       retryLimit = 0;
       let options = {
+        autoplay: true,
         width: "100%",
         height: "100%",
         channel: stream.data[0].user_login,
         layout: "video-with-chat",
+        theme: "dark",
         parent: ["guessr.tv", "127.0.0.1"],
       };
       if (!player) {
@@ -571,12 +585,10 @@
         player.setChannel(stream.data[0].user_login);
       }
 
-      previousChannels.push(currentChannel);
+      previousChannels.push($state.snapshot(currentChannel));
       seenChannels.push(channelID);
       localforage.setItem("seenChannels", JSON.stringify(seenChannels));
       //elements.seenChannels.innerHTML = seenChannels.length;
-      seenCount++;
-      updateCounts();
     } catch (error) {
       console.log(error);
       retryLimit++;
@@ -585,8 +597,8 @@
   } //nextStream
 
   function previousStream() {
-    let currentChannel = player.getChannel();
-    let currentIndex = previousChannels.findIndex((x) => x.username == currentChannel);
+    let embeddedChannel = player.getChannel();
+    let currentIndex = previousChannels.findIndex((x) => x.username == embeddedChannel);
     if (currentIndex == 0) {
       toaster.create({
         type: "error",
@@ -599,8 +611,8 @@
   } //previousStream
 
   function showPreviousStream(currentIndex, forward) {
-    currentChannel = previousChannels[(currentIndex += forward ? 1 : -1)];
-    player.setChannel(channel.username);
+    currentChannel = $state.snapshot(previousChannels[(currentIndex += forward ? 1 : -1)]);
+    player.setChannel(currentChannel.username);
   } //showPreviousStream
 </script>
 
@@ -609,222 +621,243 @@
 </svelte:head>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
-  <main class="p-4 space-y-4 h-200">
+  <main class="p-3">
     <div id="twitchEmbed"></div>
   </main>
 
-  <footer class="sticky bottom-2 z-10 backdrop-blur-sm p-4 h-30">
-    <div class="flex flex-row">
+  <footer class="sticky bottom-2 z-10 p-3 h-22">
+    <div class="flex flex-row justify-between">
       <div class="flex flex-row">
-        <div><div class="placeholder-circle size-16 animate-pulse"></div></div>
+        <div class="shrink-0 me-2">
+          {#if currentChannel?.avatar}
+            <img class="rounded-full size-18" src={currentChannel.avatar} alt="avatar" />
+          {:else}
+            <div class="placeholder-circle animate-pulse size-18"></div>
+          {/if}
+        </div>
 
-        <div class="flex flex-col">
+        <div class="flex flex-col shrink">
           <div>
-            <div id="username">
-              <div class="placeholder animate-pulse w-50"></div>
-            </div>
+            {#if currentChannel?.username && currentChannel?.displayName}
+              <a class="anchor font-bold" target="_blank" rel="noopener noreferrer" href="https://twitch.tv/{currentChannel.username}">
+                {currentChannel.username === currentChannel.displayName.toLowerCase() ? currentChannel.username : `${currentChannel.displayName} (${currentChannel.username})`}
+              </a>
+            {:else}
+              <div class="placeholder animate-pulse w-30 h-4 m-1"></div>
+            {/if}
           </div>
+
           <div>
-            <div id="title">
-              <div class="placeholder animate-pulse w-50"></div>
-            </div>
+            {#if currentChannel?.title === ""}
+              <span class="opacity-60 italic">No title</span>
+            {:else if currentChannel?.title}
+              {currentChannel.title}
+            {:else}
+              <div class="placeholder animate-pulse w-100 h-4 m-1"></div>
+            {/if}
           </div>
-          <div>
-            <div id="tags">
-              <div class="placeholder animate-pulse w-50"></div>
+
+          <div class="flex flex-row">
+            <div class="me-2">
+              {#if currentChannel?.category === ""}
+                <div class="opacity-60 italic">No category</div>
+              {:else if currentChannel?.category}
+                <a class="anchor font-thin" target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/search?term={encodeURIComponent(currentChannel.category)}">
+                  {currentChannel.category}
+                </a>
+              {:else}
+                <div class="placeholder animate-pulse w-35 h-4 m-1"></div>
+              {/if}
+            </div>
+
+            <div>
+              {#if currentChannel?.tags?.length}
+                {#each currentChannel?.tags as tag}
+                  <a class="anchor" target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/directory/all/tags/{tag}">
+                    <span class="badge rounded-full preset-filled-surface-100-900 me-1 text-xs">{tag}</span>
+                  </a>
+                {:else}
+                  <span class="opacity-60">No tags</span>
+                {/each}
+              {:else}
+                <div class="flex flex-row">
+                  <div class="placeholder animate-pulse rounded-full w-15 h-5 m-1"></div>
+                  <div class="placeholder animate-pulse rounded-full w-15 h-5 m-1"></div>
+                  <div class="placeholder animate-pulse rounded-full w-15 h-5 m-1"></div>
+                </div>
+              {/if}
             </div>
           </div>
         </div>
       </div>
 
-      <div class="flex flex-row">
-        <span style="writing-mode: sideways-lr; text-orientation: mixed">Filters</span>
-
-        <Popover
-          open={openStateLanguage}
-          onOpenChange={(e) => (openStateLanguage = e.open)}
-          positioning={{ placement: "top" }}
-          triggerBase="btn preset-tonal"
-          contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
-          arrow
-          arrowBackground="!bg-surface-200 dark:!bg-surface-800"
-        >
-          {#snippet trigger()}<IcBaselineLanguage />Languages<span id="languageFilterCount"></span>{/snippet}
-          {#snippet content()}
-            <header class="flex justify-between">
-              <p class="font-bold text-xl">Popover Example</p>
-              <button class="btn-icon hover:preset-tonal" onclick={languagePopoverClose}>x</button>
-            </header>
-            <article style="height: 400px; width: 300px; overflow-y: auto">
-              <h5>Selected languages:</h5>
-              <div class="mb-3" id="selectedLanguages"><span class="opacity-60">None (will show all languages)</span></div>
-              <div class="input-group mb-3">
-                <span class="input-group-text"><IcBaselineSearch /></span>
-                <input id="searchLanguages" type="text" class="form-control" placeholder="Search" oninput={updateLanguages} />
-              </div>
-              <hr />
-              <div id="languagesDiv">
-                <div class="spinner-border" role="status">
-                  <span class="visually-hidden">Loading...</span>
-                </div>
-              </div>
-            </article>
-          {/snippet}
-        </Popover>
-
-        <Popover
-          open={openStateTags}
-          onOpenChange={(e) => (openStateTags = e.open)}
-          positioning={{ placement: "top" }}
-          triggerBase="btn preset-tonal"
-          contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
-          arrow
-          arrowBackground="!bg-surface-200 dark:!bg-surface-800"
-        >
-          {#snippet trigger()}<IcBaselineLabel />Tags<span id="tagFilterCount"></span>{/snippet}
-          {#snippet content()}
-            <header class="flex justify-between">
-              <p class="font-bold text-xl">Popover Example</p>
-              <button class="btn-icon hover:preset-tonal" onclick={tagsPopoverClose}>x</button>
-            </header>
-            <article style="height: 400px; width: 300px; overflow-y: auto">
-              <h5>Selected tags:</h5>
-              <div class="mb-3" id="selectedTags"><span class="opacity-60">None (will show all tags)</span></div>
-              <div class="input-group mb-3">
-                <span class="input-group-text"><IcBaselineSearch /></span>
-                <input id="searchTags" type="text" class="form-control" placeholder="Search" oninput={updateTags} />
-              </div>
-              <hr />
-              <div id="tagsDiv">
-                <div class="spinner-border" role="status">
-                  <span class="visually-hidden">Loading...</span>
-                </div>
-              </div>
-            </article>
-          {/snippet}
-        </Popover>
-
-        <Popover
-          open={openStateCategory}
-          onOpenChange={(e) => (openStateCategory = e.open)}
-          positioning={{ placement: "top" }}
-          triggerBase="btn preset-tonal"
-          contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
-          arrow
-          arrowBackground="!bg-surface-200 dark:!bg-surface-800"
-        >
-          {#snippet trigger()}<IcBaselineSportsEsports />Categories<span id="categoryFilterCount"></span>{/snippet}
-          {#snippet content()}
-            <header class="flex justify-between">
-              <p class="font-bold text-xl">Popover Example</p>
-              <button class="btn-icon hover:preset-tonal" onclick={categroyPopoverClose}>x</button>
-            </header>
-            <article style="height: 400px; width: 300px; overflow-y: auto">
-              <h5>Selected categories:</h5>
-              <div class="mb-3" id="selectedCategories"><span class="opacity-60">None (will show all categories)</span></div>
-              <div class="input-group mb-3">
-                <span class="input-group-text"><IcBaselineSearch /></span>
-                <input id="searchCategories" type="text" class="form-control" placeholder="Search" oninput={updateCategories} />
-              </div>
-              <hr />
-
-              <div id="categoriesDiv">
-                <div class="spinner-border" role="status">
-                  <span class="visually-hidden">Loading...</span>
-                </div>
-              </div>
-            </article>
-          {/snippet}
-        </Popover>
-
-        <Popover
-          open={openStateViewCount}
-          onOpenChange={(e) => (openStateViewCount = e.open)}
-          positioning={{ placement: "top" }}
-          triggerBase="btn preset-tonal"
-          contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[720px]"
-          arrow
-          arrowBackground="!bg-surface-200 dark:!bg-surface-800"
-        >
-          {#snippet trigger()}<svg
-              style="filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(201deg) brightness(106%) contrast(106%)"
-              class="viewers-svg"
-              width="24px"
-              height="24px"
-              version="1.1"
-              viewBox="0 0 20 20"
-              x="0px"
-              y="0px"
+      <div class="flex flex-row shrink-0 items-center gap-2">
+        <div class="flex flex-row h-fit items-center">
+          <span style="writing-mode: sideways-lr; text-orientation: mixed">Filters</span>
+          <div class="card w-full preset-filled-surface-100-900 p-2 text-center">
+            <Popover
+              open={openStateLanguage}
+              onOpenChange={(e) => (openStateLanguage = e.open)}
+              positioning={{ placement: "top" }}
+              triggerBase="btn preset-tonal-success text-lg h-9"
+              contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
             >
-              <g>
-                <path
-                  fill-rule="evenodd"
-                  d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
-                  clip-rule="evenodd"
-                ></path>
-              </g>
-            </svg>View count{/snippet}
-          {#snippet content()}
-            <header class="flex justify-between">
-              <p class="font-bold text-xl">Popover Example</p>
-              <button class="btn-icon hover:preset-tonal" onclick={viewCountPopoverClose}>x</button>
-            </header>
-            <article style="height: 150px; width: 700px; overflow-y: auto">
-              <div class="input-group">
-                <div class="input-group-text p-1">
-                  <div class="form-check form-switch m-0 ms-1">
-                    <input class="form-check-input" type="checkbox" role="switch" id="enableMinFilter" />
+              {#snippet trigger()}<IcBaselineLanguage />Languages<span id="languageFilterCount"></span>{/snippet}
+              {#snippet content()}
+                <article style="height: 400px; width: 300px; overflow-y: auto">
+                  <h5>Selected languages:</h5>
+                  <div class="mb-3" id="selectedLanguages"><span class="opacity-60">None (will show all languages)</span></div>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text"><IcBaselineSearch /></span>
+                    <input id="searchLanguages" type="text" class="form-control" placeholder="Search" oninput={updateLanguages} />
                   </div>
-                </div>
-                <span class="input-group-text">Minimum view count</span>
-                <span class="input-group-text" style="width: 300px"><input disabled type="range" class="form-range" id="minFilterSlider" min="0" max="100" step="1" value="0" /></span>
-                <input disabled id="minFilter" placeholder="0" type="number" aria-label="Minimum view count" class="form-control" />
-              </div>
-              <br />
-              <div class="input-group">
-                <div class="input-group-text p-1">
-                  <div class="form-check form-switch m-0 ms-1">
-                    <input class="form-check-input" type="checkbox" role="switch" id="enableMaxFilter" />
+                  <hr />
+                  <div id="languagesDiv">
+                    <div class="spinner-border" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
                   </div>
-                </div>
-                <span class="input-group-text">Maximum view count</span>
-                <span class="input-group-text" style="width: 300px"><input disabled type="range" class="form-range" id="maxFilterSlider" min="0" max="100" step="1" value="100" /></span>
-                <input disabled id="maxFilter" placeholder="0" type="number" aria-label="Maximum view count" class="form-control" />
-              </div>
-            </article>
-          {/snippet}
-        </Popover>
-      </div>
+                </article>
+              {/snippet}
+            </Popover>
 
-      <div class="flex flex-row">
-        <div class="flex flex-col">
-          <button
-            disabled
-            type="button"
-            id="previousStream"
-            onclick={previousStream}
-            class="btn btn-lg preset-filled-surface-500"
-            data-bs-toggle="tooltip"
-            data-bs-placement="top"
-            data-bs-title="Previous stream"
-          >
-            <IcBaselineSkipPrevious class="align-top" />
-          </button>
-          <small class="opacity-60">
-            {seenCount}
-            {seenCount == 1 ? "stream" : "streams"} watched
-          </small>
+            <Popover
+              open={openStateTags}
+              onOpenChange={(e) => (openStateTags = e.open)}
+              positioning={{ placement: "top" }}
+              triggerBase="btn preset-tonal-error text-lg h-9"
+              contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
+            >
+              {#snippet trigger()}<IcBaselineLabel />Tags<span id="tagFilterCount"></span>{/snippet}
+              {#snippet content()}
+                <article style="height: 400px; width: 300px; overflow-y: auto">
+                  <h5>Selected tags:</h5>
+                  <div class="mb-3" id="selectedTags"><span class="opacity-60">None (will show all tags)</span></div>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text"><IcBaselineSearch /></span>
+                    <input id="searchTags" type="text" class="form-control" placeholder="Search" oninput={updateTags} />
+                  </div>
+                  <hr />
+                  <div id="tagsDiv">
+                    <div class="spinner-border" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                </article>
+              {/snippet}
+            </Popover>
+
+            <Popover
+              open={openStateCategory}
+              onOpenChange={(e) => (openStateCategory = e.open)}
+              positioning={{ placement: "top" }}
+              triggerBase="btn preset-tonal-warning text-lg h-9"
+              contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
+            >
+              {#snippet trigger()}<IcBaselineSportsEsports />Categories<span id="categoryFilterCount"></span>{/snippet}
+              {#snippet content()}
+                <article style="height: 400px; width: 300px; overflow-y: auto">
+                  <h5>Selected categories:</h5>
+                  <div class="mb-3" id="selectedCategories"><span class="opacity-60">None (will show all categories)</span></div>
+                  <div class="input-group mb-3">
+                    <span class="input-group-text"><IcBaselineSearch /></span>
+                    <input id="searchCategories" type="text" class="form-control" placeholder="Search" oninput={updateCategories} />
+                  </div>
+                  <hr />
+
+                  <div id="categoriesDiv">
+                    <div class="spinner-border" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                </article>
+              {/snippet}
+            </Popover>
+
+            <Popover
+              open={openStateViewCount}
+              onOpenChange={(e) => (openStateViewCount = e.open)}
+              positioning={{ placement: "top" }}
+              triggerBase="btn preset-tonal-tertiary text-lg h-9"
+              contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[720px]"
+            >
+              {#snippet trigger()}
+                <svg
+                  style="filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(201deg) brightness(106%) contrast(106%)"
+                  width="24px"
+                  height="24px"
+                  version="1.1"
+                  viewBox="0 0 20 20"
+                  x="0px"
+                  y="0px"
+                >
+                  <g>
+                    <path
+                      fill-rule="evenodd"
+                      d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
+                      clip-rule="evenodd"
+                    >
+                    </path>
+                  </g>
+                </svg>
+                View count{/snippet}
+              {#snippet content()}
+                <article style="height: 150px; width: 700px; overflow-y: auto">
+                  <div class="input-group">
+                    <div class="input-group-text p-1">
+                      <div class="form-check form-switch m-0 ms-1">
+                        <input class="form-check-input" type="checkbox" role="switch" id="enableMinFilter" />
+                      </div>
+                    </div>
+                    <span class="input-group-text">Minimum view count</span>
+                    <span class="input-group-text" style="width: 300px"><input disabled type="range" class="form-range" id="minFilterSlider" min="0" max="100" step="1" value="0" /></span>
+                    <input disabled id="minFilter" placeholder="0" type="number" aria-label="Minimum view count" class="form-control" />
+                  </div>
+                  <br />
+                  <div class="input-group">
+                    <div class="input-group-text p-1">
+                      <div class="form-check form-switch m-0 ms-1">
+                        <input class="form-check-input" type="checkbox" role="switch" id="enableMaxFilter" />
+                      </div>
+                    </div>
+                    <span class="input-group-text">Maximum view count</span>
+                    <span class="input-group-text" style="width: 300px"><input disabled type="range" class="form-range" id="maxFilterSlider" min="0" max="100" step="1" value="100" /></span>
+                    <input disabled id="maxFilter" placeholder="0" type="number" aria-label="Maximum view count" class="form-control" />
+                  </div>
+                </article>
+              {/snippet}
+            </Popover>
+          </div>
         </div>
-        <div class="flex flex-col">
-          <button type="button" onclick={nextStream} class="btn btn-lg preset-filled-success-500" disabled={nextStreamCooldown}>
-            <IcBaselineSkipNext /> Next stream
-          </button>
-          <small class="opacity-60">
-            {filteredList.size.toLocaleString()}
-            {filteredList.size == 1 ? "stream" : "streams"} left
-          </small>
+
+        <div class="flex flex-row gap-2">
+          <div class="flex flex-col">
+            <button disabled={previousChannels.length <= 1} type="button" onclick={previousStream} class="btn btn-lg preset-filled-surface-500 w-30 h-12" title="Previous stream">
+              <IcBaselineSkipPrevious class="align-top" />
+            </button>
+            <small class="opacity-60 text-center">
+              {previousChannels.length}
+              {previousChannels.length == 1 ? "stream" : "streams"} watched
+            </small>
+          </div>
+          <div class="flex flex-col">
+            <button type="button" onclick={nextStream} class="btn btn-lg preset-filled-success-500 h-12" disabled={nextStreamCooldown}>
+              <IcBaselineSkipNext /> Next stream
+            </button>
+            <small class="opacity-60 text-center">
+              {filteredList.size.toLocaleString()}
+              {filteredList.size == 1 ? "stream" : "streams"} left
+            </small>
+          </div>
         </div>
       </div>
     </div>
   </footer>
 </div>
+
+<style>
+  #twitchEmbed {
+    height: 85vh;
+    z-index: 1;
+  }
+</style>
