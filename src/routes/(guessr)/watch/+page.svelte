@@ -1,8 +1,8 @@
 <script>
   import { onMount } from "svelte";
   import localforage from "localforage";
-  import { toaster } from "$lib/functions";
-  import { Popover } from "@skeletonlabs/skeleton-svelte";
+  import { toaster, getLanguage, escapeString } from "$lib/functions";
+  import { Popover, ProgressRing, Slider } from "@skeletonlabs/skeleton-svelte";
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
   import IcBaselineSearch from "~icons/ic/baseline-search";
@@ -38,9 +38,32 @@
   let filteredList = $state(new Map());
 
   let mainList = new Map();
-  let categoryCounts = new Map();
-  let languageCounts = new Map();
-  let tagCounts = new Map();
+  let filterLanguages = $state(new Map());
+  let filterTags = $state(new Map());
+  let filterCategories = $state(new Map());
+  let filterViewCountSlider = $state([0, 100]);
+  let maxViewCount = $state(0);
+  let filterViewCount = $derived.by(() => {
+    let min = Math.round(Math.exp((Math.log(maxViewCount) / 100) * filterViewCountSlider[0]));
+    let max = Math.round(Math.exp((Math.log(maxViewCount) / 100) * filterViewCountSlider[1]));
+
+    if (filterViewCountSlider[0] == 0) {
+      min = 0;
+    }
+    if (filterViewCountSlider[1] == 0) {
+      max = 0;
+    }
+    return [min, max];
+  });
+
+  /**
+   * @type {[any, any][]}
+   */
+  let topTags = $state([]);
+  /**
+   * @type {string | any[]}
+   */
+  let topCategories = $state([]);
 
   /**
    * @type {any[]}
@@ -58,26 +81,11 @@
   let player;
 
   let retryLimit = 0;
-  let maxViewCount = 0;
-
-  function languagePopoverClose() {
-    openStateLanguage = false;
-  }
-  function tagsPopoverClose() {
-    openStateTags = false;
-  }
-  function categroyPopoverClose() {
-    openStateCategory = false;
-  }
-  function viewCountPopoverClose() {
-    openStateViewCount = false;
-  }
 
   onMount(async () => {
     elements = {
       selectedLanguages: document.getElementById("selectedLanguages"),
       searchLanguages: document.getElementById("searchLanguages"),
-      languagesDiv: document.getElementById("languagesDiv"),
 
       selectedTags: document.getElementById("selectedTags"),
       searchTags: document.getElementById("searchTags"),
@@ -90,13 +98,6 @@
       languageFilterCount: document.getElementById("languageFilterCount"),
       tagFilterCount: document.getElementById("tagFilterCount"),
       categoryFilterCount: document.getElementById("categoryFilterCount"),
-
-      enableMinFilter: document.getElementById("enableMinFilter"),
-      enableMaxFilter: document.getElementById("enableMaxFilter"),
-      minFilterSlider: document.getElementById("minFilterSlider"),
-      maxFilterSlider: document.getElementById("maxFilterSlider"),
-      minFilter: document.getElementById("minFilter"),
-      maxFilter: document.getElementById("maxFilter"),
     };
 
     localforage.config({
@@ -122,68 +123,8 @@
     // };
 
     await getMainList();
-    //loadCounts();
-    //loadFilters();
+    loadFilters();
     nextStream();
-
-    // elements.enableMaxFilter.addEventListener("change", (event) => {
-    //   elements.maxFilter.disabled = !event.target.checked;
-    //   elements.maxFilterSlider.disabled = !event.target.checked;
-    // });
-
-    // elements.enableMinFilter.addEventListener("change", (event) => {
-    //   elements.minFilter.disabled = !event.target.checked;
-    //   elements.minFilterSlider.disabled = !event.target.checked;
-    // });
-
-    // elements.minFilterSlider.oninput = function () {
-    //   let value = parseInt(this.value, 10);
-    //   elements.minFilter.value = Math.round(Math.exp((Math.log(maxViewCount) / 100) * value));
-    //   if (value == 0) {
-    //     elements.minFilter.value = 0;
-    //   }
-    // };
-    // elements.minFilter.oninput = function () {
-    //   let value = parseInt(this.value, 10);
-    //   elements.minFilterSlider.value = (100 * Math.log(value)) / Math.log(maxViewCount);
-    //   if (value == 0) {
-    //     elements.minFilterSlider.value = 0;
-    //   }
-    // };
-
-    // elements.maxFilterSlider.oninput = function () {
-    //   let value = parseInt(this.value, 10);
-    //   elements.maxFilter.value = Math.round(Math.exp((Math.log(maxViewCount) / 100) * value));
-    //   if (value == 0) {
-    //     elements.maxFilter.value = 0;
-    //   }
-    // };
-    // elements.maxFilter.oninput = function () {
-    //   let value = parseInt(this.value, 10);
-    //   elements.maxFilterSlider.value = (100 * Math.log(value)) / Math.log(maxViewCount);
-    //   if (value == 0) {
-    //     elements.maxFilterSlider.value = 0;
-    //   }
-    // };
-
-    // elements.minFilterSlider.onchange = function () {
-    //   updateFilteredCount();
-    // };
-    // elements.minFilter.onchange = function () {
-    //   updateFilteredCount();
-    // };
-    // elements.maxFilterSlider.onchange = function () {
-    //   updateFilteredCount();
-    // };
-    // elements.maxFilter.onchange = function () {
-    //   updateFilteredCount();
-    // };
-    // elements.enableMinFilter.onchange = function () {
-    //   updateFilteredCount();
-    // };
-    // elements.enableMaxFilter.onchange = function () {
-    //   updateFilteredCount();
-    // };
   });
 
   let elements;
@@ -209,7 +150,6 @@
 
       mainList = new Map(result);
       filteredList = new Map(mainList);
-      //elements.maxFilter.placeholder = maxViewCount;
     } catch (error) {
       toaster.create({
         type: "error",
@@ -220,82 +160,27 @@
     }
   } //getMainList
 
-  function loadCounts() {
-    languageCounts = new Map();
-    tagCounts = new Map();
-    categoryCounts = new Map();
+  function loadFilters() {
+    let languages = new Map();
+    let tags = new Map();
+    let categories = new Map();
 
+    //make maps out of all the data on the main list
     mainList.forEach((value, key, map) => {
-      languageCounts.set(value.language, (languageCounts.get(value.language) ?? 0) + 1);
-      categoryCounts.set(value.game_name, (categoryCounts.get(value.game_name) ?? 0) + 1);
+      languages.set(value.language, (languages.get(value.language) ?? 0) + 1);
+      categories.set(value.game_name, (categories.get(value.game_name) ?? 0) + 1);
       for (let index = 0; index < value?.tags?.length; index++) {
-        tagCounts.set(value.tags[index], (tagCounts.get(value.tags[index]) ?? 0) + 1);
+        tags.set(value.tags[index], (tags.get(value.tags[index]) ?? 0) + 1);
       }
     });
 
-    languageCounts = new Map([...languageCounts.entries()].sort((a, b) => b[1] - a[1]));
-    tagCounts = new Map([...tagCounts.entries()].sort((a, b) => b[1] - a[1]));
-    categoryCounts = new Map([...categoryCounts.entries()].sort((a, b) => b[1] - a[1]));
-  } //loadCounts
+    //sort the maps and update the values of the state filter vars so that the filter popovers load
+    filterLanguages = new Map([...languages.entries()].sort((a, b) => b[1] - a[1]));
+    filterTags = new Map([...tags.entries()].sort((a, b) => b[1] - a[1]));
+    filterCategories = new Map([...categories.entries()].sort((a, b) => b[1] - a[1]));
 
-  function loadFilters() {
-    elements.languagesDiv.innerHTML = "";
-    elements.tagsDiv.innerHTML = "";
-    elements.categoriesDiv.innerHTML = "";
-
-    const topTags = Array.from(tagCounts.entries()).slice(0, 10);
-    const topCategories = Array.from(categoryCounts.entries()).slice(0, 10);
-
-    languageCounts.forEach((value, key, map) => {
-      elements.languagesDiv.insertAdjacentHTML(
-        `beforeend`,
-        `
-      <div class="form-check">
-        <input class="form-check-input language-filter" type="checkbox" value="${key}" id="${key}_language_checkbox" onchange="updateLanguages()">
-        <label class="form-check-label" for="${key}_language_checkbox">
-          ${getLanguage(key)} <span class="opacity-60">(${value.toLocaleString()})</span>
-        </label>
-      </div>`,
-      );
-    });
-
-    for (let index = 0; index < topTags.length; index++) {
-      elements.tagsDiv.insertAdjacentHTML(
-        `beforeend`,
-        `
-      <div class="form-check">
-        <input class="form-check-input tag-filter" type="checkbox" value="${topTags[index][0]}" id="${topTags[index][0]}_tag_checkbox" onchange="updateTags()">
-        <label class="form-check-label" for="${topTags[index][0]}_tag_checkbox">
-          ${escapeString(topTags[index][0])} <span class="opacity-60">(${topTags[index][1].toLocaleString()})</span>
-        </label>
-      </div>`,
-      );
-    }
-    elements.tagsDiv.insertAdjacentHTML(
-      `beforeend`,
-      `<br><div class="opacity-60">${(tagCounts.size - topTags.length).toLocaleString()} more tags. Use the search box above to find more</div>`,
-    );
-
-    for (let index = 0; index < topCategories.length; index++) {
-      elements.categoriesDiv.insertAdjacentHTML(
-        `beforeend`,
-        `
-      <div class="form-check">
-        <input class="form-check-input category-filter" type="checkbox" value="${topCategories[index][0]}" id="${topCategories[index][0].replace(
-          /\s+/g,
-          "_",
-        )}_category_checkbox" onchange="updateCategories()">
-        <label class="form-check-label" for="${topCategories[index][0].replace(/\s+/g, "_")}_category_checkbox">
-          ${topCategories[index][0] == "No category" ? `<em class="opacity-60">No category</em>` : escapeString(topCategories[index][0])} 
-          <span class="opacity-60">(${topCategories[index][1].toLocaleString()})</span>
-        </label>
-      </div>`,
-      );
-    }
-    elements.categoriesDiv.insertAdjacentHTML(
-      `beforeend`,
-      `<br><div class="opacity-60">${(categoryCounts.size - topCategories.length).toLocaleString()} more categories. Use the search box above to find more</div>`,
-    );
+    topTags = Array.from(filterTags.entries()).slice(0, 10);
+    topCategories = Array.from(filterCategories.entries()).slice(0, 10);
   } //loadFilters
 
   function updateLanguages() {
@@ -304,9 +189,9 @@
     let languages;
 
     if (search) {
-      languages = Array.from(languageCounts.entries()).filter(([key, value]) => getLanguage(key).toLowerCase().includes(search));
+      languages = Array.from(filterLanguages.entries()).filter(([key, value]) => getLanguage(key).toLowerCase().includes(search));
     } else {
-      languages = Array.from(languageCounts.entries());
+      languages = Array.from(filterLanguages.entries());
     }
 
     if (selected.length == 0) {
@@ -323,7 +208,7 @@
       <div class="form-check">
         <input checked class="form-check-input language-filter" type="checkbox" value="${selected[index]}" id="${selected[index]}_language_checkbox" onchange="updateLanguages()">
         <label class="form-check-label" for="${selected[index]}_language_checkbox">
-          ${getLanguage(selected[index])} <span class="opacity-60">(${languageCounts.get(selected[index]).toLocaleString()})</span>
+          ${getLanguage(selected[index])} <span class="opacity-60">(${filterLanguages.get(selected[index]).toLocaleString()})</span>
         </label>
       </div>`,
       );
@@ -357,11 +242,11 @@
     let tags;
 
     if (search) {
-      tags = Array.from(tagCounts.entries())
+      tags = Array.from(filterTags.entries())
         .filter(([key, value]) => key.toLowerCase().includes(search))
         .slice(0, 10);
     } else {
-      tags = Array.from(tagCounts.entries()).slice(0, 10);
+      tags = Array.from(filterTags.entries()).slice(0, 10);
     }
 
     if (selected.length == 0) {
@@ -378,7 +263,7 @@
       <div class="form-check">
         <input checked class="form-check-input tag-filter" type="checkbox" value="${selected[index]}" id="${selected[index]}_tag_checkbox" onchange="updateTags()">
         <label class="form-check-label" for="${selected[index]}_tag_checkbox">
-          ${selected[index]} <span class="opacity-60">(${tagCounts.get(selected[index]).toLocaleString()})</span>
+          ${selected[index]} <span class="opacity-60">(${filterTags.get(selected[index]).toLocaleString()})</span>
         </label>
       </div>`,
       );
@@ -411,11 +296,11 @@
     let categories;
 
     if (search) {
-      categories = Array.from(categoryCounts.entries())
+      categories = Array.from(filterCategories.entries())
         .filter(([key, value]) => key.toLowerCase().includes(search))
         .slice(0, 10);
     } else {
-      categories = Array.from(categoryCounts.entries()).slice(0, 10);
+      categories = Array.from(filterCategories.entries()).slice(0, 10);
     }
 
     if (selected.length == 0) {
@@ -435,7 +320,7 @@
           "_",
         )}_category_checkbox" onchange="updateCategories()">
         <label class="form-check-label" for="${selected[index].replace(/\s+/g, "_")}_category_checkbox">
-          ${selected[index] == "No category" ? `<em class="opacity-60">No category</em>` : escapeString(selected[index])} <span class="opacity-60">(${categoryCounts
+          ${selected[index] == "No category" ? `<em class="opacity-60">No category</em>` : escapeString(selected[index])} <span class="opacity-60">(${filterCategories
             .get(selected[index])
             .toLocaleString()})</span>
         </label>
@@ -475,9 +360,6 @@
     let selectedTags = Array.from(document.querySelectorAll(".tag-filter:checked")).map((e) => e.value);
     let selectedCategories = Array.from(document.querySelectorAll(".category-filter:checked")).map((e) => e.value);
 
-    let minFilter = parseInt(elements.minFilter.value);
-    let maxFilter = parseInt(elements.maxFilter.value);
-
     for (const [key, value] of filteredList) {
       if (selectedLanguages.length && !selectedLanguages.includes(value.language)) {
         filteredList.delete(key);
@@ -489,11 +371,11 @@
         filteredList.delete(key);
       }
 
-      if (elements.enableMinFilter.checked && value.viewer_count < minFilter) {
+      if (value.viewer_count < filterViewCount[0]) {
         filteredList.delete(key);
       }
 
-      if (elements.enableMaxFilter.checked && value.viewer_count > maxFilter) {
+      if (value.viewer_count > filterViewCount[1]) {
         filteredList.delete(key);
       }
     }
@@ -694,28 +576,39 @@
       <div class="flex flex-row shrink-0 items-center gap-2">
         <div class="flex flex-row h-fit items-center">
           <span style="writing-mode: sideways-lr; text-orientation: mixed">Filters</span>
-          <div class="card w-full preset-filled-surface-100-900 p-2 text-center">
+          <div class="card w-full bg-surface-900 p-2 text-center">
             <Popover
               open={openStateLanguage}
               onOpenChange={(e) => (openStateLanguage = e.open)}
               positioning={{ placement: "top" }}
               triggerBase="btn preset-tonal-success text-lg h-9"
-              contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
+              contentBase="card bg-success-950 shadow-xl opacity-90 p-4"
             >
               {#snippet trigger()}<IcBaselineLanguage />Languages<span id="languageFilterCount"></span>{/snippet}
               {#snippet content()}
-                <article style="height: 400px; width: 300px; overflow-y: auto">
-                  <h5>Selected languages:</h5>
+                <article class="h-100 w-80 p-1 overflow-auto">
+                  <h5 class="text-xl">Selected languages:</h5>
                   <div class="mb-3" id="selectedLanguages"><span class="opacity-60">None (will show all languages)</span></div>
-                  <div class="input-group mb-3">
-                    <span class="input-group-text"><IcBaselineSearch /></span>
-                    <input id="searchLanguages" type="text" class="form-control" placeholder="Search" oninput={updateLanguages} />
+                  <hr class="hr border-success-700 mb-3" />
+
+                  <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
+                    <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
+                    <input id="searchLanguages" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateLanguages} />
                   </div>
-                  <hr />
+
                   <div id="languagesDiv">
-                    <div class="spinner-border" role="status">
-                      <span class="visually-hidden">Loading...</span>
-                    </div>
+                    {#if filterLanguages.size}
+                      <form class="space-y-1">
+                        {#each filterLanguages as [key, value]}
+                          <label class="flex items-center space-x-1">
+                            <input class="checkbox language-filter" type="checkbox" value={key} onchange={updateLanguages} />
+                            <p>{getLanguage(key)} <span class="opacity-60">({value.toLocaleString()})</span></p>
+                          </label>
+                        {/each}
+                      </form>
+                    {:else}
+                      <ProgressRing value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
+                    {/if}
                   </div>
                 </article>
               {/snippet}
@@ -726,22 +619,35 @@
               onOpenChange={(e) => (openStateTags = e.open)}
               positioning={{ placement: "top" }}
               triggerBase="btn preset-tonal-error text-lg h-9"
-              contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
+              contentBase="card bg-error-950 shadow-xl opacity-90 p-4"
             >
               {#snippet trigger()}<IcBaselineLabel />Tags<span id="tagFilterCount"></span>{/snippet}
               {#snippet content()}
-                <article style="height: 400px; width: 300px; overflow-y: auto">
-                  <h5>Selected tags:</h5>
+                <article class="h-100 w-80 p-1 overflow-auto">
+                  <h5 class="text-xl">Selected tags:</h5>
                   <div class="mb-3" id="selectedTags"><span class="opacity-60">None (will show all tags)</span></div>
-                  <div class="input-group mb-3">
-                    <span class="input-group-text"><IcBaselineSearch /></span>
-                    <input id="searchTags" type="text" class="form-control" placeholder="Search" oninput={updateTags} />
+                  <hr class="hr border-error-700 mb-3" />
+
+                  <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
+                    <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
+                    <input id="searchTags" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateTags} />
                   </div>
-                  <hr />
+
                   <div id="tagsDiv">
-                    <div class="spinner-border" role="status">
-                      <span class="visually-hidden">Loading...</span>
-                    </div>
+                    {#if topTags.length}
+                      <form class="space-y-1">
+                        {#each topTags as tag}
+                          <label class="flex items-center space-x-1">
+                            <input class="checkbox tag-filter" type="checkbox" value={tag[0]} onchange={updateTags} />
+                            <p>{escapeString(tag[0])} <span class="opacity-60">({tag[1].toLocaleString()})</span></p>
+                          </label>
+                        {/each}
+                      </form>
+
+                      <div class="opacity-60 mt-3">{(filterTags.size - topTags.length).toLocaleString()} more tags. Use the search box above to find more</div>
+                    {:else}
+                      <ProgressRing value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
+                    {/if}
                   </div>
                 </article>
               {/snippet}
@@ -752,23 +658,40 @@
               onOpenChange={(e) => (openStateCategory = e.open)}
               positioning={{ placement: "top" }}
               triggerBase="btn preset-tonal-warning text-lg h-9"
-              contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[320px]"
+              contentBase="card bg-warning-950 shadow-xl opacity-90 p-4"
             >
               {#snippet trigger()}<IcBaselineSportsEsports />Categories<span id="categoryFilterCount"></span>{/snippet}
               {#snippet content()}
-                <article style="height: 400px; width: 300px; overflow-y: auto">
-                  <h5>Selected categories:</h5>
+                <article class="h-100 w-80 p-1 overflow-auto">
+                  <h5 class="text-xl">Selected categories:</h5>
                   <div class="mb-3" id="selectedCategories"><span class="opacity-60">None (will show all categories)</span></div>
-                  <div class="input-group mb-3">
-                    <span class="input-group-text"><IcBaselineSearch /></span>
-                    <input id="searchCategories" type="text" class="form-control" placeholder="Search" oninput={updateCategories} />
+                  <hr class="hr border-warning-700 mb-3" />
+
+                  <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
+                    <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
+                    <input id="searchCategories" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateCategories} />
                   </div>
-                  <hr />
 
                   <div id="categoriesDiv">
-                    <div class="spinner-border" role="status">
-                      <span class="visually-hidden">Loading...</span>
-                    </div>
+                    {#if topCategories.length}
+                      <form class="space-y-1">
+                        {#each topCategories as category}
+                          <label class="flex items-center space-x-1">
+                            <input class="checkbox category-filter" type="checkbox" value={category[0]} onchange={updateCategories} />
+
+                            {#if category[0] == "No category"}
+                              <p class="opacity-60 italic">No category <span class="opacity-60">({category[1].toLocaleString()})</span></p>
+                            {:else}
+                              <p>{escapeString(category[0])}<span class="opacity-60">({category[1].toLocaleString()})</span></p>
+                            {/if}
+                          </label>
+                        {/each}
+                      </form>
+
+                      <div class="opacity-60 mt-3">{(filterCategories.size - topCategories.length).toLocaleString()} more categories. Use the search box above to find more</div>
+                    {:else}
+                      <ProgressRing value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
+                    {/if}
                   </div>
                 </article>
               {/snippet}
@@ -779,7 +702,7 @@
               onOpenChange={(e) => (openStateViewCount = e.open)}
               positioning={{ placement: "top" }}
               triggerBase="btn preset-tonal-tertiary text-lg h-9"
-              contentBase="card bg-surface-200-800 p-4 space-y-4 max-w-[720px]"
+              contentBase="card bg-tertiary-950 shadow-xl opacity-90 p-4"
             >
               {#snippet trigger()}
                 <svg
@@ -800,30 +723,16 @@
                     </path>
                   </g>
                 </svg>
-                View count{/snippet}
+                View count
+              {/snippet}
               {#snippet content()}
-                <article style="height: 150px; width: 700px; overflow-y: auto">
-                  <div class="input-group">
-                    <div class="input-group-text p-1">
-                      <div class="form-check form-switch m-0 ms-1">
-                        <input class="form-check-input" type="checkbox" role="switch" id="enableMinFilter" />
-                      </div>
-                    </div>
-                    <span class="input-group-text">Minimum view count</span>
-                    <span class="input-group-text" style="width: 300px"><input disabled type="range" class="form-range" id="minFilterSlider" min="0" max="100" step="1" value="0" /></span>
-                    <input disabled id="minFilter" placeholder="0" type="number" aria-label="Minimum view count" class="form-control" />
+                <article class="h-30 w-200 p-1 overflow-auto">
+                  <h5 class="text-2xl">View count range:</h5>
+                  <div class="flex flex-row justify-between m-2 p-2">
+                    <span>Minimum view count: {filterViewCount[0].toLocaleString()}</span>
+                    <span>Maximum view count: {filterViewCount[1].toLocaleString()}</span>
                   </div>
-                  <br />
-                  <div class="input-group">
-                    <div class="input-group-text p-1">
-                      <div class="form-check form-switch m-0 ms-1">
-                        <input class="form-check-input" type="checkbox" role="switch" id="enableMaxFilter" />
-                      </div>
-                    </div>
-                    <span class="input-group-text">Maximum view count</span>
-                    <span class="input-group-text" style="width: 300px"><input disabled type="range" class="form-range" id="maxFilterSlider" min="0" max="100" step="1" value="100" /></span>
-                    <input disabled id="maxFilter" placeholder="0" type="number" aria-label="Maximum view count" class="form-control" />
-                  </div>
+                  <Slider value={filterViewCountSlider} onValueChange={(e) => (filterViewCountSlider = e.value)} />
                 </article>
               {/snippet}
             </Popover>

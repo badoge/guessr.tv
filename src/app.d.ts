@@ -15,6 +15,7 @@ declare global {
 declare global {
   namespace Twitch {
     export class Embed {
+      [x: string]: any;
       constructor(divId: string, options: TwitchEmbedOptions);
     }
   }
