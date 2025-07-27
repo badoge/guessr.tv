@@ -82,6 +82,8 @@
 
   let retryLimit = 0;
 
+  let elements;
+
   onMount(async () => {
     elements = {
       selectedLanguages: document.getElementById("selectedLanguages"),
@@ -126,8 +128,6 @@
     loadFilters();
     nextStream();
   });
-
-  let elements;
 
   async function getMainList() {
     let requestOptions = {
@@ -492,6 +492,10 @@
     showPreviousStream(currentIndex, false);
   } //previousStream
 
+  /**
+   * @param {number} currentIndex
+   * @param {boolean} forward
+   */
   function showPreviousStream(currentIndex, forward) {
     currentChannel = $state.snapshot(previousChannels[(currentIndex += forward ? 1 : -1)]);
     player.setChannel(currentChannel.username);
@@ -741,7 +745,7 @@
 
         <div class="flex flex-row gap-2">
           <div class="flex flex-col">
-            <button disabled={previousChannels.length <= 1} type="button" onclick={previousStream} class="btn btn-lg preset-filled-surface-500 w-30 h-12" title="Previous stream">
+            <button disabled={previousChannels.length <= 1} type="button" onclick={previousStream} class="btn btn-lg bg-surface-500 w-30 h-12" title="Previous stream">
               <IcBaselineSkipPrevious class="align-top" />
             </button>
             <small class="opacity-60 text-center">
@@ -750,7 +754,7 @@
             </small>
           </div>
           <div class="flex flex-col">
-            <button type="button" onclick={nextStream} class="btn btn-lg preset-filled-success-500 h-12" disabled={nextStreamCooldown}>
+            <button type="button" onclick={nextStream} class="btn btn-lg bg-success-900 h-12" disabled={nextStreamCooldown}>
               <IcBaselineSkipNext /> Next stream
             </button>
             <small class="opacity-60 text-center">
