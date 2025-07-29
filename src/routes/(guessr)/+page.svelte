@@ -1878,13 +1878,13 @@
     });
 
     seenChannels = JSON.parse(await localforage.getItem("seenChannels")) || [];
-    elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
+    //elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
     seenClips = JSON.parse(await localforage.getItem("seenClips")) || [];
-    elements.seenClips.innerHTML = seenClips.length.toLocaleString();
+    //elements.seenClips.innerHTML = seenClips.length.toLocaleString();
     skipSexual = (localStorage.getItem("skipSexual") || "true") === "true";
-    elements.skipSexual.checked = skipSexual;
+    //elements.skipSexual.checked = skipSexual;
     unloadWarning = (localStorage.getItem("unloadWarning") || "false") === "true";
-    elements.unloadWarning.checked = unloadWarning;
+    //elements.unloadWarning.checked = unloadWarning;
     highscores.viewersHS = parseInt(localStorage.getItem("viewersHS"), 10) || 0;
     highscores.gameStreak = parseInt(localStorage.getItem("gameStreak"), 10) || 0;
     highscores.emoteStreak = parseInt(localStorage.getItem("emoteStreak"), 10) || 0;
@@ -1898,20 +1898,20 @@
     //   elements.drops.style.display = "none";
     // }
 
-    elements.viewersHS.innerHTML = highscores.viewersHS.toLocaleString();
-    elements.gameStreak.innerHTML = highscores.gameStreak.toLocaleString();
-    elements.emoteStreak.innerHTML = highscores.emoteStreak.toLocaleString();
-    elements.viewersHigherlowerStreak.innerHTML = highscores.viewersHigherlowerStreak.toLocaleString();
+    // elements.viewersHS.innerHTML = highscores.viewersHS.toLocaleString();
+    // elements.gameStreak.innerHTML = highscores.gameStreak.toLocaleString();
+    // elements.emoteStreak.innerHTML = highscores.emoteStreak.toLocaleString();
+    // elements.viewersHigherlowerStreak.innerHTML = highscores.viewersHigherlowerStreak.toLocaleString();
 
-    elements.skipSexual.onchange = function () {
-      skipSexual = this.checked;
-      localStorage.setItem("skipSexual", skipSexual);
-    };
+    // elements.skipSexual.onchange = function () {
+    //   skipSexual = this.checked;
+    //   localStorage.setItem("skipSexual", skipSexual);
+    // };
 
-    elements.unloadWarning.onchange = function () {
-      unloadWarning = this.checked;
-      localStorage.setItem("unloadWarning", unloadWarning);
-    };
+    // elements.unloadWarning.onchange = function () {
+    //   unloadWarning = this.checked;
+    //   localStorage.setItem("unloadWarning", unloadWarning);
+    // };
 
     elements.streamsVideoType.onchange = function () {
       if (this.checked) {
@@ -1957,26 +1957,26 @@
       nextRound();
     };
 
-    elements.resetSeenChannels.onclick = function () {
-      localforage.setItem("seenChannels", JSON.stringify([]));
-      seenChannels = [];
-      elements.seenChannels.innerHTML = 0;
-      toaster.create({
-        type: "success",
-        title: "Seen channels reset",
-        duration: 2000,
-      });
-    };
-    elements.resetSeenClips.onclick = function () {
-      localforage.setItem("seenClips", JSON.stringify([]));
-      seenClips = [];
-      elements.seenClips.innerHTML = 0;
-      toaster.create({
-        type: "success",
-        title: "Seen clips reset",
-        duration: 2000,
-      });
-    };
+    // elements.resetSeenChannels.onclick = function () {
+    //   localforage.setItem("seenChannels", JSON.stringify([]));
+    //   seenChannels = [];
+    //   elements.seenChannels.innerHTML = 0;
+    //   toaster.create({
+    //     type: "success",
+    //     title: "Seen channels reset",
+    //     duration: 2000,
+    //   });
+    // };
+    // elements.resetSeenClips.onclick = function () {
+    //   localforage.setItem("seenClips", JSON.stringify([]));
+    //   seenClips = [];
+    //   elements.seenClips.innerHTML = 0;
+    //   toaster.create({
+    //     type: "success",
+    //     title: "Seen clips reset",
+    //     duration: 2000,
+    //   });
+    // };
 
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
@@ -2000,7 +2000,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@rtirl/api@latest/lib/index.min.js" async></script>
 </svelte:head>
 
-<!-- <div class="modal fade" id="gameSettingsModal" tabindex="-1" aria-labelledby="gameSettingsModalLabel" aria-hidden="true">
+<div class="modal fade" id="gameSettingsModal" tabindex="-1" aria-labelledby="gameSettingsModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -2066,12 +2066,12 @@
         </div>
 
         <div id="drops" class="alert alert-info mt-3" role="alert" style="display: none">
-              <span class="badge text-bg-success">NEW</span>
-              Stream in the <a href="https://www.twitch.tv/directory/category/guessr-tv" target="_blank" rel="noopener noreferrer">Guessr.tv</a> Twitch category for 30 minutes to earn a
-              special Donk badge! <img src="https://chat.vote/badges/donk.png" height="24px" /> <a href="/drops.html" target="_blank" rel="noopener noreferrer">More info</a>
-              <br />
-              <small class="text-danger">Not a Twitch chat badge, the badge will only show up on this site</small>
-            </div> 
+          <span class="badge text-bg-success">NEW</span>
+          Stream in the <a href="https://www.twitch.tv/directory/category/guessr-tv" target="_blank" rel="noopener noreferrer">Guessr.tv</a> Twitch category for 30 minutes to earn a special
+          Donk badge! <img src="https://chat.vote/badges/donk.png" height="24px" /> <a href="/drops.html" target="_blank" rel="noopener noreferrer">More info</a>
+          <br />
+          <small class="text-danger">Not a Twitch chat badge, the badge will only show up on this site</small>
+        </div>
 
         <div id="disclaimer" class="alert alert-warning mt-3" role="alert" style="display: none"></div>
       </div>
@@ -2080,9 +2080,9 @@
       </div>
     </div>
   </div>
-</div> -->
+</div>
 
-<!-- <div class="modal fade" id="resetGameModal" tabindex="-1" aria-labelledby="resetGameModalLabel" aria-hidden="true">
+<div class="modal fade" id="resetGameModal" tabindex="-1" aria-labelledby="resetGameModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -2095,7 +2095,7 @@
       </div>
     </div>
   </div>
-</div> -->
+</div>
 
 <div id="scoreDiv" class="bg-body-tertiary" style="display: none">
   <span id="round">Round <br />1/5</span>
@@ -2107,259 +2107,213 @@
   <span id="timer">0</span>
 </div>
 
-<div class="container text-center pt-5" id="menuContainer">
-  <div class="row justify-content-center">
-    <div class="col-6">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col">
-            <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("viewers")}>
-              <div class="card-body">
-                <h2>
-                  <svg class="viewers-svg" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
-                    <g>
-                      <path
-                        fill-rule="evenodd"
-                        d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
-                        clip-rule="evenodd"
-                      ></path>
-                    </g>
-                  </svg>
-                  Viewers
-                </h2>
-                <div class="hidden">Guess how many viewers the random streamer has</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col">
-            <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("higherlower")}>
-              <div class="card-body">
-                <h2>
-                  <IcBaselineImportExport />
-                  Higher Lower
-                </h2>
-                <div class="hidden">Guess if the streamer has a higher or lower view count than the previous one</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <hr />
-        <div class="row">
-          <div class="col">
-            <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("game")}>
-              <div class="card-body">
-                <h2>
-                  <IcBaselineSportsEsports />
-                  Game
-                </h2>
-                <div class="hidden">Guess what game the random streamer is playing</div>
-              </div>
-            </div>
-          </div>
-          <div class="col">
-            <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("emote")}>
-              <div class="card-body">
-                <h2>
-                  <IcBaselineEmojiEmotions />
-                  Emote
-                </h2>
-                <div class="hidden">Guess which emote belongs to the random streamer</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="row mt-3" id="irl" style="display: none">
-          <hr />
-          <div class="col">
-            <div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("irl")}>
-              <div class="card-body">
-                <h2>
-                  <IcBaselinePublic />
-                  IRL streams
-                </h2>
-                <div class="hidden">Guess where the streamer is</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("viewers")}>
+  <div class="card-body">
+    <h2>
+      <svg class="viewers-svg" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
+        <g>
+          <path
+            fill-rule="evenodd"
+            d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
+            clip-rule="evenodd"
+          ></path>
+        </g>
+      </svg>
+      Viewers
+    </h2>
+    <div class="hidden">Guess how many viewers the random streamer has</div>
   </div>
 </div>
 
-<div class="container-fluid text-center mt-3" id="gameContainer" style="display: none">
-  <div class="row">
-    <div class="col-2"></div>
+<div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("higherlower")}>
+  <div class="card-body">
+    <h2>
+      <IcBaselineImportExport />
+      Higher Lower
+    </h2>
+    <div class="hidden">Guess if the streamer has a higher or lower view count than the previous one</div>
+  </div>
+</div>
 
-    <div class="col-8 position-relative pe-1">
-      <div id="twitchEmbed"></div>
-      <div id="streamCover" style="display: none"></div>
-      <div id="clipCover" style="display: none"></div>
-    </div>
+<div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("game")}>
+  <div class="card-body">
+    <h2>
+      <IcBaselineSportsEsports />
+      Game
+    </h2>
+    <div class="hidden">Guess what game the random streamer is playing</div>
+  </div>
+</div>
 
-    <div class="col-2 ps-1">
-      <div class="card" id="leaderboard" style="display: none">
-        <div class="card-body" id="leaderboardCard">
-          <ul class="nav nav-tabs bg-body-tertiary" id="leaderboardTabs" role="tablist" style="display: none">
-            <li class="nav-item" role="presentation">
-              <button
-                class="nav-link active"
-                id="totalTab"
-                data-bs-toggle="tab"
-                data-bs-target="#total-tab-pane"
-                type="button"
-                role="tab"
-                aria-controls="total-tab-pane"
-                aria-selected="true"
-              >
-                Total standings
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="roundTab" data-bs-toggle="tab" data-bs-target="#round-tab-pane" type="button" role="tab" aria-controls="round-tab-pane" aria-selected="false">
-                Round results
-              </button>
-            </li>
-          </ul>
-          <div class="tab-content">
-            <div class="tab-pane fade show active" id="total-tab-pane" role="tabpanel" aria-labelledby="totalTab" tabindex="0">
-              <ul class="list-group mt-1" id="leaderboardList"></ul>
-            </div>
-            <div class="tab-pane fade" id="round-tab-pane" role="tabpanel" aria-labelledby="roundTab" tabindex="0">
-              <ul class="list-group mt-1" id="leaderboardListRound"></ul>
-            </div>
-          </div>
-        </div>
-        <div class="card-footer" id="chatHint">
-          <h4>Type a number in chat to guess</h4>
-        </div>
+<div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("emote")}>
+  <div class="card-body">
+    <h2>
+      <IcBaselineEmojiEmotions />
+      Emote
+    </h2>
+    <div class="hidden">Guess which emote belongs to the random streamer</div>
+  </div>
+</div>
+
+<div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("irl")}>
+  <div class="card-body">
+    <h2>
+      <IcBaselinePublic />
+      IRL streams
+    </h2>
+    <div class="hidden">Guess where the streamer is</div>
+  </div>
+</div>
+
+<div class="col-8 position-relative pe-1">
+  <div id="twitchEmbed"></div>
+  <div id="streamCover" style="display: none"></div>
+  <div id="clipCover" style="display: none"></div>
+</div>
+
+<div class="card" id="leaderboard" style="display: none">
+  <div class="card-body" id="leaderboardCard">
+    <ul class="nav nav-tabs bg-body-tertiary" id="leaderboardTabs" role="tablist" style="display: none">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="totalTab" data-bs-toggle="tab" data-bs-target="#total-tab-pane" type="button" role="tab" aria-controls="total-tab-pane" aria-selected="true">
+          Total standings
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="roundTab" data-bs-toggle="tab" data-bs-target="#round-tab-pane" type="button" role="tab" aria-controls="round-tab-pane" aria-selected="false">
+          Round results
+        </button>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="total-tab-pane" role="tabpanel" aria-labelledby="totalTab" tabindex="0">
+        <ul class="list-group mt-1" id="leaderboardList"></ul>
+      </div>
+      <div class="tab-pane fade" id="round-tab-pane" role="tabpanel" aria-labelledby="roundTab" tabindex="0">
+        <ul class="list-group mt-1" id="leaderboardListRound"></ul>
       </div>
     </div>
   </div>
+  <div class="card-footer" id="chatHint">
+    <h4>Type a number in chat to guess</h4>
+  </div>
+</div>
 
-  <div class="row mb-3 mt-2" id="bottomRow">
-    <div class="col-2"></div>
-    <div class="col-10">
-      <div class="card" id="mainCard" style="display: none">
-        <div class="card-body container-fluid">
-          <div id="sliderDiv" class="row align-items-center" style="display: none">
-            <div class="col-6">
-              <label for="guessRange" id="guessRangeLabel" class="form-label">How many viewers does this stream have?</label>
-              <input type="range" min="0" max="100" step="1" value="0" class="form-range" id="guessRange" />
-            </div>
-            <div class="col-3">
-              <div class="input-group justify-content-center" id="guessInputDiv">
-                <span class="input-group-text" id="guessLabel">View count</span>
-                <input type="number" id="guessNumber" min="0" max="5000" step="1" value="" placeholder="Guess" class="form-control" aria-label="View count" aria-describedby="guessLabel" />
-              </div>
-            </div>
-            <div class="col-3">
-              <button type="button" onclick={() => guess("slider", false)} class="btn btn-lg btn-success guess">Guess</button>
-            </div>
-          </div>
+<div class="card" id="mainCard" style="display: none">
+  <div class="card-body container-fluid">
+    <div id="sliderDiv" class="row align-items-center" style="display: none">
+      <div class="col-6">
+        <label for="guessRange" id="guessRangeLabel" class="form-label">How many viewers does this stream have?</label>
+        <input type="range" min="0" max="100" step="1" value="0" class="form-range" id="guessRange" />
+      </div>
+      <div class="col-3">
+        <div class="input-group justify-content-center" id="guessInputDiv">
+          <span class="input-group-text" id="guessLabel">View count</span>
+          <input type="number" id="guessNumber" min="0" max="5000" step="1" value="" placeholder="Guess" class="form-control" aria-label="View count" aria-describedby="guessLabel" />
+        </div>
+      </div>
+      <div class="col-3">
+        <button type="button" onclick={() => guess("slider", false)} class="btn btn-lg btn-success guess">Guess</button>
+      </div>
+    </div>
 
-          <div id="multiChoiceDiv" class="row align-items-center" style="display: none">
-            <div class="col-xl-2">
-              <div class="d-flex flex-column gap-1" id="multiChoicePowerupCard">
-                <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("pSkip")}>
-                  <div><IcBaselineSkipNext /> Skip</div>
-                  <div class="flex-grow-1"></div>
-                  <div class="powerup-added powerup-pSkip-added"></div>
-                  <div class="powerup-count powerup-pSkip-count">0</div>
-                </button>
-                <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("p5050")}>
-                  <div><IcBaselineTheaterComedy /> 50/50</div>
-                  <div class="flex-grow-1"></div>
-                  <div class="powerup-added powerup-p5050-added"></div>
-                  <div class="powerup-count powerup-p5050-count">0</div>
-                </button>
-              </div>
-            </div>
-            <div class="col-xl"><label id="multiChoiceLabel" class="form-label">How many viewers does this stream have?</label></div>
-            <div class="col-xl-auto">
-              <button type="button" onclick={() => guess(1, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice1">????????</button>
-              <button type="button" onclick={() => guess(2, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice2">????????</button>
-              <button type="button" onclick={() => guess(3, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice3">????????</button>
-              <button type="button" onclick={() => guess(4, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice4">????????</button>
-              <button type="button" onclick={() => guess(5, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice5">????????</button>
-            </div>
-          </div>
+    <div id="multiChoiceDiv" class="row align-items-center" style="display: none">
+      <div class="col-xl-2">
+        <div class="d-flex flex-column gap-1" id="multiChoicePowerupCard">
+          <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("pSkip")}>
+            <div><IcBaselineSkipNext /> Skip</div>
+            <div class="flex-grow-1"></div>
+            <div class="powerup-added powerup-pSkip-added"></div>
+            <div class="powerup-count powerup-pSkip-count">0</div>
+          </button>
+          <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("p5050")}>
+            <div><IcBaselineTheaterComedy /> 50/50</div>
+            <div class="flex-grow-1"></div>
+            <div class="powerup-added powerup-p5050-added"></div>
+            <div class="powerup-count powerup-p5050-count">0</div>
+          </button>
+        </div>
+      </div>
+      <div class="col-xl"><label id="multiChoiceLabel" class="form-label">How many viewers does this stream have?</label></div>
+      <div class="col-xl-auto">
+        <button type="button" onclick={() => guess(1, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice1">????????</button>
+        <button type="button" onclick={() => guess(2, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice2">????????</button>
+        <button type="button" onclick={() => guess(3, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice3">????????</button>
+        <button type="button" onclick={() => guess(4, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice4">????????</button>
+        <button type="button" onclick={() => guess(5, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice5">????????</button>
+      </div>
+    </div>
 
-          <div id="gameNameDiv" class="row" style="display: none">
-            <div class="col-9">
-              <label class="form-label">What is this game?</label>
-              <input type="text" class="form-control" placeholder="Start typing for suggestions" list="gameList" id="gameInput" />
-              <datalist id="gameList"></datalist>
-            </div>
-            <div class="col-3">
-              <button type="button" onclick={() => guess("game", false)} class="btn btn-lg btn-success guess">Guess</button>
-            </div>
-          </div>
+    <div id="gameNameDiv" class="row" style="display: none">
+      <div class="col-9">
+        <label class="form-label">What is this game?</label>
+        <input type="text" class="form-control" placeholder="Start typing for suggestions" list="gameList" id="gameInput" />
+        <datalist id="gameList"></datalist>
+      </div>
+      <div class="col-3">
+        <button type="button" onclick={() => guess("game", false)} class="btn btn-lg btn-success guess">Guess</button>
+      </div>
+    </div>
 
-          <div id="higherlowerDiv" class="row align-items-center" style="display: none">
-            <div class="col-2">
-              <div class="d-flex flex-column gap-1" id="higherLowerPowerupCard">
-                <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("pSkip")}>
-                  <div><IcBaselineSkipNext /> Skip</div>
-                  <div class="flex-grow-1"></div>
-                  <div class="powerup-added powerup-pSkip-added"></div>
-                  <div class="powerup-count powerup-pSkip-count">0</div>
-                </button>
-                <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("p5050")} disabled>
-                  <div><IcBaselineTheaterComedy /> 50/50</div>
-                  <div class="flex-grow-1"></div>
-                  <div class="powerup-added powerup-p5050-added visually-hidden"></div>
-                  <div class="powerup-count powerup-p5050-count visually-hidden">0</div>
-                </button>
-              </div>
-            </div>
-            <div class="col-5"><label id="higherlowerLabel" class="form-label">Does this stream have a higher or lower view count than</label><br /></div>
-            <div class="col-5">
-              <button type="button" onclick={() => guess("higher", false)} class="btn btn-outline-success multiChoice-btn me-5" id="higher">Higher</button>
-              <button type="button" onclick={() => guess("lower", false)} class="btn btn-outline-danger multiChoice-btn" id="lower">Lower</button>
-            </div>
-          </div>
+    <div id="higherlowerDiv" class="row align-items-center" style="display: none">
+      <div class="col-2">
+        <div class="d-flex flex-column gap-1" id="higherLowerPowerupCard">
+          <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("pSkip")}>
+            <div><IcBaselineSkipNext /> Skip</div>
+            <div class="flex-grow-1"></div>
+            <div class="powerup-added powerup-pSkip-added"></div>
+            <div class="powerup-count powerup-pSkip-count">0</div>
+          </button>
+          <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("p5050")} disabled>
+            <div><IcBaselineTheaterComedy /> 50/50</div>
+            <div class="flex-grow-1"></div>
+            <div class="powerup-added powerup-p5050-added visually-hidden"></div>
+            <div class="powerup-count powerup-p5050-count visually-hidden">0</div>
+          </button>
+        </div>
+      </div>
+      <div class="col-5"><label id="higherlowerLabel" class="form-label">Does this stream have a higher or lower view count than</label><br /></div>
+      <div class="col-5">
+        <button type="button" onclick={() => guess("higher", false)} class="btn btn-outline-success multiChoice-btn me-5" id="higher">Higher</button>
+        <button type="button" onclick={() => guess("lower", false)} class="btn btn-outline-danger multiChoice-btn" id="lower">Lower</button>
+      </div>
+    </div>
 
-          <div id="irlDiv" class="row align-items-center" style="display: none">
-            <div class="col">
-              <div id="map" style="height: 300px"></div>
-            </div>
+    <div id="irlDiv" class="row align-items-center" style="display: none">
+      <div class="col">
+        <div id="map" style="height: 300px"></div>
+      </div>
 
-            <div class="col-3">
-              <p id="irlCorrection">Where is this streamer?</p>
-              <br />
-              <button type="button" onclick={() => guess("map", false)} class="btn btn-lg btn-success guess">Guess</button>
-            </div>
-          </div>
+      <div class="col-3">
+        <p id="irlCorrection">Where is this streamer?</p>
+        <br />
+        <button type="button" onclick={() => guess("map", false)} class="btn btn-lg btn-success guess">Guess</button>
+      </div>
+    </div>
 
-          <div id="resultsDiv" class="row align-items-center" style="display: none">
-            <div class="col-3">
-              <button type="button" id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
-              <div id="endButtons" style="display: none">
-                <button type="button" id="playAgain" class="btn btn-lg btn-warning" onclick={() => playAgain()}>Play Again</button>
-                <button type="button" id="changeMode" class="btn btn-lg btn-secondary mt-1" onclick={() => reset()}>Change mode</button>
-                <button type="button" id="breakdown" class="btn btn-lg btn-success mt-1" onclick={() => showBreakdown()}>Breakdown</button>
-              </div>
-            </div>
-            <div class="col-6">
-              <div id="scoreProgressBar">
-                <span id="scoreProgressBarLabel">0 points</span><br />
-                <div class="progress" id="progress" role="progressbar" aria-label="score" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                  <div class="progress-bar" id="progressBar"></div>
-                </div>
-              </div>
-              <div id="gameEndText">
-                Final Score: 0<br />
-                High Score: 0
-              </div>
-            </div>
-            <div class="col-3">
-              <div id="correction"></div>
-            </div>
+    <div id="resultsDiv" class="row align-items-center" style="display: none">
+      <div class="col-3">
+        <button type="button" id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
+        <div id="endButtons" style="display: none">
+          <button type="button" id="playAgain" class="btn btn-lg btn-warning" onclick={() => playAgain()}>Play Again</button>
+          <button type="button" id="changeMode" class="btn btn-lg btn-secondary mt-1" onclick={() => reset()}>Change mode</button>
+          <button type="button" id="breakdown" class="btn btn-lg btn-success mt-1" onclick={() => showBreakdown()}>Breakdown</button>
+        </div>
+      </div>
+      <div class="col-6">
+        <div id="scoreProgressBar">
+          <span id="scoreProgressBarLabel">0 points</span><br />
+          <div class="progress" id="progress" role="progressbar" aria-label="score" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" id="progressBar"></div>
           </div>
         </div>
+        <div id="gameEndText">
+          Final Score: 0<br />
+          High Score: 0
+        </div>
+      </div>
+      <div class="col-3">
+        <div id="correction"></div>
       </div>
     </div>
   </div>

@@ -3,32 +3,6 @@
 
   import IcBaselineSearch from "~icons/ic/baseline-search";
 
-  let x = 0;
-  let y = 0;
-  function mouseDownHandler(e) {
-    if (e.target.classList.contains("bingo-cell") && e.button !== 1) {
-      return;
-    }
-    document.getElementById("twitchEmbedDiv").style.pointerEvents = "none";
-    x = e.clientX;
-    y = e.clientY;
-    document.addEventListener("mousemove", mouseMoveHandler);
-    document.addEventListener("mouseup", mouseUpHandler);
-  } //mouseDownHandler
-
-  function mouseMoveHandler(e) {
-    document.getElementById("board").style.top = document.getElementById("board").offsetTop + e.clientY - y + "px";
-    document.getElementById("board").style.left = document.getElementById("board").offsetLeft + e.clientX - x + "px";
-    x = e.clientX;
-    y = e.clientY;
-  } //mouseMoveHandler
-
-  function mouseUpHandler() {
-    document.getElementById("twitchEmbedDiv").style.pointerEvents = "all";
-    document.removeEventListener("mousemove", mouseMoveHandler);
-    document.removeEventListener("mouseup", mouseUpHandler);
-  } //mouseUpHandler
-
   onMount(async () => {
     window.addEventListener("keydown", (event) => {
       if (event.code === "F3" || ((event.ctrlKey || event.metaKey) && event.code === "KeyF")) {
@@ -38,7 +12,6 @@
 
       if (event.code === "KeyR" && document.activeElement.tagName !== "INPUT") {
         document.getElementById("board").style = "top: 6%; left: 6%; scale: 1;";
-        mouseUpHandler();
         hidePreview();
       }
     });

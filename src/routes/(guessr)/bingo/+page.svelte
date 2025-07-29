@@ -3,6 +3,7 @@
   import localforage from "localforage";
   import { toaster } from "$lib/functions";
   import { Modal } from "@skeletonlabs/skeleton-svelte";
+  import { createDraggable } from "animejs";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
@@ -19,6 +20,7 @@
   }
 
   onMount(async () => {
+    const draggable = createDraggable("#board");
     elements = {
       leaderboardCount: document.getElementById("leaderboardCount"),
       leaderboard: document.getElementById("leaderboard"),
@@ -164,21 +166,20 @@
       elements.board.style.opacity = this.value;
     };
 
-    elements.board.addEventListener("mousewheel", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (event.altKey) {
-        let opacity = parseFloat(getComputedStyle(elements.board).getPropertyValue("opacity"));
-        elements.board.style.opacity = event.wheelDelta > 0 ? Math.min(opacity + 0.07, 1) : Math.max(opacity - 0.07, 0);
-        elements.boardOpacity.value = event.wheelDelta > 0 ? opacity + 0.07 : opacity - 0.07;
-      } else {
-        let scale = parseFloat(getComputedStyle(elements.board).getPropertyValue("scale"));
-        elements.board.style.scale = event.wheelDelta > 0 ? Math.min(scale + 0.07, 2) : Math.max(scale - 0.07, 0.1);
-        elements.boardSize.value = event.wheelDelta > 0 ? scale + 0.07 : scale - 0.07;
-      }
-    });
+    // elements.board.addEventListener("mousewheel", (event) => {
+    //   event.preventDefault();
+    //   event.stopPropagation();
+    //   if (event.altKey) {
+    //     let opacity = parseFloat(getComputedStyle(elements.board).getPropertyValue("opacity"));
+    //     elements.board.style.opacity = event.wheelDelta > 0 ? Math.min(opacity + 0.07, 1) : Math.max(opacity - 0.07, 0);
+    //     elements.boardOpacity.value = event.wheelDelta > 0 ? opacity + 0.07 : opacity - 0.07;
+    //   } else {
+    //     let scale = parseFloat(getComputedStyle(elements.board).getPropertyValue("scale"));
+    //     elements.board.style.scale = event.wheelDelta > 0 ? Math.min(scale + 0.07, 2) : Math.max(scale - 0.07, 0.1);
+    //     elements.boardSize.value = event.wheelDelta > 0 ? scale + 0.07 : scale - 0.07;
+    //   }
+    // });
 
-    elements.board.addEventListener("mousedown", mouseDownHandler);
     loadPacks();
     customBadges = await getCustomBadges();
   });
@@ -1281,230 +1282,214 @@
   </div>
 </div>
 
-<div class="container-fluid pt-3">
-  <div class="row">
-    <div class="col-5"></div>
-    <div class="col-7 position-relative">
-      <div class="card" id="settingsCard">
-        <div class="card-header text-center"><img src="/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv Bingo</div>
-        <div class="card-body">
-          <div class="container-fluid p-0">
-            <div class="row">
-              <div class="col mb-3">
-                <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#howToPlayModal">
-                  <i class="material-icons notranslate">help_outline</i> How to play
-                </button>
+<div class="row" id="twitchEmbedDiv" style="display: none">
+  <div class="col-1"></div>
+  <div class="col"><div id="twitchEmbed"></div></div>
+</div>
+
+<div class="card" id="settingsCard">
+  <div class="card-header text-center"><img src="/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv Bingo</div>
+  <div class="card-body">
+    <div class="container-fluid p-0">
+      <div class="row">
+        <div class="col mb-3">
+          <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#howToPlayModal">
+            <i class="material-icons notranslate">help_outline</i> How to play
+          </button>
+          <br />
+          <button id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable sharing with viewers" class="btn btn-twitch" onclick={login}>
+            <span class="twitch-icon"></span> Sign in with Twitch
+          </button>
+          <br />
+          <small id="loginDescription" class="text-body-secondary">Optional. Allows viewers to play along</small>
+
+          <div class="card mt-3">
+            <div class="card-header">
+              <h5><i class="material-icons notranslate">settings</i>Settings</h5>
+            </div>
+            <div class="card-body">
+              <h5><i class="material-icons notranslate">grid_on</i>Board</h5>
+              <label for="bingoSize" id="bingoSizeLabel" class="form-label">Board size: 5x5 (25 items)</label><br />
+              <input type="range" class="form-range" min="1" max="10" step="1" value="5" id="bingoSize" />
+
+              <div class="mt-3">
+                <h5>Bingo type</h5>
+                <div class="btn-group" role="group" aria-label="Mode">
+                  <input type="radio" class="btn-check" name="bingoTypeSelect" value="twitch" id="twitchBingo" autocomplete="off" checked />
+                  <label class="btn btn-outline-primary" for="twitchBingo"><span class="twitch-icon"></span>Twitch Bingo</label>
+                  <input type="radio" class="btn-check" name="bingoTypeSelect" value="custom" id="customBingo" autocomplete="off" />
+                  <label class="btn btn-outline-info" for="customBingo">Custom Bingo</label>
+                </div>
                 <br />
-                <button id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable sharing with viewers" class="btn btn-twitch" onclick={login}>
-                  <span class="twitch-icon"></span> Sign in with Twitch
-                </button>
-                <br />
-                <small id="loginDescription" class="text-body-secondary">Optional. Allows viewers to play along</small>
+                <small id="bingoTypeDescription">Random Twitch streams will be shown</small>
 
-                <div class="card mt-3">
-                  <div class="card-header">
-                    <h5><i class="material-icons notranslate">settings</i>Settings</h5>
-                  </div>
-                  <div class="card-body">
-                    <h5><i class="material-icons notranslate">grid_on</i>Board</h5>
-                    <label for="bingoSize" id="bingoSizeLabel" class="form-label">Board size: 5x5 (25 items)</label><br />
-                    <input type="range" class="form-range" min="1" max="10" step="1" value="5" id="bingoSize" />
-
-                    <div class="mt-3">
-                      <h5>Bingo type</h5>
-                      <div class="btn-group" role="group" aria-label="Mode">
-                        <input type="radio" class="btn-check" name="bingoTypeSelect" value="twitch" id="twitchBingo" autocomplete="off" checked />
-                        <label class="btn btn-outline-primary" for="twitchBingo"><span class="twitch-icon"></span>Twitch Bingo</label>
-                        <input type="radio" class="btn-check" name="bingoTypeSelect" value="custom" id="customBingo" autocomplete="off" />
-                        <label class="btn btn-outline-info" for="customBingo">Custom Bingo</label>
-                      </div>
-                      <br />
-                      <small id="bingoTypeDescription">Random Twitch streams will be shown</small>
-
-                      <div id="customBingoNameDiv" class="input-group mb-3" style="display: none">
-                        <span class="input-group-text" id="bingoNameLabel">Bingo name</span>
-                        <input id="customBingoName" type="text" class="form-control" placeholder="Custom Bingo" aria-label="Custom Bingo" aria-describedby="bingoNameLabel" />
-                      </div>
-                    </div>
-
-                    <div class="form-check form-switch mt-3">
-                      <input class="form-check-input" type="checkbox" role="switch" id="allowDiagonals" />
-                      <label class="form-check-label" for="allowDiagonals"><i class="material-icons notranslate">north_east</i>Allow diagonals</label>
-                      <br /><small class="text-body-secondary">Count diagonals when checking for winning patterns</small>
-                    </div>
-                  </div>
+                <div id="customBingoNameDiv" class="input-group mb-3" style="display: none">
+                  <span class="input-group-text" id="bingoNameLabel">Bingo name</span>
+                  <input id="customBingoName" type="text" class="form-control" placeholder="Custom Bingo" aria-label="Custom Bingo" aria-describedby="bingoNameLabel" />
                 </div>
               </div>
-              <div class="col">
-                <div class="hstack gap-3 mb-3">
-                  <div class="input-group" style="min-width: 20vw; padding-left: 12px">
-                    <label class="input-group-text">Item pack</label>
-                    <button id="packDropdownButton" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                      Loading...
-                    </button>
-                    <form class="dropdown-menu p-3">
-                      <h6 class="dropdown-header">Pick 1 or more packs</h6>
-                      <div id="packSwitchesDiv">Loading...</div>
-                    </form>
-                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit item packs" onclick={editPacks}>
-                      <i class="material-icons notranslate pointer-events-none">edit</i>
-                    </button>
-                  </div>
 
-                  <div class="btn-group" role="group" aria-label="text input controls">
-                    <button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Randomize all" onclick={randomizeAll}>
-                      <i class="material-icons notranslate pointer-events-none">casino</i>
-                    </button>
-                    <button type="button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear all" onclick={clearAll}>
-                      <i class="material-icons notranslate pointer-events-none">delete_forever</i>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="container-fluid" style="height: 65vh; overflow: auto">
-                  {#each { length: bingoSize * bingoSize || 25 }, index}
-                    <div class="input-group mb-1 w-50 pe-1">
-                      <input
-                        type="text"
-                        class="form-control bingo-item"
-                        onfocus={activateCellById}
-                        onblur={deactivateCellById}
-                        oninput={updateSingleItem}
-                        onkeydown={moveCursor}
-                        placeholder="Bingo item #{index + 1}"
-                        data-item-id={index + 1}
-                        aria-label="Bingo item #{index + 1}"
-                        value={index}
-                      />
-                      <button class="btn btn-outline-secondary" onclick={randomize} data-item-id={index + 1} type="button" title="Fill with random item">
-                        <IcBaselineCasino />
-                      </button>
-                    </div>
-                  {/each}
-                </div>
+              <div class="form-check form-switch mt-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="allowDiagonals" />
+                <label class="form-check-label" for="allowDiagonals"><i class="material-icons notranslate">north_east</i>Allow diagonals</label>
+                <br /><small class="text-body-secondary">Count diagonals when checking for winning patterns</small>
               </div>
             </div>
           </div>
         </div>
-        <div class="card-footer text-body-secondary text-end">
-          <small class="text-body-secondary"> Don't forget to share the bingo link with your viewers if you logged in with Twitch :)</small>
-          <button type="button" class="btn btn-success btn-lg" onclick={start} id="start"><i class="material-icons notranslate">celebration</i> Start!</button>
+        <div class="col">
+          <div class="hstack gap-3 mb-3">
+            <div class="input-group" style="min-width: 20vw; padding-left: 12px">
+              <label class="input-group-text">Item pack</label>
+              <button id="packDropdownButton" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                Loading...
+              </button>
+              <form class="dropdown-menu p-3">
+                <h6 class="dropdown-header">Pick 1 or more packs</h6>
+                <div id="packSwitchesDiv">Loading...</div>
+              </form>
+              <button class="btn btn-outline-secondary" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit item packs" onclick={editPacks}>
+                <i class="material-icons notranslate pointer-events-none">edit</i>
+              </button>
+            </div>
+
+            <div class="btn-group" role="group" aria-label="text input controls">
+              <button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Randomize all" onclick={randomizeAll}>
+                <i class="material-icons notranslate pointer-events-none">casino</i>
+              </button>
+              <button type="button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear all" onclick={clearAll}>
+                <i class="material-icons notranslate pointer-events-none">delete_forever</i>
+              </button>
+            </div>
+          </div>
+
+          <div class="container-fluid" style="height: 65vh; overflow: auto">
+            {#each { length: bingoSize * bingoSize || 25 }, index}
+              <div class="input-group mb-1 w-50 pe-1">
+                <input
+                  type="text"
+                  class="form-control bingo-item"
+                  onfocus={activateCellById}
+                  onblur={deactivateCellById}
+                  oninput={updateSingleItem}
+                  onkeydown={moveCursor}
+                  placeholder="Bingo item #{index + 1}"
+                  data-item-id={index + 1}
+                  aria-label="Bingo item #{index + 1}"
+                  value={index}
+                />
+                <button class="btn btn-outline-secondary" onclick={randomize} data-item-id={index + 1} type="button" title="Fill with random item">
+                  <IcBaselineCasino />
+                </button>
+              </div>
+            {/each}
+          </div>
         </div>
       </div>
     </div>
   </div>
-
-  <div class="row" id="twitchEmbedDiv" style="display: none">
-    <div class="col-1"></div>
-    <div class="col"><div id="twitchEmbed"></div></div>
+  <div class="card-footer text-body-secondary text-end">
+    <small class="text-body-secondary"> Don't forget to share the bingo link with your viewers if you logged in with Twitch :)</small>
+    <button type="button" class="btn btn-success btn-lg" onclick={start} id="start"><i class="material-icons notranslate">celebration</i> Start!</button>
   </div>
+</div>
 
-  <div class="row mb-3 mt-2" id="bottomRow">
-    <div class="col-1"></div>
-    <div class="col-11">
-      <div class="card" id="mainCard" style="display: none">
-        <div class="card-body container-fluid">
-          <div id="sliderDiv" class="row">
-            <div class="col-auto text-center">
-              <span
-                class="text-info mb-2"
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                data-bs-html="true"
-                data-bs-title="
+<div id="sliderDiv" class="row">
+  <div class="col-auto text-center">
+    <span
+      class="text-info mb-2"
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      data-bs-html="true"
+      data-bs-title="
                     scroll: <strong>resize board</strong><br>
                     ALT + scroll: <strong>change board opacity</strong><br>
                     scroll wheel click + drag: <strong>move board</strong><br>
                     R: <strong>reset board position</strong><br>
                     F3 / CTRL + F: <strong>search board</strong>"
-              >
-                <i class="material-icons notranslate">lightbulb</i>
-                <br /><small>Board controls</small>
-              </span>
-            </div>
+    >
+      <i class="material-icons notranslate">lightbulb</i>
+      <br /><small>Board controls</small>
+    </span>
+  </div>
 
-            <div class="col-auto">
-              <div class="vstack">
-                <div>
-                  <label for="boardSize" class="form-label float-start"><i class="material-icons notranslate">zoom_in</i>Board size</label>
-                  <input type="range" class="form-range align-middle float-end" id="boardSize" value="1" min="0.1" max="2" step="0.01" />
-                </div>
-                <div>
-                  <label for="boardOpacity" class="form-label float-start me-2"><i class="material-icons notranslate">opacity</i>Board opacity</label>
-                  <input type="range" class="form-range align-middle float-end" id="boardOpacity" value="1" min="0" max="1" step="0.01" />
-                </div>
-              </div>
-            </div>
-            <div class="col-auto">
-              <div class="input-group" id="loginInfo" style="display: none">
-                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <img id="loginInfoPFP" src="/donk.png" alt="profile pic" style="height: 2em" />
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                  <li>
-                    <a class="dropdown-item" href="#" onclick={logout}><i class="material-icons notranslate">logout</i>Logout</a>
-                  </li>
-                </ul>
-                <input readonly value="asd" id="bingoLink" type="text" class="form-control" aria-label="Bingo share link" />
-                <button
-                  class="btn btn-outline-secondary"
-                  type="button"
-                  id="copyButton"
-                  data-bs-toggle="popover"
-                  data-bs-trigger="manual"
-                  data-bs-placement="top"
-                  data-bs-content="Link copied :)"
-                  onclick={copyLink}
-                >
-                  <IcBaselineContentCopy />
-                </button>
-
-                <Modal
-                  open={drawerState}
-                  onOpenChange={(e) => (drawerState = e.open)}
-                  triggerBase="btn preset-tonal"
-                  contentBase="bg-surface-100-900 p-4 space-y-4 shadow-xl w-[480px] h-screen"
-                  positionerJustify="justify-end"
-                  positionerAlign=""
-                  positionerPadding=""
-                  transitionsPositionerIn={{ x: 480, duration: 200 }}
-                  transitionsPositionerOut={{ x: 480, duration: 200 }}
-                >
-                  {#snippet trigger()}<IcBaselineLeaderboard />Chat leaderboard{/snippet}
-                  {#snippet content()}
-                    <header class="flex justify-between">
-                      <h2 class="h2">Bingo leaderboard</h2>
-                    </header>
-                    <article>
-                      <h4>Total players: <span id="leaderboardCount">0</span></h4>
-                      <ul class="list-group" id="leaderboard"></ul>
-                    </article>
-                  {/snippet}
-                </Modal>
-              </div>
-            </div>
-
-            <div class="col">
-              <button disabled type="button" id="nextStream" onclick={nextStream} class="btn btn-lg btn-success float-end">
-                <IcBaselineSkipNext /> Next stream
-              </button>
-              <button
-                disabled
-                type="button"
-                id="previousStream"
-                onclick={previousStream}
-                class="btn btn-lg btn-secondary float-end me-2"
-                data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                data-bs-title="Previous stream"
-              >
-                <IcBaselineSkipPrevious />
-              </button>
-            </div>
-          </div>
-        </div>
+  <div class="col-auto">
+    <div class="vstack">
+      <div>
+        <label for="boardSize" class="form-label float-start"><i class="material-icons notranslate">zoom_in</i>Board size</label>
+        <input type="range" class="form-range align-middle float-end" id="boardSize" value="1" min="0.1" max="2" step="0.01" />
+      </div>
+      <div>
+        <label for="boardOpacity" class="form-label float-start me-2"><i class="material-icons notranslate">opacity</i>Board opacity</label>
+        <input type="range" class="form-range align-middle float-end" id="boardOpacity" value="1" min="0" max="1" step="0.01" />
       </div>
     </div>
+  </div>
+  <div class="col-auto">
+    <div class="input-group" id="loginInfo" style="display: none">
+      <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <img id="loginInfoPFP" src="/donk.png" alt="profile pic" style="height: 2em" />
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+          <a class="dropdown-item" href="#" onclick={logout}><i class="material-icons notranslate">logout</i>Logout</a>
+        </li>
+      </ul>
+      <input readonly value="asd" id="bingoLink" type="text" class="form-control" aria-label="Bingo share link" />
+      <button
+        class="btn btn-outline-secondary"
+        type="button"
+        id="copyButton"
+        data-bs-toggle="popover"
+        data-bs-trigger="manual"
+        data-bs-placement="top"
+        data-bs-content="Link copied :)"
+        onclick={copyLink}
+      >
+        <IcBaselineContentCopy />
+      </button>
+
+      <Modal
+        open={drawerState}
+        onOpenChange={(e) => (drawerState = e.open)}
+        triggerBase="btn preset-tonal"
+        contentBase="bg-surface-100-900 p-4 space-y-4 shadow-xl w-[480px] h-screen"
+        positionerJustify="justify-end"
+        positionerAlign=""
+        positionerPadding=""
+        transitionsPositionerIn={{ x: 480, duration: 200 }}
+        transitionsPositionerOut={{ x: 480, duration: 200 }}
+      >
+        {#snippet trigger()}<IcBaselineLeaderboard />Chat leaderboard{/snippet}
+        {#snippet content()}
+          <header class="flex justify-between">
+            <h2 class="h2">Bingo leaderboard</h2>
+          </header>
+          <article>
+            <h4>Total players: <span id="leaderboardCount">0</span></h4>
+            <ul class="list-group" id="leaderboard"></ul>
+          </article>
+        {/snippet}
+      </Modal>
+    </div>
+  </div>
+
+  <div class="col">
+    <button disabled type="button" id="nextStream" onclick={nextStream} class="btn btn-lg btn-success float-end">
+      <IcBaselineSkipNext /> Next stream
+    </button>
+    <button
+      disabled
+      type="button"
+      id="previousStream"
+      onclick={previousStream}
+      class="btn btn-lg btn-secondary float-end me-2"
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      data-bs-title="Previous stream"
+    >
+      <IcBaselineSkipPrevious />
+    </button>
   </div>
 </div>
 
