@@ -33,7 +33,7 @@
   }
 </script>
 
-<div class="card sticky top-0 grid w-full h-screen grid-cols-[auto_1fr]">
+<div class="card sticky top-0 col-span-1 grid w-full h-screen grid-cols-[auto_1fr]">
   <!-- Component -->
   <Navigation.Rail width="w-18">
     {#snippet header()}

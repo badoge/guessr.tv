@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import MdiTwitch from "~icons/mdi/twitch";
 
   onMount(async () => {
     getUsername();
@@ -62,7 +63,7 @@
   <div id="login">
     <h3>Sign in with Twitch to enable drops</h3>
     <a class="btn btn-twitch" href="https://id.twitch.tv/oauth2/authorize?client_id=ed2ch5dsxogpczmisjnbfnm92n4zps&redirect_uri=https://guessr.tv/drops.html&response_type=token">
-      <span class="twitch-icon"></span> Sign in with Twitch
+      <MdiTwitch class="text-xl" /> Sign in with Twitch
     </a>
   </div>
 
@@ -111,14 +112,6 @@
 </div>
 
 <style>
-  .twitch-icon {
-    display: inline-block;
-    width: 22px;
-    height: 26px;
-    background-image: url(/twitch.png);
-    margin: 0 5px -8px 0;
-  }
-
   .btn-twitch {
     color: #ffffff;
     background-color: #9933ff !important;

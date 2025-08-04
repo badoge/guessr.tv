@@ -1,26 +1,54 @@
 <script>
   import { onMount } from "svelte";
   import localforage from "localforage";
-  import { toaster } from "$lib/functions";
-  import { Modal } from "@skeletonlabs/skeleton-svelte";
+  import { getCustomBadges, toaster } from "$lib/functions";
+  import { Modal, Segment, Slider, Switch } from "@skeletonlabs/skeleton-svelte";
   import { createDraggable } from "animejs";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
   import IcBaselineContentCopy from "~icons/ic/baseline-content-copy";
   import IcBaselineCasino from "~icons/ic/baseline-casino";
-
+  import IcBaselineHelp from "~icons/ic/baseline-help";
+  import IcBaselineCelebration from "~icons/ic/baseline-celebration";
+  import IcBaselineNorthEast from "~icons/ic/baseline-north-east";
+  import IcBaselineDone from "~icons/ic/baseline-done";
+  import IcBaselinePreview from "~icons/ic/baseline-preview";
+  import IcBaselineLogout from "~icons/ic/baseline-logout";
+  import IcBaselineOpacity from "~icons/ic/baseline-opacity";
+  import IcBaselineZoomIn from "~icons/ic/baseline-zoom-in";
+  import IcBaselineLightbulb from "~icons/ic/baseline-lightbulb";
+  import IcBaselineDeleteForever from "~icons/ic/baseline-delete-forever";
+  import IcBaselineWarning from "~icons/ic/baseline-warning";
+  import IcBaselineAdd from "~icons/ic/baseline-add";
+  import IcBaselineGridOn from "~icons/ic/baseline-grid-on";
+  import IcBaselineEdit from "~icons/ic/baseline-edit";
+  import IcBaselineSettings from "~icons/ic/baseline-settings";
+  import IcBaselineCategory from "~icons/ic/baseline-category";
+  import IcBaselineBuild from "~icons/ic/baseline-build";
+  import MdiTwitch from "~icons/mdi/twitch";
   import BingoBoard from "$lib/BingoBoard.svelte";
+  import { slide } from "svelte/transition";
 
   let drawerState = $state(false);
-  let bingoSize = $state(5);
+  let sliderValue = $state([5]);
+  let bingoSize = $derived(sliderValue[0]);
+  let allowDiagonals = $state(false);
+
+  let bingoType = $state("twitch");
 
   function drawerClose() {
     drawerState = false;
   }
 
+  let howToPlayModalOpenState = $state(false);
+
+  function howToPlayModalClose() {
+    howToPlayModalOpenState = false;
+  }
+
   onMount(async () => {
-    const draggable = createDraggable("#board");
+    const draggable = createDraggable("#board", { container: "body" });
     elements = {
       leaderboardCount: document.getElementById("leaderboardCount"),
       leaderboard: document.getElementById("leaderboard"),
@@ -37,16 +65,10 @@
       deletePackButton: document.getElementById("deletePackButton"),
       packSwitchesDiv: document.getElementById("packSwitchesDiv"),
       packDropdownButton: document.getElementById("packDropdownButton"),
-      allowDiagonals: document.getElementById("allowDiagonals"),
       twitchBingo: document.getElementById("twitchBingo"),
       customBingo: document.getElementById("customBingo"),
-      bingoTypeDescription: document.getElementById("bingoTypeDescription"),
       customBingoName: document.getElementById("customBingoName"),
-      customBingoNameDiv: document.getElementById("customBingoNameDiv"),
       board: document.getElementById("board"),
-      boardSearch: document.getElementById("board-search"),
-      boardSearchBar: document.getElementById("board-search-bar"),
-      boardSearchToggle: document.getElementById("board-search-toggle"),
       bingoStats: document.getElementById("bingoStats"),
       bingoStatsTooltip: document.getElementById("bingoStatsTooltip"),
       previewDiv: document.getElementById("previewDiv"),
@@ -61,7 +83,6 @@
       boardOpacity: document.getElementById("boardOpacity"),
       loginButton: document.getElementById("loginButton"),
       loginInfo: document.getElementById("loginInfo"),
-      loginDescription: document.getElementById("loginDescription"),
       loginInfoPFP: document.getElementById("loginInfoPFP"),
       bingoLink: document.getElementById("bingoLink"),
       copyButton: document.getElementById("copyButton"),
@@ -80,24 +101,24 @@
     let storedItemPacks = JSON.parse(await localforage.getItem("itemPacks")) || [];
     itemPacks.push(...storedItemPacks);
     seenChannels = JSON.parse(await localforage.getItem("seenChannels")) || [];
-    elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
+    //elements.seenChannels.innerHTML = seenChannels.length.toLocaleString();
 
     skipSexual = (localStorage.getItem("skipSexual") || "true") === "true";
-    elements.skipSexual.checked = skipSexual;
+    //elements.skipSexual.checked = skipSexual;
 
     unloadWarningBingo = (localStorage.getItem("unloadWarningBingo") || "true") === "true";
-    elements.unloadWarningBingo.checked = unloadWarningBingo;
+    //elements.unloadWarningBingo.checked = unloadWarningBingo;
 
-    elements.resetSeenChannels.onclick = function () {
-      localforage.setItem("seenChannels", JSON.stringify([]));
-      elements.seenChannels.innerHTML = 0;
-      seenChannels = [];
-      toaster.create({
-        type: "success",
-        title: "Seen channels reset",
-        duration: 2000,
-      });
-    };
+    // elements.resetSeenChannels.onclick = function () {
+    //   localforage.setItem("seenChannels", JSON.stringify([]));
+    //   elements.seenChannels.innerHTML = 0;
+    //   seenChannels = [];
+    //   toaster.create({
+    //     type: "success",
+    //     title: "Seen channels reset",
+    //     duration: 2000,
+    //   });
+    // };
 
     TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
     if (TWITCH?.access_token && !(await checkToken(TWITCH.access_token))) {
@@ -112,51 +133,15 @@
       sendUsername("/bingo");
     }
 
-    elements.twitchBingo.onchange = function () {
-      if (this.checked) {
-        bingoType = "twitch";
-        elements.bingoTypeDescription.innerHTML = "Random Twitch streams will be shown";
-        elements.customBingoNameDiv.style.display = "none";
-      }
-    };
+    // elements.skipSexual.onchange = function () {
+    //   skipSexual = this.checked;
+    //   localStorage.setItem("skipSexual", skipSexual);
+    // };
 
-    elements.customBingo.onchange = function () {
-      if (this.checked) {
-        bingoType = "custom";
-        elements.bingoTypeDescription.innerHTML = "A custom bingo board that can be used to play with your viewers";
-        elements.customBingoNameDiv.style.display = "";
-      }
-    };
-
-    elements.bingoSize.oninput = function () {
-      bingoSize = parseInt(this.value, 10);
-      const bingoItems = [...document.querySelectorAll(".bingo-item")].map((e) => e.value);
-      elements.bingoSizeLabel.innerHTML = `Board size: ${bingoSize}x${bingoSize} (${bingoSize * bingoSize} ${bingoSize == 1 ? "item" : "items"})`;
-      elements.boardSearch.style.display = bingoSize < 3 ? "none" : "";
-      switch (bingoSize) {
-        case 10:
-          elements.previewDiv.style.scale = 0.7;
-          break;
-        case 9:
-          elements.previewDiv.style.scale = 0.8;
-          break;
-        case 8:
-          elements.previewDiv.style.scale = 0.85;
-          break;
-        default:
-          elements.previewDiv.style.scale = 1;
-      }
-    };
-
-    elements.skipSexual.onchange = function () {
-      skipSexual = this.checked;
-      localStorage.setItem("skipSexual", skipSexual);
-    };
-
-    elements.unloadWarningBingo.onchange = function () {
-      unloadWarningBingo = this.checked;
-      localStorage.setItem("unloadWarningBingo", unloadWarningBingo);
-    };
+    // elements.unloadWarningBingo.onchange = function () {
+    //   unloadWarningBingo = this.checked;
+    //   localStorage.setItem("unloadWarningBingo", unloadWarningBingo);
+    // };
 
     elements.boardSize.oninput = function () {
       elements.board.style.scale = this.value;
@@ -180,7 +165,7 @@
     //   }
     // });
 
-    loadPacks();
+    //loadPacks();
     customBadges = await getCustomBadges();
   });
 
@@ -286,7 +271,6 @@
   let skipSexual = true;
   let unloadWarningBingo = true;
   let userInteracted = false;
-  let bingoType = "twitch";
 
   let board = [];
   let won = false;
@@ -422,28 +406,6 @@
   function showPreviousStream(currentIndex, forward) {
     player.setChannel(previousChannels[(currentIndex += forward ? 1 : -1)]);
   } //showPreviousStream
-
-  function fillCell(event) {
-    if (!boardCreated) {
-      let textInput = document.querySelector(`input[data-item-id="${event.target.dataset.id}"]`);
-      textInput.scrollIntoView({ behavior: "smooth" });
-      textInput.select();
-      textInput.focus();
-      return;
-    }
-    clearTimeout(refreshCooldown);
-    event.target.classList.toggle("filled");
-    hideSearchBar();
-    let cellNumber = parseInt(event.target.dataset.id, 10) - 1;
-    board[cellNumber].filled = !board[cellNumber].filled;
-    checkWin(board, true);
-    if (TWITCH?.channel) {
-      refreshCooldown = setTimeout(() => {
-        updateLeaderboard();
-      }, 3000);
-    }
-    updateStatsTooltip();
-  } //fillCell
 
   function randomize(event) {
     const id = event.target.dataset.itemId;
@@ -736,7 +698,7 @@
         time: new Date(),
         board: board,
         title: bingoType == "twitch" ? "Twitch Bingo" : elements.customBingoName.value || "Custom Bingo",
-        allowDiagonals: elements.allowDiagonals.checked,
+        allowDiagonals: allowDiagonals,
       });
       let requestOptions = {
         method: "POST",
@@ -836,7 +798,7 @@
       }
     }
 
-    if (elements.allowDiagonals.checked) {
+    if (allowDiagonals) {
       let diagonalScore1 = diagonals[0].reduce((score, cell) => score + cell.filled, 0);
       let diagonalScore2 = diagonals[1].reduce((score, cell) => score + cell.filled, 0);
       result.score += scoring[diagonalScore1];
@@ -872,7 +834,6 @@
 
   function resetLoginButton() {
     elements.loginButton.innerHTML = `<span class="twitch-icon"></span> Sign in with Twitch`;
-    elements.loginDescription.style.display = "";
   } //resetLoginButton
 
   function logout() {
@@ -880,7 +841,6 @@
     localStorage.setItem("TWITCH", JSON.stringify(TWITCH));
     elements.loginButton.disabled = false;
     elements.loginButton.innerHTML = `<span class="twitch-icon"></span> Sign in with Twitch`;
-    elements.loginDescription.style.display = "";
     elements.loginInfo.style.display = "none";
     elements.loginInfoPFP.src = "/donk.png";
     elements.bingoLink.value = `https://bingo.guessr.tv`;
@@ -899,7 +859,6 @@
     elements.loginButton.disabled = true;
     elements.loginButton.innerHTML = `<span class="twitch-icon"></span><i class="material-icons notranslate">done</i>Logged in as <strong>${TWITCH.channel}</strong>`;
     elements.loginInfo.style.display = "";
-    elements.loginDescription.style.display = "none";
     elements.bingoLink.value = `https://bingo.guessr.tv/${TWITCH.channel}`;
     loadPFP();
   } //loadInfo
@@ -925,7 +884,7 @@
       access_token: TWITCH.access_token,
       time: new Date(),
       board: board,
-      allowDiagonals: elements.allowDiagonals.checked,
+      allowDiagonals: allowDiagonals,
     });
     let requestOptions = {
       method: "POST",
@@ -1194,35 +1153,11 @@
         <div class="row justify-content-center">
           Renew login:<br />
           <button type="button" data-bs-dismiss="modal" onclick={login} class="btn btn-twitch"><span class="twitch-icon"></span>Sign in with Twitch</button>
-          <br /><small class="text-body-secondary">Logins expire after 2 months.<br />Or after you change your password.</small>
+          <br /><small class="opacity-60">Logins expire after 2 months.<br />Or after you change your password.</small>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick={logout}><i class="material-icons notranslate">logout</i>Logout</button>
-      </div>
-    </div>
-  </div>
-</div> -->
-
-<!-- <div class="modal fade" id="howToPlayModal" tabindex="-1" aria-labelledby="howToPlayModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="howToPlayModalLabel">How to play</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        1. Sign in with <span class="twitch-icon"></span>Twitch <small class="text-body-secondary">Optional. Allows viewers to play along</small> <br />
-        2. Set the board size and fill it up. If you are playing Twitch bingo you can get random suggestions using the
-        <i class="material-icons notranslate pointer-events-none">casino</i> buttons<br />
-        3. <i class="material-icons notranslate pointer-events-none text-success">celebration</i> <span class="text-success">Start</span><br />
-        <small
-          >If you signed in with Twitch you should share your bingo.guessr.tv link with your viewers.<br />
-          Viewers only need to sign in to join the game, they don't interact with the board. The site will automatically fill the board for viewers on their uniquely shuffled boards
-        </small>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
       </div>
     </div>
   </div>
@@ -1287,59 +1222,97 @@
   <div class="col"><div id="twitchEmbed"></div></div>
 </div>
 
-<div class="card" id="settingsCard">
-  <div class="card-header text-center"><img src="/guessr.png" alt="logo" style="height: 24px; width: 24px" class="d-inline-block align-top" /> Guessr.tv Bingo</div>
-  <div class="card-body">
-    <div class="container-fluid p-0">
-      <div class="row">
-        <div class="col mb-3">
-          <button type="button" class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#howToPlayModal">
-            <i class="material-icons notranslate">help_outline</i> How to play
-          </button>
-          <br />
-          <button id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable sharing with viewers" class="btn btn-twitch" onclick={login}>
-            <span class="twitch-icon"></span> Sign in with Twitch
-          </button>
-          <br />
-          <small id="loginDescription" class="text-body-secondary">Optional. Allows viewers to play along</small>
-
-          <div class="card mt-3">
-            <div class="card-header">
-              <h5><i class="material-icons notranslate">settings</i>Settings</h5>
-            </div>
-            <div class="card-body">
-              <h5><i class="material-icons notranslate">grid_on</i>Board</h5>
-              <label for="bingoSize" id="bingoSizeLabel" class="form-label">Board size: 5x5 (25 items)</label><br />
-              <input type="range" class="form-range" min="1" max="10" step="1" value="5" id="bingoSize" />
-
-              <div class="mt-3">
-                <h5>Bingo type</h5>
-                <div class="btn-group" role="group" aria-label="Mode">
-                  <input type="radio" class="btn-check" name="bingoTypeSelect" value="twitch" id="twitchBingo" autocomplete="off" checked />
-                  <label class="btn btn-outline-primary" for="twitchBingo"><span class="twitch-icon"></span>Twitch Bingo</label>
-                  <input type="radio" class="btn-check" name="bingoTypeSelect" value="custom" id="customBingo" autocomplete="off" />
-                  <label class="btn btn-outline-info" for="customBingo">Custom Bingo</label>
-                </div>
+<div class="flex justify-end h-screen" id="settingsCard">
+  <div class="card bg-surface-900 m-4">
+    <div class="flex flex-col h-full">
+      <div class="flex flex-row grow p-4 gap-4">
+        <div class="w-100">
+          <Modal
+            open={howToPlayModalOpenState}
+            onOpenChange={(e) => (howToPlayModalOpenState = e.open)}
+            triggerBase="btn preset-tonal-success mb-3"
+            contentBase="card bg-surface-100-900 p-4 space-y-4 shadow-xl max-w-screen-sm"
+            backdropClasses="backdrop-blur-sm"
+          >
+            {#snippet trigger()}<IcBaselineHelp />How to play{/snippet}
+            {#snippet content()}
+              <header class="flex justify-between">
+                <h2 class="h2">How to play</h2>
+              </header>
+              <article>
+                <ul class="list-inside list-decimal space-y-2">
+                  <li>
+                    Sign in with <MdiTwitch class="inline" />Twitch
+                    <small class="opacity-60"> Optional; Allows viewers to play along </small>
+                  </li>
+                  <li>
+                    Set the board size and fill it up
+                    <small class="opacity-60">
+                      If you are playing Twitch bingo, you can get random suggestions using the
+                      <IcBaselineCasino class="inline align-text-bottom" /> buttons. You can also use your own presets if you make an item pack
+                    </small>
+                  </li>
+                  <li>Click the <span class="text-success-500"><IcBaselineCelebration class="inline" /> Start!</span> button</li>
+                </ul>
                 <br />
-                <small id="bingoTypeDescription">Random Twitch streams will be shown</small>
+                <small class="opacity-60">
+                  If you signed in with Twitch you should share the bingo.guessr.tv link with your viewers.<br />
+                  Viewers only need to sign in with Twitch to join the game, they don't interact with the board. The site will automatically fill the board for viewers on their uniquely shuffled
+                  boards
+                </small>
+              </article>
+              <footer class="flex justify-end gap-4">
+                <button type="button" class="btn preset-filled" onclick={howToPlayModalClose}>OK</button>
+              </footer>
+            {/snippet}
+          </Modal>
 
-                <div id="customBingoNameDiv" class="input-group mb-3" style="display: none">
-                  <span class="input-group-text" id="bingoNameLabel">Bingo name</span>
-                  <input id="customBingoName" type="text" class="form-control" placeholder="Custom Bingo" aria-label="Custom Bingo" aria-describedby="bingoNameLabel" />
-                </div>
-              </div>
+          <div class="card w-full max-w-md bg-tertiary-900 p-1">
+            <header><h4 class="h4"><IcBaselineSettings class="inline align-text-bottom" />Settings</h4></header>
 
-              <div class="form-check form-switch mt-3">
-                <input class="form-check-input" type="checkbox" role="switch" id="allowDiagonals" />
-                <label class="form-check-label" for="allowDiagonals"><i class="material-icons notranslate">north_east</i>Allow diagonals</label>
-                <br /><small class="text-body-secondary">Count diagonals when checking for winning patterns</small>
+            <article class="p-2">
+              <section class="w-full mb-6">
+                <h6 class="h6"><IcBaselineGridOn class="inline align-text-bottom" />Board size: {bingoSize}x{bingoSize} ({bingoSize * bingoSize} items)</h6>
+                <Slider value={sliderValue} min={1} max={10} step={1} onValueChange={(e) => (sliderValue = e.value)} base="my-1" meterBg="bg-primary-500" thumbRingColor="ring-primary-500" />
+              </section>
+
+              <section class="w-full">
+                <Switch name="allowDiagonals" base="inline-flex items-center gap-1" checked={allowDiagonals} onCheckedChange={(e) => (allowDiagonals = e.checked)}>
+                  <span><IcBaselineNorthEast class="inline" />Allow diagonals</span>
+                </Switch>
+              </section>
+              <small class="opacity-60">Count diagonals when checking for winning patterns</small>
+
+              <div class="mt-6">
+                <h6 class="h6"><IcBaselineCategory class="inline align-text-bottom" />Bingo type</h6>
+
+                <Segment name="bingoType" classes="bg-primary-500" value={bingoType} onValueChange={(e) => (bingoType = e.value)}>
+                  <Segment.Item value="twitch"><MdiTwitch class="inline" />Twitch bingo</Segment.Item>
+                  <Segment.Item value="custom"><IcBaselineBuild class="inline" />Custom bingo</Segment.Item>
+                </Segment>
+                <br />
+                <small class="opacity-60">
+                  {#if bingoType == "twitch"}
+                    Random Twitch streams will be shown
+                  {:else}
+                    A custom bingo board that can be used to play with your viewers
+                  {/if}
+                </small>
+
+                {#if bingoType == "custom"}
+                  <div class="input-group grid-cols-[auto_1fr_auto]" transition:slide>
+                    <div class="ig-cell bg-primary-500">Bingo name</div>
+                    <input id="customBingoName" class="ig-input bg-primary-800" type="text" placeholder="Custom Bingo" />
+                  </div>
+                {/if}
               </div>
-            </div>
+            </article>
           </div>
         </div>
-        <div class="col">
-          <div class="hstack gap-3 mb-3">
-            <div class="input-group" style="min-width: 20vw; padding-left: 12px">
+
+        <div class="w-150">
+          <div class="flex flex-row justify-end mb-3">
+            <div class="input-group" style="min-width: 20vw; padding-left: 12px; display:none">
               <label class="input-group-text">Item pack</label>
               <button id="packDropdownButton" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                 Loading...
@@ -1349,26 +1322,26 @@
                 <div id="packSwitchesDiv">Loading...</div>
               </form>
               <button class="btn btn-outline-secondary" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit item packs" onclick={editPacks}>
-                <i class="material-icons notranslate pointer-events-none">edit</i>
+                <IcBaselineEdit />
               </button>
             </div>
 
-            <div class="btn-group" role="group" aria-label="text input controls">
-              <button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Randomize all" onclick={randomizeAll}>
-                <i class="material-icons notranslate pointer-events-none">casino</i>
+            <nav class="btn-group preset-filled-surface-200-800 p-2 flex-row">
+              <button type="button" class="btn preset-tonal-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Randomize all" onclick={randomizeAll}>
+                <IcBaselineCasino class="text-xl" />
               </button>
-              <button type="button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear all" onclick={clearAll}>
-                <i class="material-icons notranslate pointer-events-none">delete_forever</i>
+              <button type="button" class="btn preset-tonal-error" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear all" onclick={clearAll}>
+                <IcBaselineDeleteForever class="text-xl" />
               </button>
-            </div>
+            </nav>
           </div>
 
-          <div class="container-fluid" style="height: 65vh; overflow: auto">
+          <div class="grid grid-cols-2 gap-3 overflow-y-auto max-h-[70vh]">
             {#each { length: bingoSize * bingoSize || 25 }, index}
-              <div class="input-group mb-1 w-50 pe-1">
+              <div class="input-group grid-cols-[1fr_auto] w-full">
                 <input
                   type="text"
-                  class="form-control bingo-item"
+                  class="ig-input bg-surface-950 bingo-item"
                   onfocus={activateCellById}
                   onblur={deactivateCellById}
                   oninput={updateSingleItem}
@@ -1376,9 +1349,8 @@
                   placeholder="Bingo item #{index + 1}"
                   data-item-id={index + 1}
                   aria-label="Bingo item #{index + 1}"
-                  value={index}
                 />
-                <button class="btn btn-outline-secondary" onclick={randomize} data-item-id={index + 1} type="button" title="Fill with random item">
+                <button class="ig-btn preset-tonal" title="Fill with random item" onclick={randomize} data-item-id={index + 1}>
                   <IcBaselineCasino />
                 </button>
               </div>
@@ -1386,15 +1358,29 @@
           </div>
         </div>
       </div>
+      <footer class="flex flex-col">
+        <hr class="hr border-t-2 border-surface-700" />
+        <div class="flex flex-row justify-between p-4">
+          <div class="flex flex-col">
+            <button id="loginButton" type="button" class="btn btn-lg btn-twitch" onclick={login}>
+              <MdiTwitch class="text-2xl" /> Sign in with Twitch
+            </button>
+            <small class="opacity-60">Optional. Allows viewers to play along</small>
+          </div>
+
+          <div class="flex flex-col">
+            <button id="start" type="button" class="btn btn-lg preset-tonal-success" onclick={start}>
+              <IcBaselineCelebration class="text-2xl" /> Start!
+            </button>
+            <small class="opacity-60"> Don't forget to share the bingo link with your viewers if you logged in with Twitch :)</small>
+          </div>
+        </div>
+      </footer>
     </div>
-  </div>
-  <div class="card-footer text-body-secondary text-end">
-    <small class="text-body-secondary"> Don't forget to share the bingo link with your viewers if you logged in with Twitch :)</small>
-    <button type="button" class="btn btn-success btn-lg" onclick={start} id="start"><i class="material-icons notranslate">celebration</i> Start!</button>
   </div>
 </div>
 
-<div id="sliderDiv" class="row">
+<div class="row" style="display: none;">
   <div class="col-auto text-center">
     <span
       class="text-info mb-2"
@@ -1408,7 +1394,7 @@
                     R: <strong>reset board position</strong><br>
                     F3 / CTRL + F: <strong>search board</strong>"
     >
-      <i class="material-icons notranslate">lightbulb</i>
+      <IcBaselineLightbulb />
       <br /><small>Board controls</small>
     </span>
   </div>
@@ -1416,11 +1402,11 @@
   <div class="col-auto">
     <div class="vstack">
       <div>
-        <label for="boardSize" class="form-label float-start"><i class="material-icons notranslate">zoom_in</i>Board size</label>
+        <label for="boardSize" class="form-label float-start"><IcBaselineZoomIn />Board size</label>
         <input type="range" class="form-range align-middle float-end" id="boardSize" value="1" min="0.1" max="2" step="0.01" />
       </div>
       <div>
-        <label for="boardOpacity" class="form-label float-start me-2"><i class="material-icons notranslate">opacity</i>Board opacity</label>
+        <label for="boardOpacity" class="form-label float-start me-2"><IcBaselineOpacity />Board opacity</label>
         <input type="range" class="form-range align-middle float-end" id="boardOpacity" value="1" min="0" max="1" step="0.01" />
       </div>
     </div>
@@ -1432,7 +1418,7 @@
       </button>
       <ul class="dropdown-menu dropdown-menu-end">
         <li>
-          <a class="dropdown-item" href="#" onclick={logout}><i class="material-icons notranslate">logout</i>Logout</a>
+          <a class="dropdown-item" href="#" onclick={logout}><IcBaselineLogout />Logout</a>
         </li>
       </ul>
       <input readonly value="asd" id="bingoLink" type="text" class="form-control" aria-label="Bingo share link" />
@@ -1522,5 +1508,19 @@
     z-index: 4000;
     scale: 1;
     pointer-events: none;
+  }
+
+  .btn-twitch {
+    color: #ffffff;
+    background-color: #9933ff !important;
+    border-color: #8744aa !important;
+  }
+
+  .btn-twitch:active,
+  .btn-twitch:focus,
+  .btn-twitch:hover {
+    color: #ffffff;
+    background-color: #8038de !important;
+    border-color: #7f40a1 !important;
   }
 </style>

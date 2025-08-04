@@ -4,6 +4,8 @@
   import IcBaselineLogout from "~icons/ic/baseline-logout";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineRefresh from "~icons/ic/baseline-refresh";
+  import MdiTwitch from "~icons/mdi/twitch";
+
   let { data } = $props();
 
   let channel = $state(data.slug.toLowerCase().replace(/\s/g, ""));
@@ -404,7 +406,7 @@
       <div class="modal-body">
         <div class="row justify-content-center">
           Renew login:<br />
-          <button type="button" data-bs-dismiss="modal" onclick={login} class="btn btn-twitch"><span class="twitch-icon"></span>Sign in with Twitch</button>
+          <button type="button" data-bs-dismiss="modal" onclick={login} class="btn btn-twitch"><MdiTwitch class="text-xl" /> Sign in with Twitch</button>
           <br /><small class="text-body-secondary">Logins expire after 2 months.<br />Or after you change your password.</small>
         </div>
       </div>
@@ -444,7 +446,7 @@
       <h2 class="text-body-secondary mb-5">Playing with <a href="https://twitch.tv/${data.username}" target="_blank" id="channel">${data.username}</a></h2>
 
       <a id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable the bingo board" class="btn btn-twitch" href="#" onclick={login}>
-        <span class="twitch-icon"></span> Sign in with Twitch
+        <MdiTwitch /> Sign in with Twitch
       </a>
 
       <div class="btn-group" id="loginInfo" style="display: none">

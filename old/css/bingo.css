@@ -25,21 +25,6 @@
   overflow: auto;
 }
 
-@keyframes card-easein {
-  from {
-    opacity: 0;
-    top: -10px;
-  }
-  to {
-    opacity: 1;
-    top: 0px;
-  }
-}
-
-#customBingoNameDiv {
-  animation: card-easein 0.1s ease-in;
-}
-
 .item-input-placeholder > * {
   height: 38px;
   border-radius: 6px;
