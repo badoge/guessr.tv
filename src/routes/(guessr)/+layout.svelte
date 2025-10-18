@@ -1,6 +1,6 @@
 <script>
   import "../../app.css";
-  import { Toaster } from "@skeletonlabs/skeleton-svelte";
+  import { Toast } from "@skeletonlabs/skeleton-svelte";
   import { toaster } from "$lib/functions";
   import { Navigation } from "@skeletonlabs/skeleton-svelte";
   import IcBaselineGridOn from "~icons/ic/baseline-grid-on";
@@ -17,7 +17,7 @@
   import SettingsModalBingo from "$lib/modals/SettingsModalBingo.svelte";
   import SettingsModalWatch from "$lib/modals/SettingsModalWatch.svelte";
 
-  import { Modal } from "@skeletonlabs/skeleton-svelte";
+  import { Dialog } from "@skeletonlabs/skeleton-svelte";
   import { page } from "$app/state";
 
   let { children } = $props();
@@ -31,21 +31,38 @@
   function aboutModalClose() {
     aboutModalOpenState = false;
   }
+
+  let anchorRail = "btn hover:preset-tonal aspect-square w-full max-w-[84px] flex flex-col items-center gap-0.5";
 </script>
 
 <div class="card sticky top-0 col-span-1 grid w-full h-screen grid-cols-[auto_1fr]">
   <!-- Component -->
-  <Navigation.Rail width="w-18">
-    {#snippet header()}
-      <Navigation.Tile label="Guessr.tv beta" title="Guessr.tv" href="/"><img src="/guessr.png" alt="guessr" /></Navigation.Tile>
-    {/snippet}
-    {#snippet tiles()}
-      <Navigation.Tile label="Guessr" href="/" selected={page.route.id === "/(guessr)"}><IcBaselineQuestionMark class="text-2xl" /></Navigation.Tile>
-      <Navigation.Tile label="Bingo" href="/bingo" selected={page.route.id === "/(guessr)/bingo"}><IcBaselineGridOn class="text-2xl" /></Navigation.Tile>
-      <Navigation.Tile label="Watch" href="/watch" selected={page.route.id === "/(guessr)/watch"}><IcBaselineLiveTv class="text-2xl" /></Navigation.Tile>
-    {/snippet}
+  <Navigation width="w-18" layout="rail">
+    <Navigation.Header>
+      <a href="/" class={anchorRail} title="Guessr.tv beta" aria-label="Guessr.tv beta">
+        <img src="/guessr.png" alt="guessr" />
+      </a>
+    </Navigation.Header>
+
+    <Navigation.Content>
+      <Navigation.Menu>
+        <a href="/" class={anchorRail} selected={page.route.id === "/(guessr)"}>
+          <IcBaselineQuestionMark class="text-2xl" />
+          <span class="text-xs">Guessr</span>
+        </a>
+        <a href="/bingo" class={anchorRail} selected={page.route.id === "/(guessr)/bingo"}>
+          <IcBaselineGridOn class="text-2xl" />
+          <span class="text-xs">Bingo</span>
+        </a>
+        <a href="/watch" class={anchorRail} selected={page.route.id === "/(guessr)/watch"}>
+          <IcBaselineLiveTv class="text-2xl" />
+          <span class="text-xs">Watch</span>
+        </a>
+      </Navigation.Menu>
+    </Navigation.Content>
+
     {#snippet footer()}
-      <Modal
+      <Dialog
         open={aboutModalOpenState}
         onOpenChange={(e) => (aboutModalOpenState = e.open)}
         triggerBase="btn"
@@ -73,9 +90,9 @@
             <button type="button" class="btn preset-tonal" onclick={aboutModalClose}>Close</button>
           </footer>
         {/snippet}
-      </Modal>
+      </Dialog>
 
-      <Modal
+      <Dialog
         open={settingsModalOpenState}
         onOpenChange={(e) => (settingsModalOpenState = e.open)}
         triggerBase="btn"
@@ -103,12 +120,12 @@
             <button type="button" class="btn preset-tonal" onclick={settingsModalClose}>Close</button>
           </footer>
         {/snippet}
-      </Modal>
+      </Dialog>
     {/snippet}
-  </Navigation.Rail>
+  </Navigation>
   <div>
     {@render children()}
   </div>
 </div>
 
-<Toaster {toaster}></Toaster>
+<Toast.Group {toaster}></Toast.Group>

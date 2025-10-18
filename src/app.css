@@ -1,12 +1,10 @@
 @import "tailwindcss";
-@plugin '@tailwindcss/forms';
-@plugin '@tailwindcss/typography';
-
-@import "@skeletonlabs/skeleton";
-@import "@skeletonlabs/skeleton/optional/presets";
-@import "@skeletonlabs/skeleton/themes/mona";
-
-@source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
+@plugin "@tailwindcss/typography";
+@plugin "daisyui" {
+  themes:
+    dim --default,
+    lemonade;
+}
 
 iframe {
   border-radius: 0.75rem;

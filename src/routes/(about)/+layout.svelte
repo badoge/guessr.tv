@@ -10,22 +10,26 @@
 </script>
 
 <AppBar>
-  {#snippet lead()}
-    <a href="/" class="text-2xl mt-1"><IcBaselineArrowBack /></a>
-  {/snippet}
-  {#snippet trail()}
-    <a href="/about" class={page.route.id === "/(about)/about" ? "mt-1 font-bold underline decoration-3 underline-offset-7" : "mt-1"}>
-      <IcBaselineInfo class="inline align-text-bottom me-1" />About
-    </a>
-    <a href="/badges" class={page.route.id === "/(about)/badges" ? "mt-1 font-bold underline decoration-3 underline-offset-7" : "mt-1"}>
-      <MdiBadge class="inline align-text-bottom me-1" />Badges
-    </a>
-    <a href="/drops" class={page.route.id === "/(about)/drops" ? "mt-1 font-bold underline decoration-3 underline-offset-7" : "mt-1"}>
-      <StreamlineUltimateTreasureChestBold class="inline align-text-bottom me-1" />Drops
-    </a>
-  {/snippet}
+  <AppBar.Toolbar class="grid-cols-[auto_1fr_auto]">
+    <AppBar.Lead>
+      <a href="/" class="text-2xl mt-1"><IcBaselineArrowBack /></a>
+    </AppBar.Lead>
+    <AppBar.Headline class="flex justify-center">
+      <span class="text-2xl"><img src="/guessr.png" alt="Guessr.tv" class="w-8 inline align-bottom me-1" />Guessr.tv</span>
+    </AppBar.Headline>
 
-  <span class="text-2xl"><img src="/guessr.png" alt="Guessr.tv" class="w-8 inline align-bottom me-1" />Guessr.tv</span>
+    <AppBar.Trail>
+      <a href="/about" class={page.route.id === "/(about)/about" ? "font-bold underline decoration-3 underline-offset-7 me-2" : "me-2"}>
+        <IcBaselineInfo class="inline align-text-bottom" />About
+      </a>
+      <a href="/badges" class={page.route.id === "/(about)/badges" ? "font-bold underline decoration-3 underline-offset-7 me-2" : "me-2"}>
+        <MdiBadge class="inline align-text-bottom" />Badges
+      </a>
+      <a href="/drops" class={page.route.id === "/(about)/drops" ? "font-bold underline decoration-3 underline-offset-7 me-2" : "me-2"}>
+        <StreamlineUltimateTreasureChestBold class="inline align-text-bottom" />Drops
+      </a>
+    </AppBar.Trail>
+  </AppBar.Toolbar>
 </AppBar>
 
 {@render children()}

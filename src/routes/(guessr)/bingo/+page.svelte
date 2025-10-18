@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import localforage from "localforage";
   import { getCustomBadges, toaster } from "$lib/functions";
-  import { Modal, Segment, Slider, Switch } from "@skeletonlabs/skeleton-svelte";
+  import { Dialog, SegmentedControl, Slider, Switch } from "@skeletonlabs/skeleton-svelte";
   import { createDraggable } from "animejs";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
@@ -1073,9 +1073,9 @@
 
   function updateSelectedPacks() {
     selectedPacks = [];
-    let checkeboxes = document.querySelectorAll(".pack-checkbox:checked");
-    for (let index = 0; index < checkeboxes.length; index++) {
-      selectedPacks.push(parseInt(checkeboxes[index].dataset.id, 10));
+    let checkBoxes = document.querySelectorAll(".pack-checkbox:checked");
+    for (let index = 0; index < checkBoxes.length; index++) {
+      selectedPacks.push(parseInt(checkBoxes[index].dataset.id, 10));
     }
     loadPacks();
   } //updateSelectedPacks
@@ -1227,7 +1227,7 @@
     <div class="flex flex-col h-full">
       <div class="flex flex-row grow p-4 gap-4">
         <div class="w-100">
-          <Modal
+          <Dialog
             open={howToPlayModalOpenState}
             onOpenChange={(e) => (howToPlayModalOpenState = e.open)}
             triggerBase="btn preset-tonal-success mb-3"
@@ -1265,7 +1265,7 @@
                 <button type="button" class="btn preset-filled" onclick={howToPlayModalClose}>OK</button>
               </footer>
             {/snippet}
-          </Modal>
+          </Dialog>
 
           <div class="card w-full max-w-md bg-tertiary-900 p-1">
             <header><h4 class="h4"><IcBaselineSettings class="inline align-text-bottom" />Settings</h4></header>
@@ -1286,10 +1286,10 @@
               <div class="mt-6">
                 <h6 class="h6"><IcBaselineCategory class="inline align-text-bottom" />Bingo type</h6>
 
-                <Segment name="bingoType" classes="bg-primary-500" value={bingoType} onValueChange={(e) => (bingoType = e.value)}>
+                <SegmentedControl name="bingoType" classes="bg-primary-500" value={bingoType} onValueChange={(e) => (bingoType = e.value)}>
                   <Segment.Item value="twitch"><MdiTwitch class="inline" />Twitch bingo</Segment.Item>
                   <Segment.Item value="custom"><IcBaselineBuild class="inline" />Custom bingo</Segment.Item>
-                </Segment>
+                </SegmentedControl>
                 <br />
                 <small class="opacity-60">
                   {#if bingoType == "twitch"}
@@ -1435,7 +1435,7 @@
         <IcBaselineContentCopy />
       </button>
 
-      <Modal
+      <Dialog
         open={drawerState}
         onOpenChange={(e) => (drawerState = e.open)}
         triggerBase="btn preset-tonal"
@@ -1456,7 +1456,7 @@
             <ul class="list-group" id="leaderboard"></ul>
           </article>
         {/snippet}
-      </Modal>
+      </Dialog>
     </div>
   </div>
 

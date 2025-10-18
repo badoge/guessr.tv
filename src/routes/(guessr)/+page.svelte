@@ -1750,7 +1750,7 @@
         }
       });
     } else {
-      //load map if it doesnt exist yet
+      //load map if it doesn't exist yet
       map = L.map("map", {
         center: [40, 16],
         zoom: 2,

@@ -7,7 +7,5 @@
   "endOfLine": "auto",
   "plugins": ["prettier-plugin-svelte"],
   "pluginSearchDirs": ["."],
-  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }],
-  "useTabs": false,
-  "tabWidth": 2
+  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
 }

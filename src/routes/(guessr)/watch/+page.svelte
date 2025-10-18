@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import localforage from "localforage";
   import { toaster, getLanguage, escapeString } from "$lib/functions";
-  import { Popover, ProgressRing, Slider, Modal } from "@skeletonlabs/skeleton-svelte";
+  import { Popover, Progress, Slider, Dialog } from "@skeletonlabs/skeleton-svelte";
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
   import IcBaselineSearch from "~icons/ic/baseline-search";
@@ -517,14 +517,14 @@
       <div class="flex flex-row">
         <div class="shrink-0 me-2">
           {#if currentChannel?.avatar}
-            <Modal open={zoomAvatar} onOpenChange={(e) => (zoomAvatar = e.open)} contentBase="card bg-surface-100-900 p-4 space-y-4 shadow-xl" backdropClasses="backdrop-blur-sm">
+            <Dialog open={zoomAvatar} onOpenChange={(e) => (zoomAvatar = e.open)} contentBase="card bg-surface-100-900 p-4 space-y-4 shadow-xl" backdropClasses="backdrop-blur-sm">
               {#snippet trigger()}
                 <img class="rounded-full size-18 cursor-zoom-in" src={currentChannel.avatar} alt="avatar" />
               {/snippet}
               {#snippet content()}
                 <img class="h-150 aspect-square" src={currentChannel.avatar} alt="avatar" />
               {/snippet}
-            </Modal>
+            </Dialog>
           {:else}
             <div class="placeholder-circle animate-pulse size-18"></div>
           {/if}
@@ -619,7 +619,7 @@
                         {/each}
                       </form>
                     {:else}
-                      <ProgressRing value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
+                      <Progress value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
                     {/if}
                   </div>
                 </article>
@@ -658,7 +658,7 @@
 
                       <div class="opacity-60 mt-3">{(filterTags.size - topTags.length).toLocaleString()} more tags. Use the search box above to find more</div>
                     {:else}
-                      <ProgressRing value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
+                      <Progress value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
                     {/if}
                   </div>
                 </article>
@@ -702,7 +702,7 @@
 
                       <div class="opacity-60 mt-3">{(filterCategories.size - topCategories.length).toLocaleString()} more categories. Use the search box above to find more</div>
                     {:else}
-                      <ProgressRing value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
+                      <Progress value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
                     {/if}
                   </div>
                 </article>
