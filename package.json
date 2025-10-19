@@ -24,6 +24,7 @@
     "@tailwindcss/vite": "^4.1.14",
     "@types/tmi.js": "^1.8.6",
     "animejs": "^4.2.2",
+    "bits-ui": "^2.14.0",
     "daisyui": "^5.3.7",
     "easytimer.js": "^4.6.0",
     "eslint": "^9.38.0",

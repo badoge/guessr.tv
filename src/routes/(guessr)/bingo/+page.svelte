@@ -1,10 +1,11 @@
 <script>
   import { onMount } from "svelte";
   import localforage from "localforage";
-  import { getCustomBadges, toaster } from "$lib/functions";
-  import { Dialog, SegmentedControl, Slider, Switch } from "@skeletonlabs/skeleton-svelte";
+  import { getCustomBadges } from "$lib/functions";
   import { createDraggable } from "animejs";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
+  import IcBaselineClose from "~icons/ic/baseline-close";
+
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
   import IcBaselineContentCopy from "~icons/ic/baseline-content-copy";
@@ -30,22 +31,10 @@
   import BingoBoard from "$lib/BingoBoard.svelte";
   import { slide } from "svelte/transition";
 
-  let drawerState = $state(false);
-  let sliderValue = $state([5]);
-  let bingoSize = $derived(sliderValue[0]);
+  let bingoSize = $state(5);
   let allowDiagonals = $state(false);
 
   let bingoType = $state("twitch");
-
-  function drawerClose() {
-    drawerState = false;
-  }
-
-  let howToPlayModalOpenState = $state(false);
-
-  function howToPlayModalClose() {
-    howToPlayModalOpenState = false;
-  }
 
   onMount(async () => {
     const draggable = createDraggable("#board", { container: "body" });
@@ -1204,6 +1193,39 @@
   </div>
 </div> -->
 
+<dialog id="howToPlayModal" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"><IcBaselineClose /></button>
+    </form>
+    <h3 class="text-lg font-bold">How to play</h3>
+    <article>
+      <ul class="list-inside list-decimal space-y-2">
+        <li>
+          Sign in with <MdiTwitch class="inline" />Twitch
+          <small class="opacity-60"> Optional; Allows viewers to play along </small>
+        </li>
+        <li>
+          Set the board size and fill it up
+          <small class="opacity-60">
+            If you are playing Twitch bingo, you can get random suggestions using the
+            <IcBaselineCasino class="inline align-text-bottom" /> buttons. You can also use your own presets if you make an item pack
+          </small>
+        </li>
+        <li>Click the <span class="text-success-500"><IcBaselineCelebration class="inline" /> Start!</span> button</li>
+      </ul>
+      <br />
+      <small class="opacity-60">
+        If you signed in with Twitch you should share the bingo.guessr.tv link with your viewers.<br />
+        Viewers only need to sign in with Twitch to join the game, they don't interact with the board. The site will automatically fill the board for viewers on their uniquely shuffled boards
+      </small>
+    </article>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
 <BingoBoard size={bingoSize} />
 
 <div id="previewDiv" style="display: none">
@@ -1227,45 +1249,12 @@
     <div class="flex flex-col h-full">
       <div class="flex flex-row grow p-4 gap-4">
         <div class="w-100">
-          <Dialog
-            open={howToPlayModalOpenState}
-            onOpenChange={(e) => (howToPlayModalOpenState = e.open)}
-            triggerBase="btn preset-tonal-success mb-3"
-            contentBase="card bg-surface-100-900 p-4 space-y-4 shadow-xl max-w-screen-sm"
-            backdropClasses="backdrop-blur-sm"
+          <button
+            class="btn btn-primary"
+            onclick={() => {
+              howToPlayModal.showModal();
+            }}><IcBaselineHelp />How to play</button
           >
-            {#snippet trigger()}<IcBaselineHelp />How to play{/snippet}
-            {#snippet content()}
-              <header class="flex justify-between">
-                <h2 class="h2">How to play</h2>
-              </header>
-              <article>
-                <ul class="list-inside list-decimal space-y-2">
-                  <li>
-                    Sign in with <MdiTwitch class="inline" />Twitch
-                    <small class="opacity-60"> Optional; Allows viewers to play along </small>
-                  </li>
-                  <li>
-                    Set the board size and fill it up
-                    <small class="opacity-60">
-                      If you are playing Twitch bingo, you can get random suggestions using the
-                      <IcBaselineCasino class="inline align-text-bottom" /> buttons. You can also use your own presets if you make an item pack
-                    </small>
-                  </li>
-                  <li>Click the <span class="text-success-500"><IcBaselineCelebration class="inline" /> Start!</span> button</li>
-                </ul>
-                <br />
-                <small class="opacity-60">
-                  If you signed in with Twitch you should share the bingo.guessr.tv link with your viewers.<br />
-                  Viewers only need to sign in with Twitch to join the game, they don't interact with the board. The site will automatically fill the board for viewers on their uniquely shuffled
-                  boards
-                </small>
-              </article>
-              <footer class="flex justify-end gap-4">
-                <button type="button" class="btn preset-filled" onclick={howToPlayModalClose}>OK</button>
-              </footer>
-            {/snippet}
-          </Dialog>
 
           <div class="card w-full max-w-md bg-tertiary-900 p-1">
             <header><h4 class="h4"><IcBaselineSettings class="inline align-text-bottom" />Settings</h4></header>
@@ -1273,23 +1262,25 @@
             <article class="p-2">
               <section class="w-full mb-6">
                 <h6 class="h6"><IcBaselineGridOn class="inline align-text-bottom" />Board size: {bingoSize}x{bingoSize} ({bingoSize * bingoSize} items)</h6>
-                <Slider value={sliderValue} min={1} max={10} step={1} onValueChange={(e) => (sliderValue = e.value)} base="my-1" meterBg="bg-primary-500" thumbRingColor="ring-primary-500" />
+
+                <input type="range" min="1" max="10" step="1" class="range range-accent" bind:value={bingoSize} />
               </section>
 
               <section class="w-full">
-                <Switch name="allowDiagonals" base="inline-flex items-center gap-1" checked={allowDiagonals} onCheckedChange={(e) => (allowDiagonals = e.checked)}>
-                  <span><IcBaselineNorthEast class="inline" />Allow diagonals</span>
-                </Switch>
+                <label class="label">
+                  <input type="checkbox" checked="checked" class="toggle toggle-accent" />
+                  <IcBaselineNorthEast /> <span class="font-bold">Allow diagonals</span>
+                </label>
               </section>
               <small class="opacity-60">Count diagonals when checking for winning patterns</small>
 
               <div class="mt-6">
                 <h6 class="h6"><IcBaselineCategory class="inline align-text-bottom" />Bingo type</h6>
 
-                <SegmentedControl name="bingoType" classes="bg-primary-500" value={bingoType} onValueChange={(e) => (bingoType = e.value)}>
+                <!-- <SegmentedControl name="bingoType" classes="bg-primary-500" value={bingoType} onValueChange={(e) => (bingoType = e.value)}>
                   <Segment.Item value="twitch"><MdiTwitch class="inline" />Twitch bingo</Segment.Item>
                   <Segment.Item value="custom"><IcBaselineBuild class="inline" />Custom bingo</Segment.Item>
-                </SegmentedControl>
+                </SegmentedControl> -->
                 <br />
                 <small class="opacity-60">
                   {#if bingoType == "twitch"}
@@ -1435,28 +1426,24 @@
         <IcBaselineContentCopy />
       </button>
 
-      <Dialog
-        open={drawerState}
-        onOpenChange={(e) => (drawerState = e.open)}
-        triggerBase="btn preset-tonal"
-        contentBase="bg-surface-100-900 p-4 space-y-4 shadow-xl w-[480px] h-screen"
-        positionerJustify="justify-end"
-        positionerAlign=""
-        positionerPadding=""
-        transitionsPositionerIn={{ x: 480, duration: 200 }}
-        transitionsPositionerOut={{ x: 480, duration: 200 }}
-      >
-        {#snippet trigger()}<IcBaselineLeaderboard />Chat leaderboard{/snippet}
-        {#snippet content()}
-          <header class="flex justify-between">
-            <h2 class="h2">Bingo leaderboard</h2>
-          </header>
-          <article>
-            <h4>Total players: <span id="leaderboardCount">0</span></h4>
-            <ul class="list-group" id="leaderboard"></ul>
-          </article>
-        {/snippet}
-      </Dialog>
+      <div class="drawer drawer-end">
+        <input id="my-drawer-5" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content">
+          <label for="my-drawer-5" class="drawer-button btn btn-primary"><IcBaselineLeaderboard />Chat leaderboard</label>
+        </div>
+        <div class="drawer-side">
+          <label for="my-drawer-5" aria-label="close sidebar" class="drawer-overlay"></label>
+          <div class="menu bg-base-200 min-h-full w-80 p-4">
+            <header class="flex justify-between">
+              <h2 class="h2">Bingo leaderboard</h2>
+            </header>
+            <article>
+              <h4>Total players: <span id="leaderboardCount">0</span></h4>
+              <ul class="list-group" id="leaderboard"></ul>
+            </article>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

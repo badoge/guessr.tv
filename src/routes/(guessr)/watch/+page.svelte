@@ -1,8 +1,9 @@
 <script>
   import { onMount } from "svelte";
+  import { Slider } from "bits-ui";
+
   import localforage from "localforage";
-  import { toaster, getLanguage, escapeString } from "$lib/functions";
-  import { Popover, Progress, Slider, Dialog } from "@skeletonlabs/skeleton-svelte";
+  import { getLanguage, escapeString } from "$lib/functions";
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
   import IcBaselineSearch from "~icons/ic/baseline-search";
@@ -10,10 +11,6 @@
   import IcBaselineLabel from "~icons/ic/baseline-label";
   import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
 
-  let openStateLanguage = $state(false);
-  let openStateTags = $state(false);
-  let openStateCategory = $state(false);
-  let openStateViewCount = $state(false);
   let nextStreamCooldown = $state(false);
 
   /**
@@ -34,7 +31,6 @@
     category: undefined,
     tags: [],
   });
-  let zoomAvatar = $state(false);
 
   let filteredList = $state(new Map());
 
@@ -507,6 +503,15 @@
   <script src="https://embed.twitch.tv/embed/v1.js" async></script>
 </svelte:head>
 
+<dialog id="avatarModal" class="modal">
+  <div class="modal-box">
+    <img class="h-150 aspect-square" src={currentChannel.avatar} alt="avatar" />
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
   <main class="p-3">
     <div id="twitchEmbed"></div>
@@ -517,14 +522,14 @@
       <div class="flex flex-row">
         <div class="shrink-0 me-2">
           {#if currentChannel?.avatar}
-            <Dialog open={zoomAvatar} onOpenChange={(e) => (zoomAvatar = e.open)} contentBase="card bg-surface-100-900 p-4 space-y-4 shadow-xl" backdropClasses="backdrop-blur-sm">
-              {#snippet trigger()}
-                <img class="rounded-full size-18 cursor-zoom-in" src={currentChannel.avatar} alt="avatar" />
-              {/snippet}
-              {#snippet content()}
-                <img class="h-150 aspect-square" src={currentChannel.avatar} alt="avatar" />
-              {/snippet}
-            </Dialog>
+            <img
+              class="rounded-full size-18 cursor-zoom-in"
+              onclick={() => {
+                avatarModal.showModal();
+              }}
+              src={currentChannel.avatar}
+              alt="avatar"
+            />
           {:else}
             <div class="placeholder-circle animate-pulse size-18"></div>
           {/if}
@@ -588,166 +593,144 @@
       <div class="flex flex-row shrink-0 items-center gap-2">
         <div class="flex flex-row h-fit items-center">
           <span style="writing-mode: sideways-lr; text-orientation: mixed">Filters</span>
-          <div class="card w-full bg-surface-900 p-2 text-center">
-            <Popover
-              open={openStateLanguage}
-              onOpenChange={(e) => (openStateLanguage = e.open)}
-              positioning={{ placement: "top" }}
-              triggerBase="btn preset-tonal-success text-lg h-9"
-              contentBase="card bg-success-950 shadow-xl opacity-90 p-4"
+          <div class="card inline w-full bg-surface-900 p-2 text-center">
+            <button class="btn" popovertarget="languagePopover" style="anchor-name:--languagePopoverAnchor"> <IcBaselineLanguage />Languages<span id="languageFilterCount"></span> </button>
+            <div class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 shadow-sm" popover id="languagePopover" style="position-anchor:--languagePopoverAnchor">
+              <h5 class="text-xl">Selected languages:</h5>
+              <div class="mb-3" id="selectedLanguages"><span class="opacity-60">None (will show all languages)</span></div>
+              <hr class="hr border-success-700 mb-3" />
+              <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
+                <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
+                <input id="searchLanguages" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateLanguages} />
+              </div>
+              <div id="languagesDiv">
+                {#if filterLanguages.size}
+                  <form class="space-y-1">
+                    {#each filterLanguages as [key, value]}
+                      <label class="flex items-center space-x-1">
+                        <input class="checkbox language-filter" type="checkbox" value={key} onchange={updateLanguages} />
+                        <p>{getLanguage(key)} <span class="opacity-60">({value.toLocaleString()})</span></p>
+                      </label>
+                    {/each}
+                  </form>
+                {:else}
+                  <span class="loading loading-spinner loading-xl"></span>
+                {/if}
+              </div>
+            </div>
+
+            <button class="btn" popovertarget="tagsPopover" style="anchor-name:--tagsPopoverAnchor"><IcBaselineLabel />Tags<span id="tagFilterCount"></span></button>
+            <div class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 shadow-sm" popover id="tagsPopover" style="position-anchor:--tagsPopoverAnchor">
+              <h5 class="text-xl">Selected tags:</h5>
+              <div class="mb-3" id="selectedTags"><span class="opacity-60">None (will show all tags)</span></div>
+              <hr class="hr border-error-700 mb-3" />
+
+              <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
+                <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
+                <input id="searchTags" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateTags} />
+              </div>
+
+              <div id="tagsDiv">
+                {#if topTags.length}
+                  <form class="space-y-1">
+                    {#each topTags as tag}
+                      <label class="flex items-center space-x-1">
+                        <input class="checkbox tag-filter" type="checkbox" value={tag[0]} onchange={updateTags} />
+                        <p>{escapeString(tag[0])} <span class="opacity-60">({tag[1].toLocaleString()})</span></p>
+                      </label>
+                    {/each}
+                  </form>
+
+                  <div class="opacity-60 mt-3">{(filterTags.size - topTags.length).toLocaleString()} more tags. Use the search box above to find more</div>
+                {:else}
+                  <span class="loading loading-spinner loading-xl"></span>
+                {/if}
+              </div>
+            </div>
+
+            <button class="btn" popovertarget="categoriesPopover" style="anchor-name:--categoriesPopoverAnchor">
+              <IcBaselineSportsEsports />Categories<span id="categoryFilterCount"></span>
+            </button>
+            <div class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 shadow-sm" popover id="categoriesPopover" style="position-anchor:--categoriesPopoverAnchor">
+              <h5 class="text-xl">Selected categories:</h5>
+              <div class="mb-3" id="selectedCategories"><span class="opacity-60">None (will show all categories)</span></div>
+              <hr class="hr border-warning-700 mb-3" />
+
+              <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
+                <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
+                <input id="searchCategories" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateCategories} />
+              </div>
+
+              <div id="categoriesDiv">
+                {#if topCategories.length}
+                  <form class="space-y-1">
+                    {#each topCategories as category}
+                      <label class="flex items-center space-x-1">
+                        <input class="checkbox category-filter" type="checkbox" value={category[0]} onchange={updateCategories} />
+
+                        {#if category[0] == "No category"}
+                          <p class="opacity-60 italic">No category <span class="opacity-60">({category[1].toLocaleString()})</span></p>
+                        {:else}
+                          <p>{escapeString(category[0])}<span class="opacity-60">({category[1].toLocaleString()})</span></p>
+                        {/if}
+                      </label>
+                    {/each}
+                  </form>
+
+                  <div class="opacity-60 mt-3">{(filterCategories.size - topCategories.length).toLocaleString()} more categories. Use the search box above to find more</div>
+                {:else}
+                  <span class="loading loading-spinner loading-xl"></span>
+                {/if}
+              </div>
+            </div>
+
+            <button class="btn" popovertarget="ViewCountPopover" style="anchor-name:--ViewCountPopoverAnchor">
+              <svg
+                style="filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(201deg) brightness(106%) contrast(106%)"
+                width="24px"
+                height="24px"
+                version="1.1"
+                viewBox="0 0 20 20"
+                x="0px"
+                y="0px"
+              >
+                <g>
+                  <path
+                    fill-rule="evenodd"
+                    d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
+                    clip-rule="evenodd"
+                  >
+                  </path>
+                </g>
+              </svg>
+              View count</button
             >
-              {#snippet trigger()}<IcBaselineLanguage />Languages<span id="languageFilterCount"></span>{/snippet}
-              {#snippet content()}
-                <article class="h-100 w-80 p-1 overflow-auto">
-                  <h5 class="text-xl">Selected languages:</h5>
-                  <div class="mb-3" id="selectedLanguages"><span class="opacity-60">None (will show all languages)</span></div>
-                  <hr class="hr border-success-700 mb-3" />
+            <div class="dropdown dropdown-top dropdown-center w-200 rounded-box bg-base-100 shadow-sm" popover id="ViewCountPopover" style="position-anchor:--ViewCountPopoverAnchor">
+              <h5 class="text-2xl">View count range:</h5>
+              <div class="flex flex-row justify-between m-2 p-2">
+                <span>Minimum view count: {filterViewCount[0].toLocaleString()}</span>
+                <span>Maximum view count: {filterViewCount[1].toLocaleString()}</span>
+              </div>
+              <br />
+              <Slider.Root type="multiple" bind:value={filterViewCountSlider} min={0} max={100} autoSort={true} class="relative flex w-full touch-none select-none items-center">
+                {#snippet children({ tickItems, thumbs })}
+                  <!-- Track -->
+                  <span class="relative h-3 w-full grow rounded-full bg-base-300 cursor-pointer overflow-hidden">
+                    <Slider.Range class="absolute h-full bg-primary transition-all" />
+                  </span>
 
-                  <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
-                    <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
-                    <input id="searchLanguages" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateLanguages} />
-                  </div>
+                  <!-- Thumbs -->
+                  {#each thumbs as index (index)}
+                    <Slider.Thumb {index} class="btn btn-circle btn-sm border-base-300 bg-base-100 shadow-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                  {/each}
 
-                  <div id="languagesDiv">
-                    {#if filterLanguages.size}
-                      <form class="space-y-1">
-                        {#each filterLanguages as [key, value]}
-                          <label class="flex items-center space-x-1">
-                            <input class="checkbox language-filter" type="checkbox" value={key} onchange={updateLanguages} />
-                            <p>{getLanguage(key)} <span class="opacity-60">({value.toLocaleString()})</span></p>
-                          </label>
-                        {/each}
-                      </form>
-                    {:else}
-                      <Progress value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
-                    {/if}
-                  </div>
-                </article>
-              {/snippet}
-            </Popover>
-
-            <Popover
-              open={openStateTags}
-              onOpenChange={(e) => (openStateTags = e.open)}
-              positioning={{ placement: "top" }}
-              triggerBase="btn preset-tonal-error text-lg h-9"
-              contentBase="card bg-error-950 shadow-xl opacity-90 p-4"
-            >
-              {#snippet trigger()}<IcBaselineLabel />Tags<span id="tagFilterCount"></span>{/snippet}
-              {#snippet content()}
-                <article class="h-100 w-80 p-1 overflow-auto">
-                  <h5 class="text-xl">Selected tags:</h5>
-                  <div class="mb-3" id="selectedTags"><span class="opacity-60">None (will show all tags)</span></div>
-                  <hr class="hr border-error-700 mb-3" />
-
-                  <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
-                    <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
-                    <input id="searchTags" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateTags} />
-                  </div>
-
-                  <div id="tagsDiv">
-                    {#if topTags.length}
-                      <form class="space-y-1">
-                        {#each topTags as tag}
-                          <label class="flex items-center space-x-1">
-                            <input class="checkbox tag-filter" type="checkbox" value={tag[0]} onchange={updateTags} />
-                            <p>{escapeString(tag[0])} <span class="opacity-60">({tag[1].toLocaleString()})</span></p>
-                          </label>
-                        {/each}
-                      </form>
-
-                      <div class="opacity-60 mt-3">{(filterTags.size - topTags.length).toLocaleString()} more tags. Use the search box above to find more</div>
-                    {:else}
-                      <Progress value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
-                    {/if}
-                  </div>
-                </article>
-              {/snippet}
-            </Popover>
-
-            <Popover
-              open={openStateCategory}
-              onOpenChange={(e) => (openStateCategory = e.open)}
-              positioning={{ placement: "top" }}
-              triggerBase="btn preset-tonal-warning text-lg h-9"
-              contentBase="card bg-warning-950 shadow-xl opacity-90 p-4"
-            >
-              {#snippet trigger()}<IcBaselineSportsEsports />Categories<span id="categoryFilterCount"></span>{/snippet}
-              {#snippet content()}
-                <article class="h-100 w-80 p-1 overflow-auto">
-                  <h5 class="text-xl">Selected categories:</h5>
-                  <div class="mb-3" id="selectedCategories"><span class="opacity-60">None (will show all categories)</span></div>
-                  <hr class="hr border-warning-700 mb-3" />
-
-                  <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
-                    <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
-                    <input id="searchCategories" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateCategories} />
-                  </div>
-
-                  <div id="categoriesDiv">
-                    {#if topCategories.length}
-                      <form class="space-y-1">
-                        {#each topCategories as category}
-                          <label class="flex items-center space-x-1">
-                            <input class="checkbox category-filter" type="checkbox" value={category[0]} onchange={updateCategories} />
-
-                            {#if category[0] == "No category"}
-                              <p class="opacity-60 italic">No category <span class="opacity-60">({category[1].toLocaleString()})</span></p>
-                            {:else}
-                              <p>{escapeString(category[0])}<span class="opacity-60">({category[1].toLocaleString()})</span></p>
-                            {/if}
-                          </label>
-                        {/each}
-                      </form>
-
-                      <div class="opacity-60 mt-3">{(filterCategories.size - topCategories.length).toLocaleString()} more categories. Use the search box above to find more</div>
-                    {:else}
-                      <Progress value={null} classes="place-self-center" size="size-15" meterStroke="stroke-surface-900" trackStroke="stroke-surface-500" />
-                    {/if}
-                  </div>
-                </article>
-              {/snippet}
-            </Popover>
-
-            <Popover
-              open={openStateViewCount}
-              onOpenChange={(e) => (openStateViewCount = e.open)}
-              positioning={{ placement: "top" }}
-              triggerBase="btn preset-tonal-tertiary text-lg h-9"
-              contentBase="card bg-tertiary-950 shadow-xl opacity-90 p-4"
-            >
-              {#snippet trigger()}
-                <svg
-                  style="filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(201deg) brightness(106%) contrast(106%)"
-                  width="24px"
-                  height="24px"
-                  version="1.1"
-                  viewBox="0 0 20 20"
-                  x="0px"
-                  y="0px"
-                >
-                  <g>
-                    <path
-                      fill-rule="evenodd"
-                      d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
-                      clip-rule="evenodd"
-                    >
-                    </path>
-                  </g>
-                </svg>
-                View count
-              {/snippet}
-              {#snippet content()}
-                <article class="h-30 w-200 p-1 overflow-auto">
-                  <h5 class="text-2xl">View count range:</h5>
-                  <div class="flex flex-row justify-between m-2 p-2">
-                    <span>Minimum view count: {filterViewCount[0].toLocaleString()}</span>
-                    <span>Maximum view count: {filterViewCount[1].toLocaleString()}</span>
-                  </div>
-                  <Slider value={filterViewCountSlider} onValueChange={(e) => (filterViewCountSlider = e.value)} />
-                </article>
-              {/snippet}
-            </Popover>
+                  <!-- Optional ticks -->
+                  {#each tickItems as { index } (index)}
+                    <Slider.Tick {index} class="absolute h-3 w-px bg-base-content/30" />
+                  {/each}
+                {/snippet}
+              </Slider.Root>
+            </div>
           </div>
         </div>
 

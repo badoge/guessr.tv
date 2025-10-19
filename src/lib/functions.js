@@ -1,4 +1,4 @@
-const viewersSVG = `<svg class="viewers-svg" width="24px" height="24px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
+export const viewersSVG = `<svg class="viewers-svg" width="24px" height="24px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
 <g>
   <path
     fill-rule="evenodd"
@@ -8,16 +8,12 @@ const viewersSVG = `<svg class="viewers-svg" width="24px" height="24px" version=
 </g>
 </svg>`;
 
-const spinner = `<div class="spinner-border" role="status">
-<span class="visually-hidden">Loading...</span>
-</div>`;
-
 const CLIENT_ID = "ed2ch5dsxogpczmisjnbfnm92n4zps";
 
-import { createToaster } from "@skeletonlabs/skeleton-svelte";
-
-export const toaster = createToaster();
-
+/**
+ * @param {string} badges
+ * @param {any} userid
+ */
 export function addBadges(badges, userid) {
   try {
     let badgesHTML = "";
@@ -32,13 +28,13 @@ export function addBadges(badges, userid) {
     }
     for (const badge in badges) {
       if (badge == "subscriber" && badges.subscriber && channelBadges.subscriber.length > 0) {
-        let badge = channelBadges.subscriber.find((obj) => obj.id === badges.subscriber);
+        let badge = channelBadges.subscriber.find((/** @type {{ id: any; }} */ obj) => obj.id === badges.subscriber);
         badgesHTML += `<img src="${badge.url}" class="chat-badge" title="Subscriber"/>`;
       } else if (badge == "bits" && channelBadges.bits.length > 0) {
-        let badge = channelBadges.bits.find((obj) => obj.id === badges.bits);
+        let badge = channelBadges.bits.find((/** @type {{ id: any; }} */ obj) => obj.id === badges.bits);
         badgesHTML += `<img src="${badge.url}" class="chat-badge" title="Bits"/>`;
       } else if (Object.keys(globalBadges).length > 0) {
-        let version = globalBadges[badge].find((obj) => obj.id === badges[badge]);
+        let version = globalBadges[badge].find((/** @type {{ id: any; }} */ obj) => obj.id === badges[badge]);
         badgesHTML += `<img src="${version.image_url_4x}" class="chat-badge" title="${badge}"/>`;
       }
     }
@@ -49,6 +45,9 @@ export function addBadges(badges, userid) {
   }
 } //addBadges
 
+/**
+ * @param {any} username
+ */
 export async function getTwitchUserId(username) {
   try {
     let response = await fetch(`https://helper.donk.workers.dev/twitch/users?login=${username}`);
@@ -63,6 +62,9 @@ export async function getTwitchUserId(username) {
   }
 } //getTwitchUserId
 
+/**
+ * @param {any} username
+ */
 export async function getChannelBadges(username) {
   try {
     let twitchUserId = await getTwitchUserId(username);
@@ -126,6 +128,9 @@ export async function getGlobalBadges() {
   }
 } //getGlobalBadges
 
+/**
+ * @param {any} userID
+ */
 export async function get7TVPFP(userID) {
   if (!userID) {
     return "/donk.png";
@@ -147,6 +152,10 @@ export async function get7TVPFP(userID) {
   }
 } //get7TVPFP
 
+/**
+ * @param {any} username
+ * @param {any} access_token
+ */
 export async function getTwitchPFP(username, access_token) {
   let requestOptions = {
     headers: {
@@ -164,6 +173,9 @@ export async function getTwitchPFP(username, access_token) {
   }
 } //getTwitchPFP
 
+/**
+ * @param {any} access_token
+ */
 export async function checkToken(access_token) {
   let requestOptions = {
     headers: { Authorization: `OAuth ${access_token}` },
@@ -185,6 +197,9 @@ export async function checkToken(access_token) {
   }
 } //checkToken
 
+/**
+ * @param {string} target
+ */
 export function changeSiteLinkTarget(target) {
   let links = document.getElementsByClassName("site-link");
   for (let index = 0; index < links.length; index++) {
@@ -194,6 +209,9 @@ export function changeSiteLinkTarget(target) {
 // changeSiteLinkTarget("_self");
 // changeSiteLinkTarget("_blank");
 
+/**
+ * @param {string | any[]} array
+ */
 export function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -203,6 +221,9 @@ export function shuffleArray(array) {
 } //shuffleArray
 
 // creates a random number generator function.
+/**
+ * @param {number} seed
+ */
 export function createRandomGenerator(seed) {
   const a = 5486230734; // some big numbers
   const b = 6908969830;
@@ -216,6 +237,9 @@ export function createRandomGenerator(seed) {
   };
 }
 // function creates a 32bit hash of a string
+/**
+ * @param {string} str
+ */
 export function stringTo32BitHash(str) {
   let v = 0;
   for (let i = 0; i < str.length; i += 1) {
@@ -224,6 +248,10 @@ export function stringTo32BitHash(str) {
   return v % 0xffffffff;
 }
 // shuffle array using the str as a key.
+/**
+ * @param {any[]} array
+ * @param {any} seed
+ */
 export function shuffleArraySeed(array, seed) {
   let shuffled = [];
   let random = createRandomGenerator(stringTo32BitHash(seed));
@@ -234,6 +262,10 @@ export function shuffleArraySeed(array, seed) {
   return shuffled;
 } //shuffleArraySeed
 
+/**
+ * @param {string | number | any[]} guess
+ * @param {string | any[]} answer
+ */
 export function checkSimilarity(guess, answer) {
   if (guess === -1) {
     // timer ran out and the user did not answer
@@ -257,6 +289,9 @@ export function checkSimilarity(guess, answer) {
   return distanceMatrix[answer.length][guess.length] <= 2;
 } //checkSimilarity
 
+/**
+ * @param {string} s
+ */
 export function cleanString(s) {
   return s
     .normalize("NFD")
@@ -265,6 +300,9 @@ export function cleanString(s) {
     .toLowerCase();
 } //cleanString
 
+/**
+ * @param {string | number} value
+ */
 export function isInt(value) {
   if (isNaN(value)) {
     return false;
@@ -273,6 +311,9 @@ export function isInt(value) {
   return (x | 0) === x;
 } //inInt
 
+/**
+ * @param {string | Iterable<any> | null | undefined} array
+ */
 export function hasDuplicates(array) {
   return new Set(array).size !== array.length;
 } //hasDuplicates
@@ -339,6 +380,9 @@ export async function getStreamerColor() {
   }
 } //getStreamerColor
 
+/**
+ * @param {string} level
+ */
 export function showConfetti(level) {
   let c, s, d;
   switch (parseInt(level, 10)) {
@@ -370,8 +414,11 @@ export function showConfetti(level) {
   confetti.start(d);
 } //showConfetti
 
+/**
+ * @param {string} str
+ */
 export function encodeHTML(str) {
-  return str.replace(/[\u00A0-\u9999<>&]/g, function (i) {
+  return str.replace(/[\u00A0-\u9999<>&]/g, function (/** @type {string} */ i) {
     return `&#${i.charCodeAt(0)};`;
   });
 } //encodeHTML
@@ -423,6 +470,9 @@ export function unescapeString(str) {
   // See: https://github.com/validatorjs/validator.js/issues/1827
 } //unescapeString
 
+/**
+ * @param {{ constructor: { name: any; }; } | null} input
+ */
 export function assertString(input) {
   let isString = typeof input === "string" || input instanceof String;
   if (!isString) {

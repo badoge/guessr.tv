@@ -1,7 +1,6 @@
 <script>
   import { onMount } from "svelte";
   import localforage from "localforage";
-  import { toaster } from "$lib/functions";
   import IcBaselineTheaterComedy from "~icons/ic/baseline-theater-comedy";
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
   import IcBaselinePublic from "~icons/ic/baseline-public";
