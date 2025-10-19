@@ -7,6 +7,9 @@
   import IcBaselineEmojiEmotions from "~icons/ic/baseline-emoji-emotions";
   import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
   import IcBaselineImportExport from "~icons/ic/baseline-import-export";
+  /**
+   * @type {{ [x: string]: { innerHTML: number; }; guessRange: any; guessNumber: any; infoTime: any; gameList: any; sliderDiv: any; multiChoiceDiv: any; gameNameDiv: any; higherlowerDiv: any; irlDiv: any; leaderboardList: any; leaderboardListRound: any; chatHint: any; twitchEmbed: any; menuContainer: any; gameContainer: any; round: any; score: any; scoreDiv: any; correction: any; gameEndText: any; mainCard: any; breakdown: any; nextRound: any; gameInput: any; guessRangeLabel: any; multiChoiceLabel: any; higherlowerLabel: any; clipCover: any; streamCover: any; endButtons: any; resultsDiv: any; channelName: any; progressBar: any; scoreProgressBarLabel: any; progress: any; leaderboard: any; getSettingsButton: any; guessLabel: any; disclaimer: any; clipCollection: any; timerValue: any; timerDiv: any; leaderboardTabs: any; playAgain: any; streamsVideoType: any; videoTypeDesc: any; clipCollectionDiv: any; clipsVideoType: any; seenChannels: any; seenClips: any; reset?: HTMLElement | null; multiChoice1?: HTMLElement | null; multiChoice2?: HTMLElement | null; multiChoice3?: HTMLElement | null; multiChoice4?: HTMLElement | null; multiChoice5?: HTMLElement | null; higher?: HTMLElement | null; lower?: HTMLElement | null; timer?: HTMLElement | null; skipSexual?: HTMLElement | null; unloadWarning?: HTMLElement | null; viewersHS?: HTMLElement | null; gameStreak?: HTMLElement | null; emoteStreak?: HTMLElement | null; viewersHigherlowerStreak?: HTMLElement | null; resetSeenChannels?: HTMLElement | null; resetSeenClips?: HTMLElement | null; resetGameModal?: HTMLElement | null; gameSettingsModal?: HTMLElement | null; totalTab?: HTMLElement | null; roundTab?: HTMLElement | null; }}
+   */
   let elements;
 
   import { animate, utils } from "animejs";
@@ -21,22 +24,64 @@
     pSkip: `<i class="material-icons notranslate" title="Round skipped">skip_next</i>`,
   };
 
+  /**
+   * @type {string | string[]}
+   */
   let channelName;
+  /**
+   * @type {any}
+   */
   let channelId;
+  /**
+   * @type {any}
+   */
   let streamerColor;
+  /**
+   * @type {any[]}
+   */
   let mainList = [];
+  /**
+   * @type {{ name: any; }[]}
+   */
   let gameList = [];
+  /**
+   * @type {string | any[]}
+   */
   let emoteList = [];
+  /**
+   * @type {any[]}
+   */
   let guessList = [];
+  /**
+   * @type {any[]}
+   */
   let seenChannels = [];
+  /**
+   * @type {any[]}
+   */
   let seenClips = [];
+  /**
+   * @type {{ answer: any; correct: any; points: number; percent: number; diff: number; color: string | undefined; }[]}
+   */
   let roundResults = []; // collecting stuff for final screen
+  /**
+   * @type {any[]}
+   */
   let usedPowerups = []; // list of powerups used in current round
   let round = 0;
   let score = 0;
+  /**
+   * @type {{ setChannel: (arg0: any) => void; } | null}
+   */
   let player = null;
   let max = 0;
+  /**
+   * @type {number | null}
+   */
   let previousNumber = null;
+  /**
+   * @type {{ addEventListener: (arg0: string, arg1: { (e: any): void; (e: any): void; }) => void; getTimeValues: () => { (): any; new (): any; toString: { (arg0: string[]): string; new (): any; }; }; reset: () => void; stop: () => void; start: (arg0: { countdown: boolean; precision: string; startValues: { seconds: number; }; }) => void; isRunning: () => any; }}
+   */
   let timer;
   let emoteChoices = { a: 1, b: 2, c: 3, d: 4, e: 5 };
   let gameSettings = {
@@ -61,6 +106,9 @@
   };
 
   let gameSettingsModal, resetGameModal;
+  /**
+   * @type {{ disconnect: () => void; on: (arg0: string, arg1: { (target: any, context: any, msg: any, self: any): Promise<void>; (address: any, port: any): void; (reason: any): void; (channel: any, msgid: any, message: any): void; }) => void; connect: () => Promise<any>; } | null}
+   */
   let client;
   let roundActive = false;
   let chatters = new Map();
@@ -347,7 +395,7 @@
       }
 
       //remove deleted clips
-      guessList = mainList.filter((n) => clips.data.some((n2) => n.id == n2.id));
+      guessList = mainList.filter((n) => clips.data.some((/** @type {{ id: any; }} */ n2) => n.id == n2.id));
       if (guessList.length < 5) {
         showToast("Clip set contains deleted clips, getting new set...", "info", 2000);
 
@@ -578,7 +626,13 @@
     startTimer();
   } //nextRound
 
+  /**
+   * @param {any} userid
+   */
   async function generateEmoteChoices(userid) {
+    /**
+     * @type {any[]}
+     */
     let picked = [];
     let random = [];
     for (let index = 0; index < 4; index++) {
@@ -613,6 +667,9 @@
     elements.multiChoiceDiv.style.display = "";
   } //generateEmoteChoices
 
+  /**
+   * @param {any} id
+   */
   async function checkEmote(id) {
     try {
       const res = await fetch(`https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/3.0`);
@@ -623,9 +680,15 @@
     }
   } //checkEmote
 
+  /**
+   * @param {number} lat1
+   * @param {number} lon1
+   * @param {number} lat2
+   * @param {number} lon2
+   */
   function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // Radius of the Earth in kilometers
-    const toRad = (angle) => angle * (Math.PI / 180);
+    const toRad = (/** @type {number} */ angle) => angle * (Math.PI / 180);
 
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
@@ -638,8 +701,14 @@
     return distance; // in kilometers
   }
 
+  /**
+   * @param {string | number | null} choice
+   */
   async function guess(choice, timeUp = false, skipped = false) {
     roundActive = false;
+    /**
+     * @type {number | null}
+     */
     let answer;
 
     if (gameSettings.mode == "irl") {
@@ -927,7 +996,7 @@
           <div class="d-flex flex-row m-2 align-items-center text-start">
             <h4 class="flex-grow-1 m-0"><b>${1 + i}</b> &ndash; ${channelLink}</h4>
             <div class="d-flex flex-row gap-1" style="cursor:default">
-              ${data.powerups.map((p) => powerupIcons[p]).join(" ")}
+              ${data.powerups.map((/** @type {string | number} */ p) => powerupIcons[p]).join(" ")}
             </div>
           </div>
           <hr />
@@ -957,6 +1026,9 @@
     player = null;
   } //showBreakdown
 
+  /**
+   * @param {number} answer
+   */
   function calculateScore(answer, skipped = false) {
     const result = {};
 
@@ -1067,6 +1139,10 @@
     return result;
   } //calculateScore
 
+  /**
+   * @param {number} points
+   * @param {number} percent
+   */
   function animateScore(points, percent, streak = null) {
     elements.progressBar.style.width = 0;
     let score = {
@@ -1108,7 +1184,14 @@
     elements.progress.ariaValueNow = percent;
   } //animateScore
 
-  /**temp lidl function that just groups the correction stuff from guess() :)  */
+  /**
+   * temp lidl function that just groups the correction stuff from guess() :)
+   * @param {number} correct
+   * @param {number} answer
+   * @param {number | null} diff
+   * @param {number} points
+   * @param {string | null | undefined} color
+   */
   function showCorrection(correct, answer, diff, points, color) {
     let overUnder = answer - correct > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
 
@@ -1209,6 +1292,9 @@
     elements.gameContainer.style.display = "none";
   } //reset
 
+  /**
+   * @param {string} mode
+   */
   async function showSettings(mode) {
     gameSettings.mode = mode;
 
@@ -1343,103 +1429,109 @@
     };
     client = new tmi.client(options);
 
-    client.on("message", async (target, context, msg, self) => {
-      if (!gameSettings.chat || !roundActive || context.username == channelName) {
-        return;
-      }
-
-      let results = { points: "", percent: "", diff: "", color: "" };
-
-      let input = msg.split(" ").filter(Boolean);
-
-      if (gameSettings.mode == "viewers") {
-        let answer = parseAnswer(input[0]);
-        if (answer === null || answer === undefined || answer === "" || answer < 0) {
+    client.on(
+      "message",
+      async (/** @type {any} */ target, /** @type {{ [x: string]: any; username: any; badges: any; color: any; }} */ context, /** @type {string} */ msg, /** @type {any} */ self) => {
+        if (!gameSettings.chat || !roundActive || context.username == channelName) {
           return;
         }
-        results = calculateScore(answer);
-      }
 
-      if (gameSettings.mode == "higherlower") {
-        if (input[0]?.toLowerCase() !== "higher" && input[0]?.toLowerCase() !== "lower") {
-          return;
-        }
-        results = calculateScore(input[0].toLowerCase());
-      }
+        let results = { points: "", percent: "", diff: "", color: "" };
 
-      if (gameSettings.mode == "game") {
-        if (input[0]?.toLowerCase() !== "!guess") {
-          return;
-        }
-        results = calculateScore(cleanString(input.slice(1).join("")));
-      }
+        let input = msg.split(" ").filter(Boolean);
 
-      if (gameSettings.mode == "emote") {
-        if (!emoteChoices.hasOwnProperty(input[0]?.toLowerCase())) {
-          return;
-        }
-        let answer = parseInt(elements[`multiChoice${emoteChoices[input[0].toLowerCase()]}`].dataset.answer, 10);
-        results = calculateScore(answer);
-      }
-
-      let chatter = chatters.get(context.username);
-      if (!chatter) {
-        //add the chatter to the map if they are not already in
-        let badges = addBadges(context.badges, context["user-id"]);
-        chatters.set(context.username, {
-          username: context.username,
-          score: 0,
-          round: 0,
-          answer: results,
-          color: context.color,
-          badges: badges,
-        });
-        //add chatter to the top of the leaderboard if 1st round or at the end otherwise
-        elements.leaderboardList.insertAdjacentHTML(
-          `${round == 1 ? "afterbegin" : "beforeend"}`,
-          `<li class="list-group-item"><span id="${context.username}_dot">🔵</span><span style="color:${context.color || "#FFFFFF"};">${badges} ${context.username}:</span> 🙈</li>`,
-        );
         if (gameSettings.mode == "viewers") {
-          //add chatter to the round leaderboard if mode is viewers
-          elements.leaderboardListRound.insertAdjacentHTML(
-            `${round == 1 ? "afterbegin" : "beforeend"}`,
-            `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${badges} ${context.username}:</span> 🙈</li>`,
-          );
+          let answer = parseAnswer(input[0]);
+          if (answer === null || answer === undefined || answer === "" || answer < 0) {
+            return;
+          }
+          results = calculateScore(answer);
         }
-      } else {
-        //chatter is already in the map so save their answer
-        //check if the chatter already answered before adding them to the round leaderboard
-        if (gameSettings.mode == "viewers" && !chatter.answer) {
-          //add chatter to the round leaderboard if mode is viewers
-          elements.leaderboardListRound.insertAdjacentHTML(
-            `${round == 1 ? "afterbegin" : "beforeend"}`,
-            `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${chatter.badges} ${context.username}:</span> 🙈</li>`,
-          );
-        }
-        chatter.answer = results;
-        chatters.set(context.username, chatter);
-        document.getElementById(`${context.username}_dot`).style.visibility = "visible";
-      }
-    }); //message
 
-    client.on("connected", (address, port) => {
+        if (gameSettings.mode == "higherlower") {
+          if (input[0]?.toLowerCase() !== "higher" && input[0]?.toLowerCase() !== "lower") {
+            return;
+          }
+          results = calculateScore(input[0].toLowerCase());
+        }
+
+        if (gameSettings.mode == "game") {
+          if (input[0]?.toLowerCase() !== "!guess") {
+            return;
+          }
+          results = calculateScore(cleanString(input.slice(1).join("")));
+        }
+
+        if (gameSettings.mode == "emote") {
+          if (!emoteChoices.hasOwnProperty(input[0]?.toLowerCase())) {
+            return;
+          }
+          let answer = parseInt(elements[`multiChoice${emoteChoices[input[0].toLowerCase()]}`].dataset.answer, 10);
+          results = calculateScore(answer);
+        }
+
+        let chatter = chatters.get(context.username);
+        if (!chatter) {
+          //add the chatter to the map if they are not already in
+          let badges = addBadges(context.badges, context["user-id"]);
+          chatters.set(context.username, {
+            username: context.username,
+            score: 0,
+            round: 0,
+            answer: results,
+            color: context.color,
+            badges: badges,
+          });
+          //add chatter to the top of the leaderboard if 1st round or at the end otherwise
+          elements.leaderboardList.insertAdjacentHTML(
+            `${round == 1 ? "afterbegin" : "beforeend"}`,
+            `<li class="list-group-item"><span id="${context.username}_dot">🔵</span><span style="color:${context.color || "#FFFFFF"};">${badges} ${context.username}:</span> 🙈</li>`,
+          );
+          if (gameSettings.mode == "viewers") {
+            //add chatter to the round leaderboard if mode is viewers
+            elements.leaderboardListRound.insertAdjacentHTML(
+              `${round == 1 ? "afterbegin" : "beforeend"}`,
+              `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${badges} ${context.username}:</span> 🙈</li>`,
+            );
+          }
+        } else {
+          //chatter is already in the map so save their answer
+          //check if the chatter already answered before adding them to the round leaderboard
+          if (gameSettings.mode == "viewers" && !chatter.answer) {
+            //add chatter to the round leaderboard if mode is viewers
+            elements.leaderboardListRound.insertAdjacentHTML(
+              `${round == 1 ? "afterbegin" : "beforeend"}`,
+              `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${chatter.badges} ${context.username}:</span> 🙈</li>`,
+            );
+          }
+          chatter.answer = results;
+          chatters.set(context.username, chatter);
+          document.getElementById(`${context.username}_dot`).style.visibility = "visible";
+        }
+      },
+    ); //message
+
+    client.on("connected", (/** @type {any} */ address, /** @type {any} */ port) => {
       if (!usernameSent && channelName) {
         sendUsername();
       }
       showToast(`Connected to ${channelName}`, "success", 2000);
     }); //connected
 
-    client.on("disconnected", (reason) => {
+    client.on("disconnected", (/** @type {any} */ reason) => {
       showToast(`Disconnected: ${reason}`, "error", 2000);
     }); //disconnected
 
-    client.on("notice", (channel, msgid, message) => {
+    client.on("notice", (/** @type {any} */ channel, /** @type {any} */ msgid, /** @type {any} */ message) => {
       showToast(`Disconnected: ${message}`, "error", 2000);
     }); //notice
 
     client.connect().catch(console.error);
   } //connectChat
 
+  /**
+   * @param {string | number} input
+   */
   function parseAnswer(input) {
     try {
       input = input.toLowerCase().replace(/,/g, "");
@@ -1478,10 +1570,10 @@
       return;
     }
     timer = new easytimer.Timer();
-    timer.addEventListener("secondTenthsUpdated", function (e) {
+    timer.addEventListener("secondTenthsUpdated", function (/** @type {any} */ e) {
       document.querySelector("#timer").innerHTML = timer.getTimeValues().toString(["minutes", "seconds", "secondTenths"]);
     });
-    timer.addEventListener("targetAchieved", function (e) {
+    timer.addEventListener("targetAchieved", function (/** @type {any} */ e) {
       switch (gameSettings.mode) {
         case "viewers":
           guess("slider", true);
@@ -1586,12 +1678,18 @@
     elements.playAgain.disabled = false;
   } // playAgain
 
+  /**
+   * @param {string} scoreName
+   */
   function resetHighScore(scoreName) {
     localStorage.setItem(scoreName, 0);
     highscores[scoreName] = 0;
     elements[scoreName].innerHTML = 0;
   } //resetHighScore
 
+  /**
+   * @param {string} pType
+   */
   function usePowerup(pType) {
     if (!(pType in powerups)) {
       throw new Error("Unknown powerup type requested: " + pType);
@@ -1658,14 +1756,23 @@
     });
   } //usePowerup
 
+  /**
+   * @type {{ flyTo: (arg0: any) => void; setView: (arg0: number[], arg1: number) => void; eachLayer: (arg0: { (layer: any): void; (layer: any): void; }) => void; on: (arg0: string, arg1: (e: any) => void) => void; }}
+   */
   let map;
+  /**
+   * @type {{ latitude: any; longitude: any; }}
+   */
   let markerAnswer;
+  /**
+   * @type {{ latitude: any; longitude: any; }}
+   */
   let irlLocation;
   function loadMap() {
     if (map) {
       //reset map and marker if we already loaded it
       map.setView([40, 16], 2);
-      map.eachLayer((layer) => {
+      map.eachLayer((/** @type {{ remove: () => void; }} */ layer) => {
         if (layer instanceof L.Marker) {
           layer.remove();
         }
@@ -1681,11 +1788,11 @@
         attribution: `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors`,
       }).addTo(map);
 
-      map.on("click", function (e) {
+      map.on("click", function (/** @type {{ latlng: { lat: any; lng: any; }; }} */ e) {
         const { lat, lng } = e.latlng;
         console.log(` Latitude ${lat.toFixed(5)}, Longitude ${lng.toFixed(5)}`);
 
-        map.eachLayer((layer) => {
+        map.eachLayer((/** @type {{ remove: () => void; }} */ layer) => {
           if (layer instanceof L.Marker) {
             layer.remove();
           }
@@ -1695,7 +1802,7 @@
       });
     }
 
-    dankdank = RealtimeIRL.forStreamer("twitch", irlid).addLocationListener(function (location) {
+    dankdank = RealtimeIRL.forStreamer("twitch", irlid).addLocationListener(function (/** @type {any} */ location) {
       irlLocation = location;
       console.log(irlLocation);
     });

@@ -3,7 +3,7 @@
   import { Slider } from "bits-ui";
 
   import localforage from "localforage";
-  import { getLanguage, escapeString } from "$lib/functions";
+  import { getLanguage } from "$lib/functions";
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
   import IcBaselineSearch from "~icons/ic/baseline-search";
@@ -11,6 +11,8 @@
   import IcBaselineLabel from "~icons/ic/baseline-label";
   import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
   import { showToast } from "../+layout.svelte";
+  import pkg from "validator";
+  const { escape } = pkg;
 
   let nextStreamCooldown = $state(false);
 
@@ -80,6 +82,9 @@
 
   let retryLimit = 0;
 
+  /**
+   * @type {{ searchLanguages: any; selectedLanguages: any; languagesDiv?: any; searchTags: any; selectedTags: any; tagsDiv: any; searchCategories: any; selectedCategories: any; categoriesDiv: any; languageFilterCount: any; tagFilterCount: any; categoryFilterCount: any; }}
+   */
   let elements;
 
   onMount(async () => {
@@ -311,7 +316,7 @@
           "_",
         )}_category_checkbox" onchange="updateCategories()">
         <label class="form-check-label" for="${selected[index].replace(/\s+/g, "_")}_category_checkbox">
-          ${selected[index] == "No category" ? `<em class="opacity-60">No category</em>` : escapeString(selected[index])} <span class="opacity-60">(${filterCategories
+          ${selected[index] == "No category" ? `<em class="opacity-60">No category</em>` : escape(selected[index])} <span class="opacity-60">(${filterCategories
             .get(selected[index])
             .toLocaleString()})</span>
         </label>
@@ -332,7 +337,7 @@
           "_",
         )}_category_checkbox" onchange="updateCategories()">
         <label class="form-check-label" for="${categories[index][0].replace(/\s+/g, "_")}_category_checkbox">
-          ${categories[index][0] == "No category" ? `<em class="opacity-60">No category</em>` : escapeString(categories[index][0])} <span class="opacity-60">(${categories[
+          ${categories[index][0] == "No category" ? `<em class="opacity-60">No category</em>` : escape(categories[index][0])} <span class="opacity-60">(${categories[
             index
           ][1].toLocaleString()})</span>
         </label>
@@ -621,7 +626,7 @@
                     {#each topTags as tag}
                       <label class="flex items-center space-x-1">
                         <input class="checkbox tag-filter" type="checkbox" value={tag[0]} onchange={updateTags} />
-                        <p>{escapeString(tag[0])} <span class="opacity-60">({tag[1].toLocaleString()})</span></p>
+                        <p>{escape(tag[0])} <span class="opacity-60">({tag[1].toLocaleString()})</span></p>
                       </label>
                     {/each}
                   </form>
@@ -656,7 +661,7 @@
                         {#if category[0] == "No category"}
                           <p class="opacity-60 italic">No category <span class="opacity-60">({category[1].toLocaleString()})</span></p>
                         {:else}
-                          <p>{escapeString(category[0])}<span class="opacity-60">({category[1].toLocaleString()})</span></p>
+                          <p>{escape(category[0])}<span class="opacity-60">({category[1].toLocaleString()})</span></p>
                         {/if}
                       </label>
                     {/each}
@@ -690,28 +695,26 @@
               </svg>
               View count</button
             >
-            <div class="dropdown dropdown-top dropdown-center w-200 rounded-box bg-base-100 shadow-sm" popover id="ViewCountPopover" style="position-anchor:--ViewCountPopoverAnchor">
-              <h5 class="text-2xl">View count range:</h5>
-              <div class="flex flex-row justify-between m-2 p-2">
+            <div class="dropdown dropdown-top dropdown-end w-200 rounded-box bg-base-100 shadow-sm p-2" popover id="ViewCountPopover" style="position-anchor:--ViewCountPopoverAnchor">
+              <h5 class="text-2xl">View count range</h5>
+              <div class="flex flex-row justify-between m-2">
                 <span>Minimum view count: {filterViewCount[0].toLocaleString()}</span>
                 <span>Maximum view count: {filterViewCount[1].toLocaleString()}</span>
               </div>
-              <br />
-              <Slider.Root type="multiple" bind:value={filterViewCountSlider} min={0} max={100} autoSort={true} class="relative flex w-full touch-none select-none items-center">
-                {#snippet children({ tickItems, thumbs })}
-                  <!-- Track -->
+              <Slider.Root
+                type="multiple"
+                bind:value={filterViewCountSlider}
+                min={0}
+                max={100}
+                autoSort={true}
+                class="relative flex w-190 touch-none select-none items-center p-1 mx-auto mb-3"
+              >
+                {#snippet children({ tickItems, thumbItems })}
                   <span class="relative h-3 w-full grow rounded-full bg-base-300 cursor-pointer overflow-hidden">
                     <Slider.Range class="absolute h-full bg-primary transition-all" />
                   </span>
-
-                  <!-- Thumbs -->
-                  {#each thumbs as index (index)}
-                    <Slider.Thumb {index} class="btn btn-circle btn-sm border-base-300 bg-base-100 shadow-md focus:outline-none focus:ring-2 focus:ring-primary" />
-                  {/each}
-
-                  <!-- Optional ticks -->
-                  {#each tickItems as { index } (index)}
-                    <Slider.Tick {index} class="absolute h-3 w-px bg-base-content/30" />
+                  {#each thumbItems as { index } (index)}
+                    <Slider.Thumb {index} class="btn btn-circle btn-sm bg-primary focus:outline-none focus:ring-1 focus:ring-primary" />
                   {/each}
                 {/snippet}
               </Slider.Root>

@@ -5,6 +5,7 @@
   import IcBaselineRefresh from "~icons/ic/baseline-refresh";
   import MdiTwitch from "~icons/mdi/twitch";
   import { showToast } from "../../+layout.svelte";
+  import { addBadges, checkToken, encodeHTML, get7TVPFP, getCustomBadges, getTwitchPFP, showConfetti, shuffleArraySeed } from "$lib/functions";
 
   let { data } = $props();
 
@@ -45,6 +46,9 @@
 
     customBadges = await getCustomBadges();
   });
+  /**
+   * @type {{ board: any; loginInfoPFP: any; loginButton: any; loginInfo: any; username: any; score: any; previewBoard: any; leaderboardCount: any; leaderboard: any; refresh: any; channel: any; time: any; previewUsername: any; previewDiv: any; loginExpiredModal?: HTMLElement | null; }}
+   */
   let elements;
 
   let TWITCH = {
@@ -53,12 +57,18 @@
     userID: "",
   };
 
+  /**
+   * @type {string | any[]}
+   */
   let board = [];
   let allowDiagonals = false;
 
   let won = false;
   let loginExpiredModal;
   let customBadges = [];
+  /**
+   * @type {any}
+   */
   let streamerID;
 
   function login() {
@@ -150,6 +160,9 @@
     }
   } //loadBoard
 
+  /**
+   * @param {any[]} users
+   */
   async function updateLeaderboard(users) {
     for (let index = 0; index < users.length; index++) {
       if (users[index].userid == streamerID) {
@@ -219,6 +232,9 @@
     }
   } //refresh
 
+  /**
+   * @param {string | any[]} board
+   */
   function checkWin(board, streamer = false) {
     let rows = [];
     let columns = [];
@@ -348,6 +364,12 @@
     }
   } //join
 
+  /**
+   * @param {string} username
+   * @param {any} userid
+   * @param {number} score
+   * @param {number} bingos
+   */
   function showPreview(username, userid, score, bingos) {
     elements.previewUsername.innerHTML = `
   ${encodeHTML(username)}'s bingo board<br>Score: ${score.toLocaleString()} ${score == 1 ? "point" : "points"} ${bingos > 0 ? `(${bingos} ${bingos == 1 ? "BINGO" : "BINGOs"})` : ""}`;

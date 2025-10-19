@@ -56,6 +56,9 @@
     document.querySelectorAll(".bingo-cell").forEach((c) => c.classList.remove("matching"));
   } //hideSearchBar
 
+  /**
+   * @param {{ target: { dataset: { id: string; }; classList: { toggle: (arg0: string) => void; }; }; }} event
+   */
   function fillCell(event) {
     if (!boardCreated) {
       let textInput = document.querySelector(`input[data-item-id="${event.target.dataset.id}"]`);

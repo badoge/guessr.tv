@@ -41,6 +41,7 @@
     "tmi.js": "^1.8.5",
     "typescript": "^5.9.3",
     "unplugin-icons": "^22.4.2",
+    "validator": "^13.15.15",
     "vite": "^7.1.10"
   }
 }

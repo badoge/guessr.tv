@@ -9,7 +9,7 @@
     let url = window.location.href;
     let access_token;
     try {
-      access_token = url.match(/\#(?:access_token)\=([\S\s]*?)\&/)[1];
+      access_token = url?.match(/\#(?:access_token)\=([\S\s]*?)\&/)?.[1];
       if (!access_token) {
         window.history.replaceState(null, "", window.location.pathname);
         return;

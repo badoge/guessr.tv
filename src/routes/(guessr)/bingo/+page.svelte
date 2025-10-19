@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import localforage from "localforage";
-  import { getCustomBadges } from "$lib/functions";
+  import { getCustomBadges, sendUsername } from "$lib/functions";
   import { createDraggable } from "animejs";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineClose from "~icons/ic/baseline-close";
@@ -232,8 +232,14 @@
     },
   ];
   let selectedPacks = [0];
+  /**
+   * @type {any[]}
+   */
   let currentItems = [];
 
+  /**
+   * @type {{ boardSize: any; board: any; boardOpacity: any; infoTime: any; nextStream: any; previousStream: any; seenChannels: any; start: any; twitchEmbedDiv: any; settingsCard: any; mainCard: any; customBingoName: any; loginInfoPFP: any; bingoLink: any; loginButton: any; loginInfo: any; leaderboard: any; leaderboardCount: any; previewUsername: any; previewDiv: any; packEditorSelect: any; packSwitchesDiv: any; packEditorName: any; packDropdownButton: any; packEditorItems: any; deletePackButton: any; skipSexual?: HTMLElement | null; unloadWarningBingo?: HTMLElement | null; resetSeenChannels?: HTMLElement | null; loginExpiredModal?: HTMLElement | null; packsModal?: HTMLElement | null; twitchBingo?: HTMLElement | null; customBingo?: HTMLElement | null; bingoStats?: HTMLElement | null; bingoStatsTooltip?: HTMLElement | null; previewBoard?: HTMLElement | null; twitchEmbed?: HTMLElement | null; copyButton?: HTMLElement | null; }}
+   */
   let elements;
 
   let TWITCH = {
@@ -246,18 +252,37 @@
   let bingoStatsTooltip;
   let streamerScore;
   let copyButton;
+  /**
+   * @type {any[]}
+   */
   let mainList = [];
+  /**
+   * @type {any[]}
+   */
   let seenChannels = [];
+  /**
+   * @type {any[]}
+   */
   let previousChannels = [];
+  /**
+   * @type {Twitch.Embed}
+   */
   let player;
   let retryLimit = 0;
   let customBadges = [];
   let refreshCooldown;
+
+  /**
+   * @type {string}
+   */
   let channelName;
   let skipSexual = true;
   let unloadWarningBingo = true;
   let userInteracted = false;
 
+  /**
+   * @type {any[]}
+   */
   let board = [];
   let won = false;
   let boardCreated = false;
@@ -376,10 +401,17 @@
     showPreviousStream(currentIndex, false);
   } //previousStream
 
+  /**
+   * @param {number} currentIndex
+   * @param {boolean} forward
+   */
   function showPreviousStream(currentIndex, forward) {
     player.setChannel(previousChannels[(currentIndex += forward ? 1 : -1)]);
   } //showPreviousStream
 
+  /**
+   * @param {{ target: { dataset: { itemId: any; }; }; }} event
+   */
   function randomize(event) {
     const id = event.target.dataset.itemId;
     const input = document.querySelector(`[data-item-id="${id}"]`);
@@ -480,6 +512,9 @@
     checkDuplicatesOnBoard();
   } //loadItems
 
+  /**
+   * @param {{ dataset: { itemId: string; }; value: string; }} element
+   */
   function updateSingleItem(element) {
     const itemId = parseInt(element.dataset.itemId, 10);
     const index = itemId - 1;
@@ -496,6 +531,9 @@
     checkDuplicatesOnBoard();
   } //updateSingleItem
 
+  /**
+   * @param {{ target: { dataset: { itemId: string; }; selectionStart: number; value: string | any[]; }; key: any; preventDefault: () => void; shiftKey: any; }} event
+   */
   function moveCursor(event) {
     let currentId = parseInt(event.target.dataset.itemId, 10);
     switch (event.key) {
@@ -582,12 +620,18 @@
     }
   }
 
+  /**
+   * @param {{ dataset: { itemId: any; }; }} element
+   */
   function activateCellById(element) {
     const itemId = element.dataset.itemId;
     const itemCell = document.querySelector(`.bingo-cell[data-id="${itemId}"]`);
     itemCell.classList.add("selected");
   } //activateCellById
 
+  /**
+   * @param {{ dataset: { itemId: any; }; }} element
+   */
   function deactivateCellById(element) {
     const itemId = element.dataset.itemId;
     const itemCell = document.querySelector(`.bingo-cell[data-id="${itemId}"]`);
@@ -683,6 +727,9 @@
     }
   } //uploadBoard
 
+  /**
+   * @param {string | any[]} board
+   */
   function checkWin(board, streamer = false) {
     let rows = [];
     let columns = [];
@@ -861,7 +908,7 @@
         users[index].result = checkWin(users[index].board);
       }
 
-      users.sort((a, b) => a.result.score - b.result.score);
+      users.sort((/** @type {{ result: { score: number; }; }} */ a, /** @type {{ result: { score: number; }; }} */ b) => a.result.score - b.result.score);
 
       elements.leaderboardCount.innerHTML = users.length;
       elements.leaderboard.innerHTML = "";
@@ -902,6 +949,12 @@
     });
   } //updateStatsTooltip
 
+  /**
+   * @param {any} username
+   * @param {string} userid
+   * @param {number} score
+   * @param {number} bingos
+   */
   function showPreview(username, userid, score, bingos) {
     elements.previewUsername.innerHTML = `
   ${encodeHTML(username)}'s bingo board<br>Score: ${score.toLocaleString()} ${score == 1 ? "point" : "points"} ${bingos > 0 ? `(${bingos} ${bingos == 1 ? "BINGO" : "BINGOs"})` : ""}`;
@@ -1028,6 +1081,9 @@
     loadPacks();
   } //updateSelectedPacks
 
+  /**
+   * @param {{ value: string; }} select
+   */
   function changePack(select) {
     loadPacks(parseInt(select.value, 10));
   } //changePack
@@ -1039,7 +1095,7 @@
     let packItemsRaw = elements.packEditorItems.value;
     let packItems = elements.packEditorItems.value
       .split(String.fromCharCode(10))
-      .map((x) => x.trim())
+      .map((/** @type {string} */ x) => x.trim())
       .filter(Boolean);
 
     itemPacks[id].name = packName;
@@ -1050,7 +1106,7 @@
       showToast("Pack name already exists", "warning", 3000);
     }
 
-    if (new Set(packItems.map((x) => x.toLowerCase())).size !== packItems.length) {
+    if (new Set(packItems.map((/** @type {string} */ x) => x.toLowerCase())).size !== packItems.length) {
       showToast("Pack has duplicates", "warning", 3000);
     }
 
