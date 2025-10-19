@@ -1,10 +1,10 @@
 <script>
   import { onMount } from "svelte";
-  import { toaster } from "$lib/functions";
   import IcBaselineLogout from "~icons/ic/baseline-logout";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineRefresh from "~icons/ic/baseline-refresh";
   import MdiTwitch from "~icons/mdi/twitch";
+  import { showToast } from "../../+layout.svelte";
 
   let { data } = $props();
 
@@ -202,22 +202,15 @@
       }
       loadBoard();
       updateLeaderboard(result.users);
+      showToast("Board & leaderboard refreshed", "info", 3000);
 
-      toaster.create({
-        type: "info",
-        title: "Board & leaderboard refreshed",
-        duration: 3000,
-      });
       elements.refresh.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
       setTimeout(() => {
         elements.refresh.disabled = false;
       }, 30000);
     } catch (error) {
-      toaster.create({
-        type: "error",
-        title: "Could not refresh board",
-        duration: 3000,
-      });
+      showToast("Could not refresh board", "error", 3000);
+
       console.log("refresh error", error);
       elements.refresh.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
       setTimeout(() => {
@@ -347,17 +340,10 @@
       console.log(result);
       board = result.data.board;
       allowDiagonals = result.data.allowDiagonals;
-      toaster.create({
-        type: "info",
-        title: result.message,
-        duration: 3000,
-      });
+      showToast(result.message, "info", 3000);
     } catch (error) {
-      toaster.create({
-        type: "error",
-        title: "Could not join game",
-        duration: 3000,
-      });
+      showToast("Could not join game", "error", 3000);
+
       console.log("join error", error);
     }
   } //join

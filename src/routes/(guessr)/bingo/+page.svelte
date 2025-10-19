@@ -30,6 +30,7 @@
   import MdiTwitch from "~icons/mdi/twitch";
   import BingoBoard from "$lib/BingoBoard.svelte";
   import { slide } from "svelte/transition";
+  import { showToast } from "../+layout.svelte";
 
   let bingoSize = $state(5);
   let allowDiagonals = $state(false);
@@ -102,11 +103,7 @@
     //   localforage.setItem("seenChannels", JSON.stringify([]));
     //   elements.seenChannels.innerHTML = 0;
     //   seenChannels = [];
-    //   toaster.create({
-    //     type: "success",
-    //     title: "Seen channels reset",
-    //     duration: 2000,
-    //   });
+    //   showToast("Seen channels reset", "success", 3000);
     // };
 
     TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
@@ -279,11 +276,7 @@
       elements.infoTime.innerHTML = `Channel list updated on ${new Date(result.time)}`;
     } catch (error) {
       console.log(error);
-      toaster.create({
-        type: "error",
-        title: "Could not load channel list :(",
-        duration: 5000,
-      });
+      showToast("Could not load channel list :(", "error", 5000);
     }
   } //getMainList
 
@@ -310,22 +303,16 @@
       channel = mainList.pop();
     }
     if (mainList.length == 0 || !channel) {
-      toaster.create({
-        type: "error",
-        title: "No more channels left on the list ...getting new list",
-        duration: 3000,
-      });
+      showToast("No more channels left on the list ...getting new list", "error", 5000);
+
       await getMainList();
       shuffleArray(mainList);
       nextStream();
       return;
     }
     if (retryLimit > 5) {
-      toaster.create({
-        type: "error",
-        title: "Too many retries, something might be wrong :(",
-        duration: 3000,
-      });
+      showToast("Too many retries, something might be wrong :(", "error", 4000);
+
       return;
     }
 
@@ -382,11 +369,8 @@
     let currentChannel = player.getChannel();
     let currentIndex = previousChannels.findIndex((x) => x == currentChannel);
     if (currentIndex == 0) {
-      toaster.create({
-        type: "error",
-        title: "Can't go further back",
-        duration: 3000,
-      });
+      showToast("Can't go further back", "error", 3000);
+
       return;
     }
     showPreviousStream(currentIndex, false);
@@ -403,11 +387,8 @@
     const taken = [...bingoItems].map((x) => x.value).filter(Boolean);
     let random = currentItems[Math.floor(Math.random() * currentItems.length)];
     if (taken.length >= currentItems.length) {
-      toaster.create({
-        type: "error",
-        title: "No more presets left",
-        duration: 3000,
-      });
+      showToast("No more presets left", "error", 3000);
+
       return;
     }
     while (taken.includes(random)) {
@@ -424,11 +405,8 @@
     const bingoItems = document.querySelectorAll(".bingo-item");
 
     if (![...bingoItems].map((e) => e.value).includes("")) {
-      toaster.create({
-        type: "warning",
-        title: "Board is full",
-        duration: 3000,
-      });
+      showToast("Board is full", "warning", 3000);
+
       return;
     }
 
@@ -436,11 +414,8 @@
     for (let index = 0; index < bingoItems.length; index++) {
       let option = options.pop();
       if (!option) {
-        toaster.create({
-          type: "error",
-          title: "No more presets left",
-          duration: 3000,
-        });
+        showToast("No more presets left", "error", 3000);
+
         break;
       }
       if (!bingoItems[index].value) {
@@ -648,21 +623,15 @@
     }
 
     if (itemValues.includes("")) {
-      toaster.create({
-        type: "warning",
-        title: "Board must be full",
-        duration: 2000,
-      });
+      showToast("Board must be full", "warning", 3000);
+
       return;
     }
     const values = board.map((item) => item.value.toLowerCase());
     const duplicates = new Set(values.filter((v) => values.indexOf(v) !== values.lastIndexOf(v)));
     if (duplicates.size > 0) {
-      toaster.create({
-        type: "warning",
-        title: "Board must not have duplicates",
-        duration: 2000,
-      });
+      showToast("Board must not have duplicates", "warning", 3000);
+
       return;
     }
 
@@ -703,17 +672,10 @@
         if (response.status == 200) {
           boardCreated = true;
         }
-        toaster.create({
-          type: "info",
-          title: result.message,
-          duration: 3000,
-        });
+        showToast(result.message, "info", 3000);
       } catch (error) {
-        toaster.create({
-          type: "error",
-          title: "Could not upload board",
-          duration: 3000,
-        });
+        showToast("Could not upload board", "error", 3000);
+
         console.log("save error", error);
       }
     } else {
@@ -925,11 +887,8 @@
         );
       }
     } catch (error) {
-      toaster.create({
-        type: "error",
-        title: "Could not refresh leaderboard",
-        duration: 3000,
-      });
+      showToast("Could not refresh leaderboard", "error", 3000);
+
       console.log("updateLeaderboard error", error);
     }
   } //updateLeaderboard
@@ -1088,19 +1047,11 @@
     itemPacks[id].items = packItems;
 
     if (itemPacks.filter((e) => e.name === packName).length > 1) {
-      toaster.create({
-        type: "warning",
-        title: "Pack name already exists",
-        duration: 2000,
-      });
+      showToast("Pack name already exists", "warning", 3000);
     }
 
     if (new Set(packItems.map((x) => x.toLowerCase())).size !== packItems.length) {
-      toaster.create({
-        type: "warning",
-        title: "Pack has duplicates",
-        duration: 2000,
-      });
+      showToast("Pack has duplicates", "warning", 3000);
     }
 
     loadPacks(id);

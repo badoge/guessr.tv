@@ -10,6 +10,7 @@
   import IcBaselineLanguage from "~icons/ic/baseline-language";
   import IcBaselineLabel from "~icons/ic/baseline-label";
   import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
+  import { showToast } from "../+layout.svelte";
 
   let nextStreamCooldown = $state(false);
 
@@ -114,11 +115,7 @@
     //   localforage.setItem("seenChannels", JSON.stringify([]));
     //   elements.seenChannels.innerHTML = 0;
     //   seenChannels = [];
-    //   toaster.create({
-    //     type: "success",
-    //     title: "Seen channels reset",
-    //     duration: 2000,
-    //   });
+    //   showToast("Seen channels reset", "success", 2000);
     // };
 
     await getMainList();
@@ -148,11 +145,8 @@
       mainList = new Map(result);
       filteredList = new Map(mainList);
     } catch (error) {
-      toaster.create({
-        type: "error",
-        title: "Could not load channel list :(",
-        duration: 5000,
-      });
+      showToast("Could not load channel list :(", "error", 5000);
+
       console.log(error);
     }
   } //getMainList
@@ -415,19 +409,13 @@
     }
 
     if (filteredList.size == 0 || !channelID) {
-      toaster.create({
-        type: "error",
-        title: "No more channels left on the list, change your filters or refresh to get a new list",
-        duration: 4000,
-      });
+      showToast("No more channels left on the list, change your filters or refresh to get a new list", "error", 5000);
+
       return;
     }
     if (retryLimit > 5) {
-      toaster.create({
-        type: "error",
-        title: "Too many retries, something might be wrong :(",
-        duration: 3000,
-      });
+      showToast("Too many retries, something might be wrong :(", "error", 4000);
+
       return;
     }
 
@@ -479,11 +467,8 @@
     let embeddedChannel = player.getChannel();
     let currentIndex = previousChannels.findIndex((x) => x.username == embeddedChannel);
     if (currentIndex == 0) {
-      toaster.create({
-        type: "error",
-        title: "Can't go further back",
-        duration: 3000,
-      });
+      showToast("Can't go further back", "error", 3000);
+
       return;
     }
     showPreviousStream(currentIndex, false);

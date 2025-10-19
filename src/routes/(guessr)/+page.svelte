@@ -10,6 +10,7 @@
   let elements;
 
   import { animate, utils } from "animejs";
+  import { showToast } from "./+layout.svelte";
 
   let channelBadges = { subscriber: [], bits: [] };
   let globalBadges = {};
@@ -275,31 +276,21 @@
               let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
               while (!(await checkEmote(emote))) {
                 if (++tries > 3) {
-                  toaster.create({
-                    type: "error",
-                    title: "Something went wrong while fetching the channel's emotes :(",
-                    duration: 3000,
-                  });
-                  console.log(error);
+                  showToast("Something went wrong while fetching the channel's emotes :(", "error", 3000);
+                  //console.log(error);
                   return await getRandomStream();
                 }
                 emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
               }
               randomStream.emote = emote;
             } else {
-              toaster.create({
-                type: "info",
-                title: "Channel has no emotes, getting new channel...",
-                duration: 3000,
-              });
+              showToast("Channel has no emotes, getting new channel...", "info", 3000);
+
               return await getRandomStream();
             }
           } catch (error) {
-            toaster.create({
-              type: "error",
-              title: "Something went wrong while fetching the channel's emotes :(",
-              duration: 3000,
-            });
+            showToast("Something went wrong while fetching the channel's emotes :(", "error", 3000);
+
             console.log(error);
             return await getRandomStream();
           }
@@ -330,11 +321,8 @@
         return await getRandomStream();
       }
     } catch (error) {
-      toaster.create({
-        type: "error",
-        title: "Something went wrong while updating the view count :(",
-        duration: 3000,
-      });
+      showToast("Something went wrong while updating the view count :(", "error", 3000);
+
       console.log(error);
       return await getRandomStream();
     }
@@ -346,11 +334,8 @@
     try {
       let response = await fetch(`https://helper.guessr.tv/twitch/clips?id=${ids.join(",")}`);
       if (response.status != 200) {
-        toaster.create({
-          type: "error",
-          title: "Something went wrong while updating clip view counts :(",
-          duration: 3000,
-        });
+        showToast("Something went wrong while updating clip view counts :(", "error", 3000);
+
         // await getClipsGuessList();
         return;
       }
@@ -364,22 +349,16 @@
       //remove deleted clips
       guessList = mainList.filter((n) => clips.data.some((n2) => n.id == n2.id));
       if (guessList.length < 5) {
-        toaster.create({
-          type: "info",
-          title: "Clip set contains deleted clips, getting new set...",
-          duration: 2000,
-        });
+        showToast("Clip set contains deleted clips, getting new set...", "info", 2000);
+
         return await getClipsGuessList();
       }
 
       //remove seen clips
       guessList = guessList.filter((n) => !seenClips.includes(n.id));
       if (guessList.length < 5) {
-        toaster.create({
-          type: "info",
-          title: "Clip set contains already seen clips, getting new set...",
-          duration: 2000,
-        });
+        showToast("Clip set contains already seen clips, getting new set...", "info", 2000);
+
         return await getClipsGuessList();
       }
 
@@ -392,11 +371,8 @@
         await getClipsEmotes();
       }
     } catch (error) {
-      toaster.create({
-        type: "error",
-        title: "Something went wrong while updating clip view counts :(",
-        duration: 3000,
-      });
+      showToast("Something went wrong while updating clip view counts :(", "error", 3000);
+
       //await getClipsGuessList();
       console.log(error);
     }
@@ -409,11 +385,8 @@
       try {
         let response = await fetch(`https://helper.guessr.tv/twitch/chat/emotes?broadcaster_id=${guessList[index].userid}`);
         if (response.status != 200) {
-          toaster.create({
-            type: "error",
-            title: "Something went wrong while fetching the channel's emotes :(",
-            duration: 3000,
-          });
+          showToast("Something went wrong while fetching the channel's emotes :(", "error", 3000);
+
           return;
         }
         let emotes = await response.json();
@@ -421,11 +394,8 @@
           let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
           while (!(await checkEmote(emote))) {
             if (++tries > 3) {
-              toaster.create({
-                type: "error",
-                title: "Something went wrong while fetching the channel's emotes :(",
-                duration: 3000,
-              });
+              showToast("Something went wrong while fetching the channel's emotes :(", "error", 3000);
+
               console.log(error);
               return await getClipsGuessList();
             }
@@ -434,29 +404,20 @@
           guessList[index].emote = emote;
           fetched++;
         } else {
-          toaster.create({
-            type: "info",
-            title: "Channel has no emotes, getting new clip set...",
-            duration: 3000,
-          });
+          showToast("Channel has no emotes, getting new clip set...", "info", 3000);
+
           return await getClipsGuessList();
         }
       } catch (error) {
-        toaster.create({
-          type: "error",
-          title: "Something went wrong while fetching the channel's emotes :(",
-          duration: 3000,
-        });
+        showToast("Something went wrong while fetching the channel's emotes :(", "error", 3000);
+
         console.log(error);
       }
     }
     if (fetched < 5) {
       guessList = [];
-      toaster.create({
-        type: "info",
-        title: "Clip set contains deleted clips, getting new set...",
-        duration: 2000,
-      });
+      showToast("Clip set contains deleted clips, getting new set...", "info", 3000);
+
       return await getClipsGuessList();
     }
   } //getClipsEmotes
@@ -683,11 +644,8 @@
 
     if (gameSettings.mode == "irl") {
       if (!markerAnswer) {
-        toaster.create({
-          type: "warning",
-          title: "No location selected",
-          duration: 2000,
-        });
+        showToast("No location selected", "warning", 2000);
+
         return;
       }
 
@@ -730,21 +688,15 @@
         answer = cleanString(elements.gameInput.value);
         //show warning if no answer is provided but only if timer is not over
         if (!answer && !timeUp) {
-          toaster.create({
-            type: "warning",
-            title: "Invalid answer",
-            duration: 2000,
-          });
+          showToast("Invalid answer", "warning", 2000);
+
           elements.gameInput.value = "";
           return;
         }
         //show warning if answer does not exist in the game list
         if (!gameList.some((x) => cleanString(x.name) === answer) && !timeUp) {
-          toaster.create({
-            type: "warning",
-            title: "Answer must be from the suggestions list",
-            duration: 2000,
-          });
+          showToast("Answer must be from the suggestions list", "warning", 2000);
+
           elements.gameInput.value = "";
           return;
         }
@@ -761,11 +713,8 @@
 
     //show warning if no answer is selected
     if ((isNaN(answer) || answer === null) && gameSettings.mode !== "game" && gameSettings.mode !== "higherlower" && !timeUp) {
-      toaster.create({
-        type: "warning",
-        title: "Invalid answer",
-        duration: 2000,
-      });
+      showToast("Invalid answer", "warning", 2000);
+
       return;
     }
 
@@ -1297,20 +1246,14 @@
     gameSettings.collection = elements.clipCollection.value || "random";
 
     if (gameSettings.mode == "game" && gameSettings.collection == "hottub" && gameSettings.clips) {
-      toaster.create({
-        type: "info",
-        title: "Hmmm today I'll pick game guessr mode then pick a clip collection that has 1 category only 🤙",
-        duration: 5000,
-      });
+      showToast("Hmmm today I'll pick game guessr mode then pick a clip collection that has 1 category only 🤙", "info", 5000);
+
       reset();
       return;
     }
     if (gameSettings.mode == "emote" && gameSettings.collection == "forsen" && gameSettings.clips) {
-      toaster.create({
-        type: "info",
-        title: "Hmmm today I'll pick emote guessr mode then pick a clip collection that has 1 channel only 🤙",
-        duration: 5000,
-      });
+      showToast("Hmmm today I'll pick emote guessr mode then pick a clip collection that has 1 channel only 🤙", "info", 5000);
+
       reset();
       return;
     }
@@ -1334,11 +1277,8 @@
     channelName = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
 
     if (channelName.includes("://") || channelName.includes(".")) {
-      toaster.create({
-        type: "warning",
-        title: "Invalid username. Input your username only not the link",
-        duration: 3000,
-      });
+      showToast("Invalid username. Input your username only not the link", "warning", 3000);
+
       reset();
       return;
     }
@@ -1347,11 +1287,8 @@
       irlid = parseInt(document.getElementById("channelId").value, 10);
 
       if (!irlid) {
-        toaster.create({
-          type: "error",
-          title: "no irl channel id provided",
-          duration: 3000,
-        });
+        showToast("no irl channel id provided", "error", 3000);
+
         reset();
         return;
       }
@@ -1359,11 +1296,8 @@
       let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${irlid}`);
       let stream = await response.json();
       if (!stream?.data[0] || !stream?.data[0]?.user_login) {
-        toaster.create({
-          type: "warning",
-          title: "stream offline/not found",
-          duration: 3000,
-        });
+        showToast("stream offline/not found", "warning", 3000);
+
         reset();
         return;
       }
@@ -1492,27 +1426,15 @@
       if (!usernameSent && channelName) {
         sendUsername();
       }
-      toaster.create({
-        type: "success",
-        title: `Connected to ${channelName}`,
-        duration: 2000,
-      });
+      showToast(`Connected to ${channelName}`, "success", 2000);
     }); //connected
 
     client.on("disconnected", (reason) => {
-      toaster.create({
-        type: "error",
-        title: `Disconnected: ${reason}`,
-        duration: 2000,
-      });
+      showToast(`Disconnected: ${reason}`, "error", 2000);
     }); //disconnected
 
     client.on("notice", (channel, msgid, message) => {
-      toaster.create({
-        type: "error",
-        title: `Disconnected: ${message}`,
-        duration: 2000,
-      });
+      showToast(`Disconnected: ${message}`, "error", 2000);
     }); //notice
 
     client.connect().catch(console.error);
@@ -1960,21 +1882,13 @@
     //   localforage.setItem("seenChannels", JSON.stringify([]));
     //   seenChannels = [];
     //   elements.seenChannels.innerHTML = 0;
-    //   toaster.create({
-    //     type: "success",
-    //     title: "Seen channels reset",
-    //     duration: 2000,
-    //   });
-    // };
+    //   showToast("Seen channels reset", "success", 2000);
+
     // elements.resetSeenClips.onclick = function () {
     //   localforage.setItem("seenClips", JSON.stringify([]));
     //   seenClips = [];
     //   elements.seenClips.innerHTML = 0;
-    //   toaster.create({
-    //     type: "success",
-    //     title: "Seen clips reset",
-    //     duration: 2000,
-    //   });
+    //   showToast("Seen clips reset", "success", 2000);
     // };
 
     const queryString = window.location.search;
