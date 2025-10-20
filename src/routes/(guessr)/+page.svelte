@@ -7,8 +7,10 @@
   import IcBaselineEmojiEmotions from "~icons/ic/baseline-emoji-emotions";
   import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
   import IcBaselineImportExport from "~icons/ic/baseline-import-export";
+  import IcBaselineClose from "~icons/ic/baseline-close";
+
   /**
-   * @type {{ [x: string]: { innerHTML: number; }; guessRange: any; guessNumber: any; infoTime: any; gameList: any; sliderDiv: any; multiChoiceDiv: any; gameNameDiv: any; higherlowerDiv: any; irlDiv: any; leaderboardList: any; leaderboardListRound: any; chatHint: any; twitchEmbed: any; menuContainer: any; gameContainer: any; round: any; score: any; scoreDiv: any; correction: any; gameEndText: any; mainCard: any; breakdown: any; nextRound: any; gameInput: any; guessRangeLabel: any; multiChoiceLabel: any; higherlowerLabel: any; clipCover: any; streamCover: any; endButtons: any; resultsDiv: any; channelName: any; progressBar: any; scoreProgressBarLabel: any; progress: any; leaderboard: any; getSettingsButton: any; guessLabel: any; disclaimer: any; clipCollection: any; timerValue: any; timerDiv: any; leaderboardTabs: any; playAgain: any; streamsVideoType: any; videoTypeDesc: any; clipCollectionDiv: any; clipsVideoType: any; seenChannels: any; seenClips: any; reset?: HTMLElement | null; multiChoice1?: HTMLElement | null; multiChoice2?: HTMLElement | null; multiChoice3?: HTMLElement | null; multiChoice4?: HTMLElement | null; multiChoice5?: HTMLElement | null; higher?: HTMLElement | null; lower?: HTMLElement | null; timer?: HTMLElement | null; skipSexual?: HTMLElement | null; unloadWarning?: HTMLElement | null; viewersHS?: HTMLElement | null; gameStreak?: HTMLElement | null; emoteStreak?: HTMLElement | null; viewersHigherlowerStreak?: HTMLElement | null; resetSeenChannels?: HTMLElement | null; resetSeenClips?: HTMLElement | null; resetGameModal?: HTMLElement | null; gameSettingsModal?: HTMLElement | null; totalTab?: HTMLElement | null; roundTab?: HTMLElement | null; }}
+   * @type {{ [x: string]: { innerHTML: number; }; guessRange: any; guessNumber: any; infoTime: any; gameList: any; sliderDiv: any; multiChoiceDiv: any; gameNameDiv: any; higherlowerDiv: any; irlDiv: any; leaderboardList: any; leaderboardListRound: any; chatHint: any; twitchEmbed: any; menuContainer: any; gameContainer: any; round: any; score: any; scoreDiv: any; correction: any; gameEndText: any; mainCard: any; breakdown: any; nextRound: any; gameInput: any; guessRangeLabel: any; multiChoiceLabel: any; higherlowerLabel: any; clipCover: any; streamCover: any; endButtons: any; resultsDiv: any; channelName: any; progressBar: any; scoreProgressBarLabel: any; progress: any; leaderboard: any; getSettingsButton: any; guessLabel: any; disclaimer: any; clipCollection: any; timerValue: any; timerDiv: any; leaderboardTabs: any; playAgain: any; streamsVideoType: any; videoTypeDesc: any; clipCollectionDiv: any; clipsVideoType: any; seenChannels: any; seenClips: any; reset?: HTMLElement | null; multiChoice1?: HTMLElement | null; multiChoice2?: HTMLElement | null; multiChoice3?: HTMLElement | null; multiChoice4?: HTMLElement | null; multiChoice5?: HTMLElement | null; higher?: HTMLElement | null; lower?: HTMLElement | null; timer?: HTMLElement | null; skipSexual?: HTMLElement | null; unloadWarning?: HTMLElement | null; viewersHS?: HTMLElement | null; gameStreak?: HTMLElement | null; emoteStreak?: HTMLElement | null; viewersHigherlowerStreak?: HTMLElement | null; resetSeenChannels?: HTMLElement | null; resetSeenClips?: HTMLElement | null; totalTab?: HTMLElement | null; roundTab?: HTMLElement | null; }}
    */
   let elements;
 
@@ -105,7 +107,6 @@
     viewersHigherlowerStreak: 0,
   };
 
-  let gameSettingsModal, resetGameModal;
   /**
    * @type {{ disconnect: () => void; on: (arg0: string, arg1: { (target: any, context: any, msg: any, self: any): Promise<void>; (address: any, port: any): void; (reason: any): void; (channel: any, msgid: any, message: any): void; }) => void; connect: () => Promise<any>; } | null}
    */
@@ -613,7 +614,7 @@
     if (gameSettings.mode == "viewers") {
       //reset round leaderboard and switch to total tab
       elements.leaderboardListRound.innerHTML = "";
-      totalTab.show();
+      //totalTab.show();
     }
 
     elements.correction.innerHTML = "";
@@ -1252,7 +1253,7 @@
 
   function reset(logoClicked = false) {
     if (logoClicked && gameRunning) {
-      resetGameModal.show();
+      resetGameModal.showModal();
       return;
     }
     stopTimer();
@@ -1319,7 +1320,7 @@
       document.getElementById("irlSettingsDiv").style.display = "none";
     }
 
-    gameSettingsModal.show();
+    gameSettingsModal.showModal();
   } //showSettings
 
   let irlid = "";
@@ -1416,7 +1417,7 @@
     await startGame();
     nextRound();
 
-    gameSettingsModal.hide();
+    gameSettingsModal.close();
   } //getSettings
 
   async function connectChat() {
@@ -1616,7 +1617,7 @@
     } else {
       //hide the tabs and switch to total tab for all other modes
       elements.leaderboardTabs.style.display = "none";
-      totalTab.show();
+      //totalTab.show();
     }
   } //showLeaderboard
 
@@ -1875,9 +1876,6 @@
       resetSeenClips: document.getElementById("resetSeenClips"),
       seenClips: document.getElementById("seenClips"),
 
-      resetGameModal: document.getElementById("resetGameModal"),
-
-      gameSettingsModal: document.getElementById("gameSettingsModal"),
       streamsVideoType: document.getElementById("streamsVideoType"),
       clipsVideoType: document.getElementById("clipsVideoType"),
       clipCollectionDiv: document.getElementById("clipCollectionDiv"),
@@ -2020,102 +2018,106 @@
   <script src="https://cdn.jsdelivr.net/npm/@rtirl/api@latest/lib/index.min.js" async></script>
 </svelte:head>
 
-<div class="modal fade" id="gameSettingsModal" tabindex="-1" aria-labelledby="gameSettingsModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="gameSettingsModalLabel">Game settings</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<dialog id="gameSettingsModal" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"><IcBaselineClose /></button>
+    </form>
+    <h3 class="text-lg font-bold">Game settings</h3>
+    <div id="videoTypeDiv">
+      <h4>Video type</h4>
+      <div class="btn-group" role="group" aria-label="Video type">
+        <input type="radio" class="btn-check" name="videoTypeSelect" value="streams" id="streamsVideoType" autocomplete="off" checked />
+        <label class="btn btn-outline-danger" for="streamsVideoType">Live Streams</label>
+
+        <input type="radio" class="btn-check" name="videoTypeSelect" value="clips" id="clipsVideoType" autocomplete="off" />
+        <label class="btn btn-outline-warning" for="clipsVideoType">Clips</label>
       </div>
-      <div class="modal-body text-center">
-        <div id="videoTypeDiv">
-          <h4>Video type</h4>
-          <div class="btn-group" role="group" aria-label="Video type">
-            <input type="radio" class="btn-check" name="videoTypeSelect" value="streams" id="streamsVideoType" autocomplete="off" checked />
-            <label class="btn btn-outline-danger" for="streamsVideoType">Live Streams</label>
+      <br />
+      <small id="videoTypeDesc">A random live stream will be picked for you each round. Some streams might have preroll ads</small>
+    </div>
 
-            <input type="radio" class="btn-check" name="videoTypeSelect" value="clips" id="clipsVideoType" autocomplete="off" />
-            <label class="btn btn-outline-warning" for="clipsVideoType">Clips</label>
-          </div>
-          <br />
-          <small id="videoTypeDesc">A random live stream will be picked for you each round. Some streams might have preroll ads</small>
-        </div>
+    <div id="clipCollectionDiv" class="mt-3" style="display: none">
+      <h5>Clip collection</h5>
+      <select class="form-select" id="clipCollection" aria-label="Default select example">
+        <option value="random" selected>Random</option>
+        <option value="short">Short clips (&lt;10s)</option>
+        <option value="long">Long clips (&gt;45s)</option>
+        <option value="popular">Popular clips (&gt;50,000 views)</option>
+        <option value="hottub">Pools, Hot Tubs, and Beaches section :)</option>
+        <option value="forsen">forsen</option>
+      </select>
+    </div>
 
-        <div id="clipCollectionDiv" class="mt-3" style="display: none">
-          <h5>Clip collection</h5>
-          <select class="form-select" id="clipCollection" aria-label="Default select example">
-            <option value="random" selected>Random</option>
-            <option value="short">Short clips (&lt;10s)</option>
-            <option value="long">Long clips (&gt;45s)</option>
-            <option value="popular">Popular clips (&gt;50,000 views)</option>
-            <option value="hottub">Pools, Hot Tubs, and Beaches section :)</option>
-            <option value="forsen">forsen</option>
-          </select>
-        </div>
-
-        <div class="mt-3">
-          <h5>Timer</h5>
-          <div class="input-group">
-            <div class="input-group-text">Round timer</div>
-            <input type="number" id="timerValue" value="0" min="0" max="60" class="form-control" aria-label="timer value" />
-            <div class="input-group-text">minutes</div>
-          </div>
-          <small>Your guess will be automatically submitted when the timer runs out. Set to 0 to disable</small>
-        </div>
-
-        <div class="mt-3">
-          <h4>Play with chat</h4>
-          <div class="input-group">
-            <span class="input-group-text" id="channelNameLabel">twitch.tv/</span>
-            <input type="text" id="channelName" class="form-control" placeholder="username" aria-label="channel name" aria-describedby="channelNameLabel" />
-          </div>
-          <small class="mb-3">Your viewers will be able to play along by guessing in chat</small>
-        </div>
-
-        <div id="irlSettingsDiv" class="mt-3">
-          <h4>IRL stream channel id</h4>
-          <div class="input-group">
-            <span class="input-group-text" id="channelIdLabel">https://rtirl.com/twitch:</span>
-            <input type="text" id="channelId" class="form-control" placeholder="123456789" aria-label="channel id" aria-describedby="channelIdLabel" />
-          </div>
-          <small class="mb-3">
-            Go to <a href="https://rtirl.com/" target="_blank" rel="noopener noreferrer">RealtimeIRL</a> and pick a random stream and enter their twitch user id above. Example: when you
-            click a stream the url will change to https://rtirl.com/twitch:123456789, so enter 123456789 in the field above :)<br />Scuffed proof of concept :) try to get someone else to
-            pick a stream for you to not spoil the location
-          </small>
-        </div>
-
-        <div id="drops" class="alert alert-info mt-3" role="alert" style="display: none">
-          <span class="badge text-bg-success">NEW</span>
-          Stream in the <a href="https://www.twitch.tv/directory/category/guessr-tv" target="_blank" rel="noopener noreferrer">Guessr.tv</a> Twitch category for 30 minutes to earn a special
-          Donk badge! <img src="https://chat.vote/badges/donk.png" height="24px" /> <a href="/drops.html" target="_blank" rel="noopener noreferrer">More info</a>
-          <br />
-          <small class="text-danger">Not a Twitch chat badge, the badge will only show up on this site</small>
-        </div>
-
-        <div id="disclaimer" class="alert alert-warning mt-3" role="alert" style="display: none"></div>
+    <div class="mt-3">
+      <h5>Timer</h5>
+      <div class="input-group">
+        <div class="input-group-text">Round timer</div>
+        <input type="number" id="timerValue" value="0" min="0" max="60" class="form-control" aria-label="timer value" />
+        <div class="input-group-text">minutes</div>
       </div>
-      <div class="modal-footer">
+      <small>Your guess will be automatically submitted when the timer runs out. Set to 0 to disable</small>
+    </div>
+
+    <div class="mt-3">
+      <h4>Play with chat</h4>
+      <div class="input-group">
+        <span class="input-group-text" id="channelNameLabel">twitch.tv/</span>
+        <input type="text" id="channelName" class="form-control" placeholder="username" aria-label="channel name" aria-describedby="channelNameLabel" />
+      </div>
+      <small class="mb-3">Your viewers will be able to play along by guessing in chat</small>
+    </div>
+
+    <div id="irlSettingsDiv" class="mt-3">
+      <h4>IRL stream channel id</h4>
+      <div class="input-group">
+        <span class="input-group-text" id="channelIdLabel">https://rtirl.com/twitch:</span>
+        <input type="text" id="channelId" class="form-control" placeholder="123456789" aria-label="channel id" aria-describedby="channelIdLabel" />
+      </div>
+      <small class="mb-3">
+        Go to <a href="https://rtirl.com/" target="_blank" rel="noopener noreferrer">RealtimeIRL</a> and pick a random stream and enter their twitch user id above. Example: when you click a
+        stream the url will change to https://rtirl.com/twitch:123456789, so enter 123456789 in the field above :)<br />Scuffed proof of concept :) try to get someone else to pick a stream
+        for you to not spoil the location
+      </small>
+    </div>
+
+    <div id="drops" class="alert alert-info mt-3" role="alert" style="display: none">
+      <span class="badge text-bg-success">NEW</span>
+      Stream in the <a href="https://www.twitch.tv/directory/category/guessr-tv" target="_blank" rel="noopener noreferrer">Guessr.tv</a> Twitch category for 30 minutes to earn a special Donk
+      badge! <img src="https://chat.vote/badges/donk.png" height="24px" /> <a href="/drops.html" target="_blank" rel="noopener noreferrer">More info</a>
+      <br />
+      <small class="text-danger">Not a Twitch chat badge, the badge will only show up on this site</small>
+    </div>
+
+    <div id="disclaimer" class="alert alert-warning mt-3" role="alert" style="display: none"></div>
+    <div class="modal-action">
+      <form method="dialog">
         <button type="button" class="btn btn-success" id="getSettingsButton" onclick={() => getSettings()}>Start</button>
-      </div>
+      </form>
     </div>
   </div>
-</div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
 
-<div class="modal fade" id="resetGameModal" tabindex="-1" aria-labelledby="resetGameModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="resetGameModalLabel">Are you sure?</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center">Your progress will be lost</div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-warning" onclick={() => reset()} data-bs-dismiss="modal">Reset</button>
-      </div>
+<dialog id="resetGameModal" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"><IcBaselineClose /></button>
+    </form>
+    <h3 class="text-lg font-bold">Are you sure?</h3>
+    <p class="py-4">Your progress will be lost</p>
+    <div class="modal-action">
+      <form method="dialog">
+        <button type="submit" class="btn btn-warning" onclick={() => reset()}>Reset</button>
+      </form>
     </div>
   </div>
-</div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
 
 <div id="scoreDiv" class="bg-body-tertiary" style="display: none">
   <span id="round">Round <br />1/5</span>
@@ -2127,7 +2129,7 @@
   <span id="timer">0</span>
 </div>
 
-<div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("viewers")}>
+<div class="card game-card cursor-pointer bg-body-tertiary" role="button" tabindex="0" onclick={() => showSettings("viewers")}>
   <div class="card-body">
     <h2>
       <svg class="viewers-svg" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
@@ -2145,7 +2147,7 @@
   </div>
 </div>
 
-<div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("higherlower")}>
+<div class="card game-card cursor-pointer bg-body-tertiary" role="button" tabindex="1" onclick={() => showSettings("higherlower")}>
   <div class="card-body">
     <h2>
       <IcBaselineImportExport />
@@ -2155,7 +2157,7 @@
   </div>
 </div>
 
-<div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("game")}>
+<div class="card game-card cursor-pointer bg-body-tertiary" role="button" tabindex="2" onclick={() => showSettings("game")}>
   <div class="card-body">
     <h2>
       <IcBaselineSportsEsports />
@@ -2165,7 +2167,7 @@
   </div>
 </div>
 
-<div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("emote")}>
+<div class="card game-card cursor-pointer bg-body-tertiary" role="button" tabindex="3" onclick={() => showSettings("emote")}>
   <div class="card-body">
     <h2>
       <IcBaselineEmojiEmotions />
@@ -2175,7 +2177,7 @@
   </div>
 </div>
 
-<div class="card game-card cursor-pointer bg-body-tertiary" onclick={() => showSettings("irl")}>
+<div class="card game-card cursor-pointer bg-body-tertiary" role="button" tabindex="4" onclick={() => showSettings("irl")}>
   <div class="card-body">
     <h2>
       <IcBaselinePublic />

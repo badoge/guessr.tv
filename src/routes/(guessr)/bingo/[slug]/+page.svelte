@@ -30,13 +30,6 @@
       time: document.getElementById("time"),
     };
 
-    TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
-    if (TWITCH?.access_token && !(await checkToken(TWITCH.access_token))) {
-      TWITCH.channel = "";
-      TWITCH.access_token = "";
-      loginExpiredModal.show();
-    }
-
     if (TWITCH?.channel) {
       loadInfo();
       await join();
@@ -64,33 +57,11 @@
   let allowDiagonals = false;
 
   let won = false;
-  let loginExpiredModal;
   let customBadges = [];
   /**
    * @type {any}
    */
   let streamerID;
-
-  function login() {
-    elements.loginInfoPFP.src = "https://guessr.tv/donk.png";
-    elements.loginButton.innerHTML = spinner;
-    window.open("https://bingo.guessr.tv/prompt", "loginWindow", "toolbar=0,status=0,scrollbars=0,width=500px,height=800px");
-    return false;
-  } //login
-
-  function resetLoginButton() {
-    elements.loginButton.innerHTML = `<span class="twitch-icon"></span> Sign in with Twitch`;
-  } //resetLoginButton
-
-  function logout() {
-    TWITCH = { channel: "", access_token: "", userID: "" };
-    localStorage.setItem("TWITCH", JSON.stringify(TWITCH));
-    elements.loginButton.style.display = "";
-    elements.loginInfo.style.display = "none";
-    elements.username.innerText = "Loading...";
-    elements.score.innerText = "Loading...";
-    elements.loginInfoPFP.src = "https://guessr.tv/donk.png";
-  } //logout
 
   async function loadInfo() {
     TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
@@ -327,14 +298,6 @@
     return result;
   } //checkWin
 
-  async function loadPFP() {
-    let pfpURL = await get7TVPFP(TWITCH.userID);
-    if (pfpURL == "/donk.png" && TWITCH.access_token) {
-      pfpURL = await getTwitchPFP(TWITCH.channel, TWITCH.access_token);
-    }
-    elements.loginInfoPFP.src = pfpURL;
-  } //loadPFP
-
   async function join() {
     let body = JSON.stringify({
       userid: TWITCH.userID,
@@ -404,38 +367,6 @@
   } //hidePreview
 </script>
 
-<div class="modal" id="loginExpiredModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Login expired</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row justify-content-center">
-          Renew login:<br />
-          <button type="button" data-bs-dismiss="modal" onclick={login} class="btn btn-twitch"><MdiTwitch class="text-xl" /> Sign in with Twitch</button>
-          <br /><small class="text-body-secondary">Logins expire after 2 months.<br />Or after you change your password.</small>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick={logout}><IcBaselineLogout />Logout</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasLeaderboard" aria-labelledby="offcanvasLeaderboardLabel">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasLeaderboardLabel">lidlboard :) <small class="text-body-secondary">Click the green refresh button to update the leaderboard</small></h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
-  <div class="offcanvas-body">
-    <h4>Total players: <span id="leaderboardCount">0</span></h4>
-    <ul class="list-group" id="leaderboard"></ul>
-  </div>
-</div>
-
 <div id="previewDiv" style="top: 5%; right: 30%; display: none">
   <div class="card">
     <div class="card-header">
@@ -451,29 +382,45 @@
   <div class="row">
     <div class="col text-center">
       <h1>${data.title}</h1>
-      <h2 class="text-body-secondary mb-5">Playing with <a href="https://twitch.tv/${data.username}" target="_blank" id="channel">${data.username}</a></h2>
+      <h2 class="text-body-secondary mb-5">Playing with <a href="https://twitch.tv/{channel}" target="_blank" id="channel">{channel}</a></h2>
 
-      <a id="loginButton" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Sign in to enable the bingo board" class="btn btn-twitch" href="#" onclick={login}>
-        <MdiTwitch /> Sign in with Twitch
-      </a>
+      <div class="tooltip" data-tip="Sign in to enable the bingo board">
+        <button class="btn btn-twitch" id="loginButton"><MdiTwitch /> Sign in with Twitch</button>
+      </div>
 
-      <div class="btn-group" id="loginInfo" style="display: none">
-        <button type="button" class="btn btn-success" id="refresh" onclick={refresh} title="Refresh the board - 30s cooldown - temporary scuffed solution 🤙">
+      <div class="join" id="loginInfo" style="display: none">
+        <button class="btn btn-success" id="refresh" onclick={refresh} title="Refresh the board - 30s cooldown - temporary scuffed solution 🤙">
           <IcBaselineRefresh />
         </button>
-        <button class="btn btn-info" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasLeaderboard" aria-controls="offcanvasLeaderboard">
-          <IcBaselineLeaderboard />
-          Chat leaderboard
-        </button>
-        <button type="button" class="btn btn-secondary pointer-events-none" id="username">Loading...</button>
-        <button type="button" class="btn btn-secondary pointer-events-none" id="score">Loading...</button>
-        <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+
+        <div class="drawer drawer-end">
+          <input id="leaderboardDrawer" type="checkbox" class="drawer-toggle" />
+          <div class="drawer-content">
+            <label for="leaderboardDrawer" class="drawer-button btn btn-primary join-item"><IcBaselineLeaderboard />Chat leaderboard </label>
+          </div>
+          <div class="drawer-side">
+            <label for="leaderboardDrawer" aria-label="close sidebar" class="drawer-overlay"></label>
+            <div class="menu bg-base-200 min-h-full w-80 p-4">
+              <header class="flex justify-between">
+                <h2 class="h2">Bingo leaderboard <small class="text-body-secondary">Click the green refresh button to update the leaderboard</small></h2>
+              </header>
+              <article>
+                <h4>Total players: <span id="leaderboardCount">0</span></h4>
+                <ul class="list-group" id="leaderboard"></ul>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary pointer-events-none" id="username">Loading...</button>
+        <button class="btn btn-secondary pointer-events-none" id="score">Loading...</button>
+        <button class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
           <img id="loginInfoPFP" src="https://guessr.tv/donk.png" alt="profile pic" style="height: 2em" />
           <span class="visually-hidden">Toggle Dropdown</span>
         </button>
         <ul class="dropdown-menu">
           <li>
-            <a class="dropdown-item" onclick={logout} href="#"><IcBaselineLogout />Log out</a>
+            <a class="dropdown-item" href="#"><IcBaselineLogout />Log out</a>
           </li>
         </ul>
       </div>
@@ -487,3 +434,19 @@
     </div>
   </div>
 </div>
+
+<style>
+  .btn-twitch {
+    color: #ffffff;
+    background-color: #9933ff !important;
+    border-color: #8744aa !important;
+  }
+
+  .btn-twitch:active,
+  .btn-twitch:focus,
+  .btn-twitch:hover {
+    color: #ffffff;
+    background-color: #8038de !important;
+    border-color: #7f40a1 !important;
+  }
+</style>

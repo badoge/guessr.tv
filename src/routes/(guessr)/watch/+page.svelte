@@ -495,7 +495,7 @@
 
 <dialog id="avatarModal" class="modal">
   <div class="modal-box">
-    <img class="h-150 aspect-square" src={currentChannel.avatar} alt="avatar" />
+    <img class="w-full aspect-square" src={currentChannel.avatar} alt="avatar" />
   </div>
   <form method="dialog" class="modal-backdrop">
     <button>close</button>

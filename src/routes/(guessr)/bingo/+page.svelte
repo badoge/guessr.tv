@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import localforage from "localforage";
-  import { getCustomBadges, sendUsername } from "$lib/functions";
+  import { addBadges, getCustomBadges, sendUsername, shuffleArraySeed } from "$lib/functions";
   import { createDraggable } from "animejs";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineClose from "~icons/ic/baseline-close";
@@ -59,8 +59,6 @@
       customBingo: document.getElementById("customBingo"),
       customBingoName: document.getElementById("customBingoName"),
       board: document.getElementById("board"),
-      bingoStats: document.getElementById("bingoStats"),
-      bingoStatsTooltip: document.getElementById("bingoStatsTooltip"),
       previewDiv: document.getElementById("previewDiv"),
       previewBoard: document.getElementById("previewBoard"),
       previewUsername: document.getElementById("previewUsername"),
@@ -75,7 +73,6 @@
       loginInfo: document.getElementById("loginInfo"),
       loginInfoPFP: document.getElementById("loginInfoPFP"),
       bingoLink: document.getElementById("bingoLink"),
-      copyButton: document.getElementById("copyButton"),
       previousStream: document.getElementById("previousStream"),
       nextStream: document.getElementById("nextStream"),
     };
@@ -107,11 +104,6 @@
     // };
 
     TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
-    if (TWITCH?.access_token && !(await checkToken(TWITCH.access_token))) {
-      TWITCH.channel = "";
-      TWITCH.access_token = "";
-      loginExpiredModal.show();
-    }
 
     if (TWITCH?.channel) {
       channelName = TWITCH.channel;
@@ -238,7 +230,7 @@
   let currentItems = [];
 
   /**
-   * @type {{ boardSize: any; board: any; boardOpacity: any; infoTime: any; nextStream: any; previousStream: any; seenChannels: any; start: any; twitchEmbedDiv: any; settingsCard: any; mainCard: any; customBingoName: any; loginInfoPFP: any; bingoLink: any; loginButton: any; loginInfo: any; leaderboard: any; leaderboardCount: any; previewUsername: any; previewDiv: any; packEditorSelect: any; packSwitchesDiv: any; packEditorName: any; packDropdownButton: any; packEditorItems: any; deletePackButton: any; skipSexual?: HTMLElement | null; unloadWarningBingo?: HTMLElement | null; resetSeenChannels?: HTMLElement | null; loginExpiredModal?: HTMLElement | null; packsModal?: HTMLElement | null; twitchBingo?: HTMLElement | null; customBingo?: HTMLElement | null; bingoStats?: HTMLElement | null; bingoStatsTooltip?: HTMLElement | null; previewBoard?: HTMLElement | null; twitchEmbed?: HTMLElement | null; copyButton?: HTMLElement | null; }}
+   * @type {{ boardSize: any; board: any; boardOpacity: any; infoTime: any; nextStream: any; previousStream: any; seenChannels: any; start: any; twitchEmbedDiv: any; settingsCard: any; mainCard: any; customBingoName: any; loginInfoPFP: any; bingoLink: any; loginButton: any; loginInfo: any; leaderboard: any; leaderboardCount: any; previewUsername: any; previewDiv: any; packEditorSelect: any; packSwitchesDiv: any; packEditorName: any; packDropdownButton: any; packEditorItems: any; deletePackButton: any; skipSexual?: HTMLElement | null; unloadWarningBingo?: HTMLElement | null; resetSeenChannels?: HTMLElement | null; loginExpiredModal?: HTMLElement | null; packsModal?: HTMLElement | null; twitchBingo?: HTMLElement | null; customBingo?: HTMLElement | null; previewBoard?: HTMLElement | null; twitchEmbed?: HTMLElement | null; }}
    */
   let elements;
 
@@ -248,10 +240,7 @@
     userID: "",
   };
 
-  let loginExpiredModal, packsModal;
-  let bingoStatsTooltip;
   let streamerScore;
-  let copyButton;
   /**
    * @type {any[]}
    */
@@ -865,10 +854,6 @@
     elements.bingoLink.select();
     elements.bingoLink.setSelectionRange(0, 99999);
     navigator.clipboard.writeText(elements.bingoLink.value);
-    copyButton.show();
-    setTimeout(() => {
-      copyButton.hide();
-    }, 1000);
   } //copyLink
 
   let chatWinner = false;
@@ -942,11 +927,11 @@
 
   function updateStatsTooltip() {
     let score = checkWin(board, true);
-    bingoStatsTooltip.setContent({
-      ".tooltip-inner": `<strong>Stats</strong><hr><em>Watched channels:</em> ${previousChannels.length}<br><em>BINGO score:</em> ${score.score.toLocaleString()} ${
-        score.score == 1 ? "point" : "points"
-      } ${score.bingos > 0 ? `(${score.bingos} ${score.bingos == 1 ? "BINGO" : "BINGOs"})` : ""}<br>`,
-    });
+    // bingoStatsTooltip.setContent({
+    //   ".tooltip-inner": `<strong>Stats</strong><hr><em>Watched channels:</em> ${previousChannels.length}<br><em>BINGO score:</em> ${score.score.toLocaleString()} ${
+    //     score.score == 1 ? "point" : "points"
+    //   } ${score.bingos > 0 ? `(${score.bingos} ${score.bingos == 1 ? "BINGO" : "BINGOs"})` : ""}<br>`,
+    // });
   } //updateStatsTooltip
 
   /**
@@ -987,14 +972,6 @@
   function hidePreview() {
     elements.previewDiv.style.display = "none";
   } //hidePreview
-
-  function loadInputs(bingoItems = []) {
-    board = [];
-    let size = bingoSize * bingoSize || 25;
-    for (let index = 0; index < size; index++) {
-      board.push({ filled: false, value: "" });
-    }
-  } //loadInputs
 
   function loadPacks(selectedIndex = 0) {
     //remove Loading... placeholder or old options when updating the list
@@ -1041,7 +1018,7 @@
       option.disabled = true;
       option.innerText = "Create a pack using the green button on the right :)";
       elements.packEditorSelect.appendChild(option);
-      elements.packSwitchesDiv.insertAdjacentHTML("beforeend", `<br><button type="button" class="btn btn-primary" onclick="editPacks()">Create a new pack</button>`);
+      elements.packSwitchesDiv.insertAdjacentHTML("beforeend", `<br><button type="button" class="btn btn-primary" onclick="packsModal.showModal()">Create a new pack</button>`);
     }
 
     //disable editing for default pack
@@ -1067,10 +1044,6 @@
     loadPacks(itemPacks.length - 1);
     localforage.setItem("itemPacks", JSON.stringify(itemPacks.slice(1)));
   } //createPack
-
-  function editPacks() {
-    packsModal.show();
-  } //editPacks
 
   function updateSelectedPacks() {
     selectedPacks = [];
@@ -1138,67 +1111,50 @@
   <script src="https://embed.twitch.tv/embed/v1.js" async></script>
 </svelte:head>
 
-<!-- <div class="modal" id="loginExpiredModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Login expired</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<dialog id="packsModal" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"><IcBaselineClose /></button>
+    </form>
+    <h3 class="text-lg font-bold">Pack editor</h3>
+    <div class="hstack gap-3 mb-3">
+      <div class="form-floating" style="width: 100%">
+        <select class="form-select" id="packEditorSelect" onchange={() => changePack(this)} aria-label="Select a pack to edit">
+          <option value="0" disabled selected>Loading...</option>
+        </select>
+        <label for="packEditorSelect">Select a pack to edit</label>
       </div>
-      <div class="modal-body">
-        <div class="row justify-content-center">
-          Renew login:<br />
-          <button type="button" data-bs-dismiss="modal" onclick={login} class="btn btn-twitch"><span class="twitch-icon"></span>Sign in with Twitch</button>
-          <br /><small class="opacity-60">Logins expire after 2 months.<br />Or after you change your password.</small>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick={logout}><i class="material-icons notranslate">logout</i>Logout</button>
+
+      <div class="tooltip" data-tip="Create a new pack">
+        <button id="createPack" onclick={createPack} class="btn btn-success">
+          <i class="material-icons notranslate">add</i>
+        </button>
       </div>
     </div>
-  </div>
-</div> -->
 
-<!-- <div class="modal fade" id="packsModal" tabindex="-1" aria-labelledby="packsModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="packsModalLabel">Pack editor</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="hstack gap-3 mb-3">
-          <div class="form-floating" style="width: 100%">
-            <select class="form-select" id="packEditorSelect" onchange={() => changePack(this)} aria-label="Select a pack to edit">
-              <option value="0" disabled selected>Loading...</option>
-            </select>
-            <label for="packEditorSelect">Select a pack to edit</label>
-          </div>
-          <button id="createPack" onclick={createPack} type="button" class="btn btn-success" data-bs-toggle="tooltip" data-bs-title="Create a new pack">
-            <i class="material-icons notranslate">add</i>
-          </button>
+    <div class="card">
+      <div class="card-body">
+        <form class="form-floating mb-3">
+          <input type="text" class="form-control" id="packEditorName" onchange={savePacks} placeholder="Custom pack" />
+          <label for="packEditorName">Pack name</label>
+        </form>
+        <div class="form-floating">
+          <textarea class="form-control" placeholder="Leave a comment here" id="packEditorItems" onchange={savePacks} style="height: 500px"></textarea>
+          <label for="packEditorItems">Items (one per line)</label>
         </div>
-
-        <div class="card">
-          <div class="card-body">
-            <form class="form-floating mb-3">
-              <input type="text" class="form-control" id="packEditorName" onchange={savePacks} placeholder="Custom pack" />
-              <label for="packEditorName">Pack name</label>
-            </form>
-            <div class="form-floating">
-              <textarea class="form-control" placeholder="Leave a comment here" id="packEditorItems" onchange={savePacks} style="height: 500px"></textarea>
-              <label for="packEditorItems">Items (one per line)</label>
-            </div>
-            <button id="deletePackButton" type="button" class="btn btn-danger mt-3" onclick={deletePack}>Delete pack</button>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button id="deletePackButton" type="button" class="btn btn-danger mt-3" onclick={deletePack}>Delete pack</button>
       </div>
     </div>
+    <div class="modal-action">
+      <form method="dialog">
+        <button type="submit" class="btn">Close</button>
+      </form>
+    </div>
   </div>
-</div> -->
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
 
 <dialog id="howToPlayModal" class="modal">
   <div class="modal-box">
@@ -1319,18 +1275,31 @@
                 <h6 class="dropdown-header">Pick 1 or more packs</h6>
                 <div id="packSwitchesDiv">Loading...</div>
               </form>
-              <button class="btn btn-outline-secondary" type="button" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Edit item packs" onclick={editPacks}>
-                <IcBaselineEdit />
-              </button>
+
+              <div class="tooltip" data-tip="Edit item packs">
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  onclick={() => {
+                    packsModal.showModal();
+                  }}
+                >
+                  <IcBaselineEdit />
+                </button>
+              </div>
             </div>
 
             <nav class="btn-group preset-filled-surface-200-800 p-2 flex-row">
-              <button type="button" class="btn preset-tonal-warning" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Randomize all" onclick={randomizeAll}>
-                <IcBaselineCasino class="text-xl" />
-              </button>
-              <button type="button" class="btn preset-tonal-error" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Clear all" onclick={clearAll}>
-                <IcBaselineDeleteForever class="text-xl" />
-              </button>
+              <div class="tooltip" data-tip="Randomize all">
+                <button type="button" class="btn preset-tonal-warning" onclick={randomizeAll}>
+                  <IcBaselineCasino class="text-xl" />
+                </button>
+              </div>
+              <div class="tooltip" data-tip="Clear all">
+                <button type="button" class="btn preset-tonal-error" onclick={clearAll}>
+                  <IcBaselineDeleteForever class="text-xl" />
+                </button>
+              </div>
             </nav>
           </div>
 
@@ -1380,21 +1349,16 @@
 
 <div class="row" style="display: none;">
   <div class="col-auto text-center">
-    <span
-      class="text-info mb-2"
-      data-bs-toggle="tooltip"
-      data-bs-placement="top"
-      data-bs-html="true"
-      data-bs-title="
-                    scroll: <strong>resize board</strong><br>
-                    ALT + scroll: <strong>change board opacity</strong><br>
-                    scroll wheel click + drag: <strong>move board</strong><br>
-                    R: <strong>reset board position</strong><br>
-                    F3 / CTRL + F: <strong>search board</strong>"
-    >
-      <IcBaselineLightbulb />
-      <br /><small>Board controls</small>
-    </span>
+    <div class="tooltip text-info mb-2">
+      <div class="tooltip-content">
+        scroll: <strong>resize board</strong><br />
+        ALT + scroll: <strong>change board opacity</strong><br />
+        scroll wheel click + drag: <strong>move board</strong><br />
+        R: <strong>reset board position</strong><br />
+        F3 / CTRL + F: <strong>search board</strong>
+      </div>
+      <IcBaselineLightbulb /><br /><small>Board controls</small>
+    </div>
   </div>
 
   <div class="col-auto">
@@ -1420,16 +1384,7 @@
         </li>
       </ul>
       <input readonly value="asd" id="bingoLink" type="text" class="form-control" aria-label="Bingo share link" />
-      <button
-        class="btn btn-outline-secondary"
-        type="button"
-        id="copyButton"
-        data-bs-toggle="popover"
-        data-bs-trigger="manual"
-        data-bs-placement="top"
-        data-bs-content="Link copied :)"
-        onclick={copyLink}
-      >
+      <button class="btn btn-outline-secondary" type="button" onclick={copyLink}>
         <IcBaselineContentCopy />
       </button>
 
@@ -1458,18 +1413,12 @@
     <button disabled type="button" id="nextStream" onclick={nextStream} class="btn btn-lg btn-success float-end">
       <IcBaselineSkipNext /> Next stream
     </button>
-    <button
-      disabled
-      type="button"
-      id="previousStream"
-      onclick={previousStream}
-      class="btn btn-lg btn-secondary float-end me-2"
-      data-bs-toggle="tooltip"
-      data-bs-placement="top"
-      data-bs-title="Previous stream"
-    >
-      <IcBaselineSkipPrevious />
-    </button>
+
+    <div class="tooltip" data-tip="Previous stream">
+      <button disabled type="button" id="previousStream" onclick={previousStream} class="btn btn-lg btn-secondary float-end me-2">
+        <IcBaselineSkipPrevious />
+      </button>
+    </div>
   </div>
 </div>
 

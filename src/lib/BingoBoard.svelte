@@ -119,32 +119,26 @@
     {/each}
   </div>
   <div id="boardSearch">
-    <button
-      class="btn bg-surface-600"
-      onclick={toggleSearchBar}
-      type="button"
-      data-bs-toggle="tooltip"
-      data-bs-title="Search board (F3 / CTRL + F)"
-      data-bs-placement="top"
-      id="boardSearchToggle"
-    >
-      <IcBaselineSearch class="text-2xl" />
-    </button>
+    <div class="tooltip" data-tip="Search board (F3 / CTRL + F)">
+      <button class="btn bg-surface-600" onclick={toggleSearchBar} id="boardSearchToggle">
+        <IcBaselineSearch class="text-2xl" />
+      </button>
+    </div>
+
     <input type="text" class="form-control" id="boardSearchBar" placeholder="Quick search" oninput={doBoardSearch} />
   </div>
 
   <div id="bingoStats">
-    <button
-      class="btn bg-surface-600"
-      type="button"
-      data-bs-toggle="tooltip"
-      data-bs-html="true"
-      data-bs-title="<strong>Stats</strong><hr><em>Watched channels:</em> 0<br><em>BINGO score:</em> 0<br>"
-      data-bs-placement="top"
-      id="bingoStatsTooltip"
-    >
-      <IcOutlineInfo class="text-2xl" />
-    </button>
+    <div class="tooltip">
+      <div class="tooltip-content">
+        <strong>Stats</strong>
+        <hr />
+        <em>Watched channels:</em> 0<br /><em>BINGO score:</em> 0<br />
+      </div>
+      <button class="btn bg-surface-600" id="bingoStatsTooltip">
+        <IcOutlineInfo class="text-2xl" />
+      </button>
+    </div>
   </div>
 </div>
 
