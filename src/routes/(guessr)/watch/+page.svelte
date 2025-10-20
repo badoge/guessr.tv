@@ -10,8 +10,8 @@
   import IcBaselineLanguage from "~icons/ic/baseline-language";
   import IcBaselineLabel from "~icons/ic/baseline-label";
   import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
-  import { showToast } from "../+layout.svelte";
   import pkg from "validator";
+  import { showToast } from "../../+layout.svelte";
   const { escape } = pkg;
 
   let nextStreamCooldown = $state(false);

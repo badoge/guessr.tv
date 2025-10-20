@@ -15,7 +15,8 @@
   let elements;
 
   import { animate, utils } from "animejs";
-  import { showToast } from "./+layout.svelte";
+  import ViewersSVG from "$lib/ViewersSVG.svelte";
+  import { showToast } from "../+layout.svelte";
 
   let channelBadges = { subscriber: [], bits: [] };
   let globalBadges = {};
@@ -1198,7 +1199,7 @@
 
     if (gameSettings.mode == "viewers") {
       elements.correction.innerHTML = `
-    The ${gameSettings.clips ? "clip" : "stream"} has ${viewersSVG}<strong>${correct.toLocaleString()}</strong>
+    The ${gameSettings.clips ? "clip" : "stream"} has <viewersSVG/><strong>${correct.toLocaleString()}</strong>
     ${correct == 1 ? `${gameSettings.clips ? "view" : "viewer"}` : `${gameSettings.clips ? "views" : "viewers"}`}<br>
     ${
       diff == 0
@@ -1235,7 +1236,7 @@
 
     if (gameSettings.mode == "higherlower") {
       elements.correction.innerHTML = `
-    The ${gameSettings.clips ? "clip" : "channel"} has ${viewersSVG}<strong>${guessList[round - 1].viewers.toLocaleString()}</strong>
+    The ${gameSettings.clips ? "clip" : "channel"} has <viewersSVG/><strong>${guessList[round - 1].viewers.toLocaleString()}</strong>
     ${correct == 1 ? "viewer" : "viewers"}${correct == previousNumber ? " (same as previous channel!)" : ""}<br>
     ${
       points > -1
@@ -2132,15 +2133,7 @@
 <div class="card game-card cursor-pointer bg-body-tertiary" role="button" tabindex="0" onclick={() => showSettings("viewers")}>
   <div class="card-body">
     <h2>
-      <svg class="viewers-svg" width="48px" height="48px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
-        <g>
-          <path
-            fill-rule="evenodd"
-            d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
-            clip-rule="evenodd"
-          ></path>
-        </g>
-      </svg>
+      <ViewersSVG />
       Viewers
     </h2>
     <div class="hidden">Guess how many viewers the random streamer has</div>

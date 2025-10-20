@@ -1,14 +1,4 @@
-export const viewersSVG = `<svg class="viewers-svg" width="24px" height="24px" version="1.1" viewBox="0 0 20 20" x="0px" y="0px">
-<g>
-  <path
-    fill-rule="evenodd"
-    d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
-    clip-rule="evenodd"
-  ></path>
-</g>
-</svg>`;
-
-const CLIENT_ID = "ed2ch5dsxogpczmisjnbfnm92n4zps";
+import { CLIENT_ID } from "./consts";
 
 /**
  * @param {string} badges
@@ -174,7 +164,39 @@ export async function getTwitchPFP(username, access_token) {
 } //getTwitchPFP
 
 /**
- * @param {any} access_token
+ * @param {any} channel
+ */
+export async function loadBadges(channel) {
+  if (Object.keys(globalBadges).length == 0) {
+    globalBadges = await getGlobalBadges();
+  }
+  if (channelBadges.subscriber.length == 0) {
+    channelBadges = await getChannelBadges(channel);
+  }
+  if (customBadges.length == 0) {
+    customBadges = await getCustomBadges();
+  }
+} //loadBadges
+
+/**
+ * @param {any} username
+ * @description gets the twitch user id from a twitch login name - returns empty string if user is not found
+ * @returns {Promise<string>} twitch user id
+ */
+export async function getUserID(username) {
+  try {
+    let response = await fetch(`https://helper.donk.workers.dev/twitch/users?login=${username}`);
+    let result = await response.json();
+    return result?.data[0]?.id || "";
+  } catch (error) {
+    return "";
+  }
+} //getUserID
+
+/**
+ * @description checks if the twitch access token is valid
+ * @param {string} access_token
+ * @returns {Promise<any>}
  */
 export async function checkToken(access_token) {
   let requestOptions = {
@@ -182,15 +204,10 @@ export async function checkToken(access_token) {
   };
   try {
     let response = await fetch("https://id.twitch.tv/oauth2/validate", requestOptions);
-    if (!response.ok) {
+    if (!response.ok || response.status !== 200) {
       return false;
     }
-    let result = await response.json();
-    if (result.expires_in < 600) {
-      return false;
-    } else {
-      return true;
-    }
+    return await response.json();
   } catch (error) {
     console.log("checkToken error", error);
     return false;

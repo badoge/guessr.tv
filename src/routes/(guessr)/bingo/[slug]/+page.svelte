@@ -4,8 +4,8 @@
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineRefresh from "~icons/ic/baseline-refresh";
   import MdiTwitch from "~icons/mdi/twitch";
-  import { showToast } from "../../+layout.svelte";
-  import { addBadges, checkToken, encodeHTML, get7TVPFP, getCustomBadges, getTwitchPFP, showConfetti, shuffleArraySeed } from "$lib/functions";
+  import { addBadges, encodeHTML, getCustomBadges, showConfetti, shuffleArraySeed } from "$lib/functions";
+  import { showToast } from "../../../+layout.svelte";
 
   let { data } = $props();
 
@@ -15,7 +15,6 @@
     elements = {
       leaderboardCount: document.getElementById("leaderboardCount"),
       leaderboard: document.getElementById("leaderboard"),
-      loginExpiredModal: document.getElementById("loginExpiredModal"),
       loginButton: document.getElementById("loginButton"),
       loginInfo: document.getElementById("loginInfo"),
       username: document.getElementById("username"),
@@ -39,8 +38,9 @@
 
     customBadges = await getCustomBadges();
   });
+
   /**
-   * @type {{ board: any; loginInfoPFP: any; loginButton: any; loginInfo: any; username: any; score: any; previewBoard: any; leaderboardCount: any; leaderboard: any; refresh: any; channel: any; time: any; previewUsername: any; previewDiv: any; loginExpiredModal?: HTMLElement | null; }}
+   * @type {{ board: any; loginButton: any; loginInfo: any; username: any; previewBoard: any; score: any; leaderboardCount: any; leaderboard: any; refresh: any; channel: any; time: any; previewUsername: any; previewDiv: any; loginInfoPFP?: HTMLElement | null; }}
    */
   let elements;
 

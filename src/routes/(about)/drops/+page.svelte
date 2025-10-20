@@ -1,53 +1,5 @@
 <script>
-  import { onMount } from "svelte";
-  import MdiTwitch from "~icons/mdi/twitch";
-
-  onMount(async () => {
-    getUsername();
-  });
-  async function getUsername() {
-    let url = window.location.href;
-    let access_token;
-    try {
-      access_token = url?.match(/\#(?:access_token)\=([\S\s]*?)\&/)?.[1];
-      if (!access_token) {
-        window.history.replaceState(null, "", window.location.pathname);
-        return;
-      }
-    } catch (error) {
-      window.history.replaceState(null, "", window.location.pathname);
-      return;
-    }
-
-    let requestOptions = {
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-        "Client-Id": "ed2ch5dsxogpczmisjnbfnm92n4zps",
-      },
-    };
-    try {
-      let response = await fetch("https://api.twitch.tv/helix/users", requestOptions);
-      if (response.status != 200) {
-        document.getElementById("login").innerHTML = `<span class="text-danger">Could not login</span>`;
-        window.history.replaceState(null, "", window.location.pathname);
-        return;
-      }
-      let result = await response.json();
-      localStorage.setItem(
-        "DROPS",
-        JSON.stringify({
-          channel: result.data[0].login,
-          userID: result.data[0].id,
-        }),
-      );
-      document.getElementById("login").innerHTML = `<span class="text-success">Twitch account connected!</span>`;
-      window.history.replaceState(null, "", window.location.pathname);
-    } catch (error) {
-      console.log("error", error);
-      document.getElementById("login").innerHTML = `<span class="text-danger">Could not login</span>`;
-      window.history.replaceState(null, "", window.location.pathname);
-    }
-  }
+  import Login from "$lib/Login.svelte";
 </script>
 
 <div class="w-200 h-full mx-auto mb-100">
@@ -60,12 +12,8 @@
     <span class="text-error-500">Not a Twitch chat badge, the badge will only show up on the site</span>
   </p>
 
-  <div id="login">
-    <h3>Sign in with Twitch to enable drops</h3>
-    <a class="btn btn-twitch" href="https://id.twitch.tv/oauth2/authorize?client_id=ed2ch5dsxogpczmisjnbfnm92n4zps&redirect_uri=https://guessr.tv/drops.html&response_type=token">
-      <MdiTwitch class="text-xl" /> Sign in with Twitch
-    </a>
-  </div>
+  <h3>Sign in with Twitch to enable drops</h3>
+  <Login />
 
   <p class="text-warning-500">
     Drops have ended :) Make sure to claim the badge in your <a href="https://www.twitch.tv/drops/inventory" target="_blank" rel="noopener noreferrer">drops inventory</a> before it's too late
@@ -110,19 +58,3 @@
     >If you encounter any issues while claiming your badge, contact <a class="anchor" href="https://twitch.tv/badoge" target="_blank" rel="noopener noreferrer">badoge</a></small
   >
 </div>
-
-<style>
-  .btn-twitch {
-    color: #ffffff;
-    background-color: #9933ff !important;
-    border-color: #8744aa !important;
-  }
-
-  .btn-twitch:active,
-  .btn-twitch:focus,
-  .btn-twitch:hover {
-    color: #ffffff;
-    background-color: #8038de !important;
-    border-color: #7f40a1 !important;
-  }
-</style>

@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import localforage from "localforage";
-  import { addBadges, getCustomBadges, sendUsername, shuffleArraySeed } from "$lib/functions";
+  import { addBadges, changeSiteLinkTarget, getCustomBadges, sendUsername, showConfetti, shuffleArray, shuffleArraySeed } from "$lib/functions";
   import { createDraggable } from "animejs";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineClose from "~icons/ic/baseline-close";
@@ -30,7 +30,8 @@
   import MdiTwitch from "~icons/mdi/twitch";
   import BingoBoard from "$lib/BingoBoard.svelte";
   import { slide } from "svelte/transition";
-  import { showToast } from "../+layout.svelte";
+  import Login from "$lib/Login.svelte";
+  import { showToast } from "../../+layout.svelte";
 
   let bingoSize = $state(5);
   let allowDiagonals = $state(false);
@@ -47,7 +48,6 @@
       unloadWarningBingo: document.getElementById("unloadWarningBingo"),
       seenChannels: document.getElementById("seenChannels"),
       resetSeenChannels: document.getElementById("resetSeenChannels"),
-      loginExpiredModal: document.getElementById("loginExpiredModal"),
       packsModal: document.getElementById("packsModal"),
       packEditorSelect: document.getElementById("packEditorSelect"),
       packEditorName: document.getElementById("packEditorName"),
@@ -230,7 +230,7 @@
   let currentItems = [];
 
   /**
-   * @type {{ boardSize: any; board: any; boardOpacity: any; infoTime: any; nextStream: any; previousStream: any; seenChannels: any; start: any; twitchEmbedDiv: any; settingsCard: any; mainCard: any; customBingoName: any; loginInfoPFP: any; bingoLink: any; loginButton: any; loginInfo: any; leaderboard: any; leaderboardCount: any; previewUsername: any; previewDiv: any; packEditorSelect: any; packSwitchesDiv: any; packEditorName: any; packDropdownButton: any; packEditorItems: any; deletePackButton: any; skipSexual?: HTMLElement | null; unloadWarningBingo?: HTMLElement | null; resetSeenChannels?: HTMLElement | null; loginExpiredModal?: HTMLElement | null; packsModal?: HTMLElement | null; twitchBingo?: HTMLElement | null; customBingo?: HTMLElement | null; previewBoard?: HTMLElement | null; twitchEmbed?: HTMLElement | null; }}
+   * @type {{ boardSize: any; board: any; boardOpacity: any; infoTime: any; nextStream: any; previousStream: any; seenChannels: any; start: any; twitchEmbedDiv: any; settingsCard: any; mainCard: any; customBingoName: any; bingoLink: any; leaderboard: any; leaderboardCount: any; previewUsername: any; previewDiv: any; packEditorSelect: any; packSwitchesDiv: any; packEditorName: any; packDropdownButton: any; packEditorItems: any; deletePackButton: any; skipSexual?: HTMLElement | null; unloadWarningBingo?: HTMLElement | null; resetSeenChannels?: HTMLElement | null; packsModal?: HTMLElement | null; twitchBingo?: HTMLElement | null; customBingo?: HTMLElement | null; previewBoard?: HTMLElement | null; twitchEmbed?: HTMLElement | null; loginButton?: HTMLElement | null; loginInfo?: HTMLElement | null; loginInfoPFP?: HTMLElement | null; }}
    */
   let elements;
 
@@ -811,45 +811,6 @@
     return result;
   } //checkWin
 
-  function login() {
-    elements.loginInfoPFP.src = "/donk.png";
-    elements.bingoLink.value = `Loading...`;
-    elements.loginButton.innerHTML = spinner;
-    window.open("/prompt.html", "loginWindow", "toolbar=0,status=0,scrollbars=0,width=500px,height=800px");
-    return false;
-  } //login
-
-  function resetLoginButton() {
-    elements.loginButton.innerHTML = `<span class="twitch-icon"></span> Sign in with Twitch`;
-  } //resetLoginButton
-
-  function logout() {
-    TWITCH = { channel: "", access_token: "", userID: "" };
-    localStorage.setItem("TWITCH", JSON.stringify(TWITCH));
-    elements.loginButton.disabled = false;
-    elements.loginButton.innerHTML = `<span class="twitch-icon"></span> Sign in with Twitch`;
-    elements.loginInfo.style.display = "none";
-    elements.loginInfoPFP.src = "/donk.png";
-    elements.bingoLink.value = `https://bingo.guessr.tv`;
-  } //logout
-
-  async function loadPFP() {
-    let pfpURL = await get7TVPFP(TWITCH.userID);
-    if (pfpURL == "/donk.png" && TWITCH.access_token) {
-      pfpURL = await getTwitchPFP(TWITCH.channel, TWITCH.access_token);
-    }
-    elements.loginInfoPFP.src = pfpURL;
-  } //loadPFP
-
-  function loadInfo() {
-    TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
-    elements.loginButton.disabled = true;
-    elements.loginButton.innerHTML = `<span class="twitch-icon"></span><i class="material-icons notranslate">done</i>Logged in as <strong>${TWITCH.channel}</strong>`;
-    elements.loginInfo.style.display = "";
-    elements.bingoLink.value = `https://bingo.guessr.tv/${TWITCH.channel}`;
-    loadPFP();
-  } //loadInfo
-
   function copyLink() {
     elements.bingoLink.select();
     elements.bingoLink.setSelectionRange(0, 99999);
@@ -1224,7 +1185,7 @@
 
             <article class="p-2">
               <section class="w-full mb-6">
-                <h6 class="h6"><IcBaselineGridOn class="inline align-text-bottom" />Board size: {bingoSize}x{bingoSize} ({bingoSize * bingoSize} items)</h6>
+                <h6 class="h6"><IcBaselineGridOn class="inline align-text-bottom" />Board size: {bingoSize}x{bingoSize} ({bingoSize * bingoSize} {bingoSize == 1 ? "item" : "items"})</h6>
 
                 <input type="range" min="1" max="10" step="1" class="range range-accent" bind:value={bingoSize} />
               </section>
@@ -1329,9 +1290,7 @@
         <hr class="hr border-t-2 border-surface-700" />
         <div class="flex flex-row justify-between p-4">
           <div class="flex flex-col">
-            <button id="loginButton" type="button" class="btn btn-lg btn-twitch" onclick={login}>
-              <MdiTwitch class="text-2xl" /> Sign in with Twitch
-            </button>
+            <Login />
             <small class="opacity-60">Optional. Allows viewers to play along</small>
           </div>
 
