@@ -3,9 +3,9 @@
   import IcBaselineLogout from "~icons/ic/baseline-logout";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineRefresh from "~icons/ic/baseline-refresh";
-  import MdiTwitch from "~icons/mdi/twitch";
-  import { addBadges, encodeHTML, getCustomBadges, showConfetti, shuffleArraySeed } from "$lib/functions";
+  import { addBadges, encodeHTML, showConfetti, shuffleArraySeed } from "$lib/functions";
   import { showToast } from "../../../+layout.svelte";
+  import Login from "$lib/Login.svelte";
 
   let { data } = $props();
 
@@ -29,26 +29,17 @@
       time: document.getElementById("time"),
     };
 
-    if (TWITCH?.channel) {
-      loadInfo();
-      await join();
-      loadBoard();
-      elements.board.classList.remove("blur");
-    }
-
-    customBadges = await getCustomBadges();
+    // if (TWITCH?.channel) {
+    //   await join();
+    //   loadBoard();
+    //   elements.board.classList.remove("blur");
+    // }
   });
 
   /**
    * @type {{ board: any; loginButton: any; loginInfo: any; username: any; previewBoard: any; score: any; leaderboardCount: any; leaderboard: any; refresh: any; channel: any; time: any; previewUsername: any; previewDiv: any; loginInfoPFP?: HTMLElement | null; }}
    */
   let elements;
-
-  let TWITCH = {
-    channel: "",
-    access_token: "",
-    userID: "",
-  };
 
   /**
    * @type {string | any[]}
@@ -57,19 +48,10 @@
   let allowDiagonals = false;
 
   let won = false;
-  let customBadges = [];
   /**
    * @type {any}
    */
   let streamerID;
-
-  async function loadInfo() {
-    TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
-    elements.loginButton.style.display = "none";
-    elements.loginInfo.style.display = "";
-    elements.username.innerText = `Playing as ${TWITCH.channel}`;
-    loadPFP();
-  } //loadInfo
 
   function loadBoard() {
     elements.board.innerHTML = "";
@@ -385,7 +367,7 @@
       <h2 class="text-body-secondary mb-5">Playing with <a href="https://twitch.tv/{channel}" target="_blank" id="channel">{channel}</a></h2>
 
       <div class="tooltip" data-tip="Sign in to enable the bingo board">
-        <button class="btn btn-twitch" id="loginButton"><MdiTwitch /> Sign in with Twitch</button>
+        <Login />
       </div>
 
       <div class="join" id="loginInfo" style="display: none">
@@ -434,19 +416,3 @@
     </div>
   </div>
 </div>
-
-<style>
-  .btn-twitch {
-    color: #ffffff;
-    background-color: #9933ff !important;
-    border-color: #8744aa !important;
-  }
-
-  .btn-twitch:active,
-  .btn-twitch:focus,
-  .btn-twitch:hover {
-    color: #ffffff;
-    background-color: #8038de !important;
-    border-color: #7f40a1 !important;
-  }
-</style>

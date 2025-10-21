@@ -1,11 +1,13 @@
 <script>
   import { onMount } from "svelte";
   import localforage from "localforage";
+  import { ToggleGroup } from "bits-ui";
+
   import { addBadges, changeSiteLinkTarget, getCustomBadges, sendUsername, showConfetti, shuffleArray, shuffleArraySeed } from "$lib/functions";
   import { createDraggable } from "animejs";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineClose from "~icons/ic/baseline-close";
-
+  import IcBaselineArrowDropDown from "~icons/ic/baseline-arrow-drop-down";
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
   import IcBaselineContentCopy from "~icons/ic/baseline-content-copy";
@@ -979,7 +981,7 @@
       option.disabled = true;
       option.innerText = "Create a pack using the green button on the right :)";
       elements.packEditorSelect.appendChild(option);
-      elements.packSwitchesDiv.insertAdjacentHTML("beforeend", `<br><button type="button" class="btn btn-primary" onclick="packsModal.showModal()">Create a new pack</button>`);
+      elements.packSwitchesDiv.insertAdjacentHTML("beforeend", `<br><button class="btn btn-primary" onclick="packsModal.showModal()">Create a new pack</button>`);
     }
 
     //disable editing for default pack
@@ -1103,7 +1105,7 @@
           <textarea class="form-control" placeholder="Leave a comment here" id="packEditorItems" onchange={savePacks} style="height: 500px"></textarea>
           <label for="packEditorItems">Items (one per line)</label>
         </div>
-        <button id="deletePackButton" type="button" class="btn btn-danger mt-3" onclick={deletePack}>Delete pack</button>
+        <button id="deletePackButton" class="btn btn-danger mt-3" onclick={deletePack}>Delete pack</button>
       </div>
     </div>
     <div class="modal-action">
@@ -1127,11 +1129,11 @@
       <ul class="list-inside list-decimal space-y-2">
         <li>
           Sign in with <MdiTwitch class="inline" />Twitch
-          <small class="opacity-60"> Optional; Allows viewers to play along </small>
+          <small class="opacity-70"> Optional; Allows viewers to play along </small>
         </li>
         <li>
           Set the board size and fill it up
-          <small class="opacity-60">
+          <small class="opacity-70">
             If you are playing Twitch bingo, you can get random suggestions using the
             <IcBaselineCasino class="inline align-text-bottom" /> buttons. You can also use your own presets if you make an item pack
           </small>
@@ -1139,7 +1141,7 @@
         <li>Click the <span class="text-success-500"><IcBaselineCelebration class="inline" /> Start!</span> button</li>
       </ul>
       <br />
-      <small class="opacity-60">
+      <small class="opacity-70">
         If you signed in with Twitch you should share the bingo.guessr.tv link with your viewers.<br />
         Viewers only need to sign in with Twitch to join the game, they don't interact with the board. The site will automatically fill the board for viewers on their uniquely shuffled boards
       </small>
@@ -1169,78 +1171,94 @@
 </div>
 
 <div class="flex justify-end h-screen" id="settingsCard">
-  <div class="card bg-surface-900 m-4">
-    <div class="flex flex-col h-full">
-      <div class="flex flex-row grow p-4 gap-4">
+  <div class="card bg-base-300 border-base-100 m-4">
+    <div class="card-body">
+      <div class="flex flex-row grow gap-4">
         <div class="w-100">
           <button
-            class="btn btn-primary"
+            class="btn btn-primary mb-4"
             onclick={() => {
               howToPlayModal.showModal();
-            }}><IcBaselineHelp />How to play</button
-          >
+            }}
+            ><IcBaselineHelp />How to play
+          </button>
 
-          <div class="card w-full max-w-md bg-tertiary-900 p-1">
-            <header><h4 class="h4"><IcBaselineSettings class="inline align-text-bottom" />Settings</h4></header>
+          <div class="card w-full max-w-md bg-base-200 border border-accent">
+            <div class="card-body">
+              <h2 class="card-title"><IcBaselineSettings class="text-2xl inline align-text-bottom" />Settings</h2>
 
-            <article class="p-2">
-              <section class="w-full mb-6">
-                <h6 class="h6"><IcBaselineGridOn class="inline align-text-bottom" />Board size: {bingoSize}x{bingoSize} ({bingoSize * bingoSize} {bingoSize == 1 ? "item" : "items"})</h6>
+              <span class="text-lg">
+                <IcBaselineGridOn class="inline align-text-bottom" />
+                Board size: {bingoSize}x{bingoSize} ({bingoSize * bingoSize}
+                {bingoSize == 1 ? "item" : "items"})
+              </span>
 
-                <input type="range" min="1" max="10" step="1" class="range range-accent" bind:value={bingoSize} />
-              </section>
+              <input type="range" min="1" max="10" step="1" class="range range-accent mb-3" bind:value={bingoSize} />
 
-              <section class="w-full">
-                <label class="label">
-                  <input type="checkbox" checked="checked" class="toggle toggle-accent" />
-                  <IcBaselineNorthEast /> <span class="font-bold">Allow diagonals</span>
-                </label>
-              </section>
-              <small class="opacity-60">Count diagonals when checking for winning patterns</small>
+              <label class="label text-base-content text-lg">
+                <input type="checkbox" class="toggle toggle-accent" />
+                <IcBaselineNorthEast class="text-lg inline align-text-bottom" /> Allow diagonals
+              </label>
+              <small class="opacity-70 mb-3">Count diagonals when checking for winning patterns</small>
 
-              <div class="mt-6">
-                <h6 class="h6"><IcBaselineCategory class="inline align-text-bottom" />Bingo type</h6>
+              <span class="text-lg"><IcBaselineCategory class="inline align-text-bottom" />Bingo type</span>
 
-                <!-- <SegmentedControl name="bingoType" classes="bg-primary-500" value={bingoType} onValueChange={(e) => (bingoType = e.value)}>
-                  <Segment.Item value="twitch"><MdiTwitch class="inline" />Twitch bingo</Segment.Item>
-                  <Segment.Item value="custom"><IcBaselineBuild class="inline" />Custom bingo</Segment.Item>
-                </SegmentedControl> -->
-                <br />
-                <small class="opacity-60">
-                  {#if bingoType == "twitch"}
-                    Random Twitch streams will be shown
-                  {:else}
-                    A custom bingo board that can be used to play with your viewers
-                  {/if}
-                </small>
+              <ToggleGroup.Root bind:value={bingoType} type="single" class="rounded border border-base-100 bg-base-100 flex justify-center w-fit p-2">
+                <ToggleGroup.Item
+                  aria-label="Twitch Bingo"
+                  value="twitch"
+                  class="p-1 text-lg font-bold rounded cursor-pointer active:bg-accent data-[state=on]:pointer-events-none data-[state=on]:bg-accent data-[state=on]:text-accent-content inline-flex  items-center justify-center transition-all"
+                >
+                  <MdiTwitch />Twitch Bingo
+                </ToggleGroup.Item>
+                <ToggleGroup.Item
+                  aria-label="Custom Bingo"
+                  value="custom"
+                  class="p-1 text-lg font-bold rounded cursor-pointer active:bg-dark-10 data-[state=on]:pointer-events-none data-[state=on]:bg-accent data-[state=on]:text-accent-content inline-flex  items-center justify-center transition-all"
+                >
+                  <IcBaselineBuild />Custom Bingo
+                </ToggleGroup.Item>
+              </ToggleGroup.Root>
 
-                {#if bingoType == "custom"}
-                  <div class="input-group grid-cols-[auto_1fr_auto]" transition:slide>
-                    <div class="ig-cell bg-primary-500">Bingo name</div>
-                    <input id="customBingoName" class="ig-input bg-primary-800" type="text" placeholder="Custom Bingo" />
-                  </div>
+              <small class="opacity-70">
+                {#if bingoType == "twitch"}
+                  Random Twitch streams will be shown
+                {:else}
+                  A custom bingo board that can be used to play with your viewers
                 {/if}
-              </div>
-            </article>
+              </small>
+
+              {#if bingoType == "custom"}
+                <label class="input" transition:slide>
+                  <span class="label">Bingo name</span>
+                  <input type="text" id="customBingoName" placeholder="Custom Bingo" />
+                </label>
+              {/if}
+            </div>
           </div>
         </div>
 
         <div class="w-150">
-          <div class="flex flex-row justify-end mb-3">
-            <div class="input-group" style="min-width: 20vw; padding-left: 12px; display:none">
-              <label class="input-group-text">Item pack</label>
-              <button id="packDropdownButton" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                Loading...
-              </button>
-              <form class="dropdown-menu p-3">
-                <h6 class="dropdown-header">Pick 1 or more packs</h6>
-                <div id="packSwitchesDiv">Loading...</div>
-              </form>
+          <div class="flex flex-row justify-between mx-1 mb-3">
+            <div class="join">
+              <button class="btn btn-soft btn-secondary pointer-events-none join-item">Item pack</button>
 
-              <div class="tooltip" data-tip="Edit item packs">
+              <button id="packDropdownButton" class="btn btn-soft btn-secondary join-item" popovertarget="itemPackDropdown" style="anchor-name:--itemPackDropdownAnchor">
+                Loading... <IcBaselineArrowDropDown />
+              </button>
+              <div
+                class="dropdown dropdown-end menu w-52 rounded-box bg-base-100 border border-secondary shadow-sm p-3"
+                popover
+                id="itemPackDropdown"
+                style="position-anchor:--itemPackDropdownAnchor"
+              >
+                <span class="opacity-70">Pick 1 or more packs</span>
+                <div id="packSwitchesDiv">Loading...</div>
+              </div>
+
+              <div class="tooltip tooltip-bottom" data-tip="Edit item packs">
                 <button
-                  class="btn btn-outline-secondary"
-                  type="button"
+                  class="btn btn-soft btn-secondary join-item"
                   onclick={() => {
                     packsModal.showModal();
                   }}
@@ -1250,26 +1268,26 @@
               </div>
             </div>
 
-            <nav class="btn-group preset-filled-surface-200-800 p-2 flex-row">
+            <div class="join">
               <div class="tooltip" data-tip="Randomize all">
-                <button type="button" class="btn preset-tonal-warning" onclick={randomizeAll}>
+                <button class="btn btn-warning join-item" onclick={randomizeAll}>
                   <IcBaselineCasino class="text-xl" />
                 </button>
               </div>
               <div class="tooltip" data-tip="Clear all">
-                <button type="button" class="btn preset-tonal-error" onclick={clearAll}>
+                <button class="btn btn-error join-item" onclick={clearAll}>
                   <IcBaselineDeleteForever class="text-xl" />
                 </button>
               </div>
-            </nav>
+            </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 overflow-y-auto max-h-[70vh]">
+          <div class="grid grid-cols-2 overflow-y-auto max-h-[70vh]">
             {#each { length: bingoSize * bingoSize || 25 }, index}
-              <div class="input-group grid-cols-[1fr_auto] w-full">
+              <div class="join m-1">
                 <input
                   type="text"
-                  class="ig-input bg-surface-950 bingo-item"
+                  class="input join-item bingo-item"
                   onfocus={activateCellById}
                   onblur={deactivateCellById}
                   oninput={updateSingleItem}
@@ -1278,7 +1296,7 @@
                   data-item-id={index + 1}
                   aria-label="Bingo item #{index + 1}"
                 />
-                <button class="ig-btn preset-tonal" title="Fill with random item" onclick={randomize} data-item-id={index + 1}>
+                <button class="btn btn-soft join-item" title="Fill with random item" onclick={randomize} data-item-id={index + 1}>
                   <IcBaselineCasino />
                 </button>
               </div>
@@ -1286,22 +1304,21 @@
           </div>
         </div>
       </div>
-      <footer class="flex flex-col">
-        <hr class="hr border-t-2 border-surface-700" />
-        <div class="flex flex-row justify-between p-4">
-          <div class="flex flex-col">
-            <Login />
-            <small class="opacity-60">Optional. Allows viewers to play along</small>
-          </div>
+      <div class="divider"></div>
 
-          <div class="flex flex-col">
-            <button id="start" type="button" class="btn btn-lg preset-tonal-success" onclick={start}>
-              <IcBaselineCelebration class="text-2xl" /> Start!
-            </button>
-            <small class="opacity-60"> Don't forget to share the bingo link with your viewers if you logged in with Twitch :)</small>
-          </div>
+      <div class="card-actions justify-between">
+        <div class="flex flex-col">
+          <Login />
+          <small class="opacity-70">Optional. Allows viewers to play along</small>
         </div>
-      </footer>
+
+        <div class="flex flex-col">
+          <button id="start" class="btn btn-success btn-lg" onclick={start}>
+            <IcBaselineCelebration class="text-2xl" /> Start!
+          </button>
+          <small class="opacity-70"> Don't forget to share the bingo link with your viewers if you logged in with Twitch :)</small>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1334,7 +1351,7 @@
   </div>
   <div class="col-auto">
     <div class="input-group" id="loginInfo" style="display: none">
-      <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <button class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         <img id="loginInfoPFP" src="/donk.png" alt="profile pic" style="height: 2em" />
       </button>
       <ul class="dropdown-menu dropdown-menu-end">
@@ -1343,7 +1360,7 @@
         </li>
       </ul>
       <input readonly value="asd" id="bingoLink" type="text" class="form-control" aria-label="Bingo share link" />
-      <button class="btn btn-outline-secondary" type="button" onclick={copyLink}>
+      <button class="btn btn-outline-secondary" onclick={copyLink}>
         <IcBaselineContentCopy />
       </button>
 
@@ -1369,12 +1386,12 @@
   </div>
 
   <div class="col">
-    <button disabled type="button" id="nextStream" onclick={nextStream} class="btn btn-lg btn-success float-end">
+    <button disabled id="nextStream" onclick={nextStream} class="btn btn-lg btn-success float-end">
       <IcBaselineSkipNext /> Next stream
     </button>
 
     <div class="tooltip" data-tip="Previous stream">
-      <button disabled type="button" id="previousStream" onclick={previousStream} class="btn btn-lg btn-secondary float-end me-2">
+      <button disabled id="previousStream" onclick={previousStream} class="btn btn-lg btn-secondary float-end me-2">
         <IcBaselineSkipPrevious />
       </button>
     </div>
@@ -1410,19 +1427,5 @@
     z-index: 4000;
     scale: 1;
     pointer-events: none;
-  }
-
-  .btn-twitch {
-    color: #ffffff;
-    background-color: #9933ff !important;
-    border-color: #8744aa !important;
-  }
-
-  .btn-twitch:active,
-  .btn-twitch:focus,
-  .btn-twitch:hover {
-    color: #ffffff;
-    background-color: #8038de !important;
-    border-color: #7f40a1 !important;
   }
 </style>

@@ -17,6 +17,7 @@
   import { animate, utils } from "animejs";
   import ViewersSVG from "$lib/ViewersSVG.svelte";
   import { showToast } from "../+layout.svelte";
+  import { sendUsername, showConfetti } from "$lib/functions";
 
   let channelBadges = { subscriber: [], bits: [] };
   let globalBadges = {};
@@ -1001,7 +1002,7 @@
               ${data.powerups.map((/** @type {string | number} */ p) => powerupIcons[p]).join(" ")}
             </div>
           </div>
-          <hr />
+          <div class="divider"></div>
           <div class="row px-2">
             ${roundResultBlock}
           </div>

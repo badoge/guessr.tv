@@ -12,6 +12,7 @@
   import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
   import pkg from "validator";
   import { showToast } from "../../+layout.svelte";
+  import ViewersSVG from "$lib/ViewersSVG.svelte";
   const { escape } = pkg;
 
   let nextStreamCooldown = $state(false);
@@ -82,9 +83,6 @@
 
   let retryLimit = 0;
 
-  /**
-   * @type {{ searchLanguages: any; selectedLanguages: any; languagesDiv?: any; searchTags: any; selectedTags: any; tagsDiv: any; searchCategories: any; selectedCategories: any; categoriesDiv: any; languageFilterCount: any; tagFilterCount: any; categoryFilterCount: any; }}
-   */
   let elements;
 
   onMount(async () => {
@@ -191,11 +189,10 @@
     }
 
     if (selected.length == 0) {
-      elements.selectedLanguages.innerHTML = `<span class="opacity-60">None (will show all languages)</span>`;
+      elements.selectedLanguages.innerHTML = `<span class="opacity-70">None (will show all languages)</span>`;
     } else {
       elements.selectedLanguages.innerHTML = "";
     }
-    elements.languagesDiv.innerHTML = "";
 
     for (let index = 0; index < selected.length; index++) {
       elements.selectedLanguages.insertAdjacentHTML(
@@ -204,7 +201,7 @@
       <div class="form-check">
         <input checked class="form-check-input language-filter" type="checkbox" value="${selected[index]}" id="${selected[index]}_language_checkbox" onchange="updateLanguages()">
         <label class="form-check-label" for="${selected[index]}_language_checkbox">
-          ${getLanguage(selected[index])} <span class="opacity-60">(${filterLanguages.get(selected[index]).toLocaleString()})</span>
+          ${getLanguage(selected[index])} <span class="opacity-70">(${filterLanguages.get(selected[index]).toLocaleString()})</span>
         </label>
       </div>`,
       );
@@ -214,19 +211,6 @@
       if (selected.includes(languages[index][0])) {
         continue;
       }
-      elements.languagesDiv.insertAdjacentHTML(
-        `beforeend`,
-        `
-      <div class="form-check">
-        <input class="form-check-input language-filter" type="checkbox" value="${languages[index][0]}" id="${languages[index][0]}_language_checkbox" onchange="updateLanguages()">
-        <label class="form-check-label" for="${languages[index][0]}_language_checkbox">
-          ${getLanguage(languages[index][0])} <span class="opacity-60">(${languages[index][1].toLocaleString()})</span>
-        </label>
-      </div>`,
-      );
-    }
-    if (languages.length == 0) {
-      elements.languagesDiv.innerHTML = `<span class="opacity-60">No results</span>`;
     }
 
     updateFilteredCount();
@@ -246,7 +230,7 @@
     }
 
     if (selected.length == 0) {
-      elements.selectedTags.innerHTML = `<span class="opacity-60">None (will show all tags)</span>`;
+      elements.selectedTags.innerHTML = `<span class="opacity-70">None (will show all tags)</span>`;
     } else {
       elements.selectedTags.innerHTML = "";
     }
@@ -259,7 +243,7 @@
       <div class="form-check">
         <input checked class="form-check-input tag-filter" type="checkbox" value="${selected[index]}" id="${selected[index]}_tag_checkbox" onchange="updateTags()">
         <label class="form-check-label" for="${selected[index]}_tag_checkbox">
-          ${selected[index]} <span class="opacity-60">(${filterTags.get(selected[index]).toLocaleString()})</span>
+          ${selected[index]} <span class="opacity-70">(${filterTags.get(selected[index]).toLocaleString()})</span>
         </label>
       </div>`,
       );
@@ -275,13 +259,13 @@
       <div class="form-check">
         <input class="form-check-input tag-filter" type="checkbox" value="${tags[index][0]}" id="${tags[index][0]}_tag_checkbox" onchange="updateTags()">
         <label class="form-check-label" for="${tags[index][0]}_tag_checkbox">
-          ${tags[index][0]} <span class="opacity-60">(${tags[index][1].toLocaleString()})</span>
+          ${tags[index][0]} <span class="opacity-70">(${tags[index][1].toLocaleString()})</span>
         </label>
       </div>`,
       );
     }
     if (tags.length == 0) {
-      elements.tagsDiv.innerHTML = `<span class="opacity-60">No results</span>`;
+      elements.tagsDiv.innerHTML = `<span class="opacity-70">No results</span>`;
     }
     updateFilteredCount();
   } //updateTags
@@ -300,7 +284,7 @@
     }
 
     if (selected.length == 0) {
-      elements.selectedCategories.innerHTML = `<span class="opacity-60">None (will show all categories)</span>`;
+      elements.selectedCategories.innerHTML = `<span class="opacity-70">None (will show all categories)</span>`;
     } else {
       elements.selectedCategories.innerHTML = "";
     }
@@ -316,7 +300,7 @@
           "_",
         )}_category_checkbox" onchange="updateCategories()">
         <label class="form-check-label" for="${selected[index].replace(/\s+/g, "_")}_category_checkbox">
-          ${selected[index] == "No category" ? `<em class="opacity-60">No category</em>` : escape(selected[index])} <span class="opacity-60">(${filterCategories
+          ${selected[index] == "No category" ? `<em class="opacity-70">No category</em>` : escape(selected[index])} <span class="opacity-70">(${filterCategories
             .get(selected[index])
             .toLocaleString()})</span>
         </label>
@@ -337,7 +321,7 @@
           "_",
         )}_category_checkbox" onchange="updateCategories()">
         <label class="form-check-label" for="${categories[index][0].replace(/\s+/g, "_")}_category_checkbox">
-          ${categories[index][0] == "No category" ? `<em class="opacity-60">No category</em>` : escape(categories[index][0])} <span class="opacity-60">(${categories[
+          ${categories[index][0] == "No category" ? `<em class="opacity-70">No category</em>` : escape(categories[index][0])} <span class="opacity-70">(${categories[
             index
           ][1].toLocaleString()})</span>
         </label>
@@ -345,7 +329,7 @@
       );
     }
     if (categories.length == 0) {
-      elements.categoriesDiv.innerHTML = `<span class="opacity-60">No results</span>`;
+      elements.categoriesDiv.innerHTML = `<span class="opacity-70">No results</span>`;
     }
     updateFilteredCount();
   } //updateCategories
@@ -528,7 +512,7 @@
         <div class="flex flex-col shrink">
           <div>
             {#if currentChannel?.username && currentChannel?.displayName}
-              <a class="anchor font-bold" target="_blank" rel="noopener noreferrer" href="https://twitch.tv/{currentChannel.username}">
+              <a class="hover:link font-bold" target="_blank" rel="noopener noreferrer" href="https://twitch.tv/{currentChannel.username}">
                 {currentChannel.username === currentChannel.displayName.toLowerCase() ? currentChannel.username : `${currentChannel.displayName} (${currentChannel.username})`}
               </a>
             {:else}
@@ -538,7 +522,7 @@
 
           <div>
             {#if currentChannel?.title === ""}
-              <span class="opacity-60 italic">No title</span>
+              <span class="opacity-70 italic">No title</span>
             {:else if currentChannel?.title}
               {currentChannel.title}
             {:else}
@@ -549,9 +533,9 @@
           <div class="flex flex-row">
             <div class="me-2">
               {#if currentChannel?.category === ""}
-                <div class="opacity-60 italic">No category</div>
+                <div class="opacity-70 italic">No category</div>
               {:else if currentChannel?.category}
-                <a class="anchor font-thin" target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/search?term={encodeURIComponent(currentChannel.category)}">
+                <a class="hover:link font-thin" target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/search?term={encodeURIComponent(currentChannel.category)}">
                   {currentChannel.category}
                 </a>
               {:else}
@@ -562,11 +546,11 @@
             <div>
               {#if currentChannel?.tags?.length}
                 {#each currentChannel?.tags as tag}
-                  <a class="anchor" target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/directory/all/tags/{tag}">
-                    <span class="badge rounded-full preset-filled-surface-100-900 me-1 text-xs">{tag}</span>
+                  <a class="link" target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/directory/all/tags/{tag}">
+                    <span class="badge badge-neutral me-1 text-xs">{tag}</span>
                   </a>
                 {:else}
-                  <span class="opacity-60">No tags</span>
+                  <span class="opacity-70">No tags</span>
                 {/each}
               {:else}
                 <div class="flex flex-row">
@@ -582,142 +566,134 @@
 
       <div class="flex flex-row shrink-0 items-center gap-2">
         <div class="flex flex-row h-fit items-center">
-          <span style="writing-mode: sideways-lr; text-orientation: mixed">Filters</span>
-          <div class="card inline w-full bg-surface-900 p-2 text-center">
-            <button class="btn" popovertarget="languagePopover" style="anchor-name:--languagePopoverAnchor"> <IcBaselineLanguage />Languages<span id="languageFilterCount"></span> </button>
-            <div class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 shadow-sm" popover id="languagePopover" style="position-anchor:--languagePopoverAnchor">
-              <h5 class="text-xl">Selected languages:</h5>
-              <div class="mb-3" id="selectedLanguages"><span class="opacity-60">None (will show all languages)</span></div>
-              <hr class="hr border-success-700 mb-3" />
-              <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
-                <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
-                <input id="searchLanguages" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateLanguages} />
-              </div>
-              <div id="languagesDiv">
-                {#if filterLanguages.size}
-                  <form class="space-y-1">
-                    {#each filterLanguages as [key, value]}
-                      <label class="flex items-center space-x-1">
-                        <input class="checkbox language-filter" type="checkbox" value={key} onchange={updateLanguages} />
-                        <p>{getLanguage(key)} <span class="opacity-60">({value.toLocaleString()})</span></p>
-                      </label>
-                    {/each}
-                  </form>
-                {:else}
-                  <span class="loading loading-spinner loading-xl"></span>
-                {/if}
-              </div>
-            </div>
+          <div class="card w-fit bg-base-300 shadow-xl">
+            <div class="card-body p-2 flex flex-row">
+              <span style="writing-mode: sideways-lr; text-orientation: mixed">Filters</span>
 
-            <button class="btn" popovertarget="tagsPopover" style="anchor-name:--tagsPopoverAnchor"><IcBaselineLabel />Tags<span id="tagFilterCount"></span></button>
-            <div class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 shadow-sm" popover id="tagsPopover" style="position-anchor:--tagsPopoverAnchor">
-              <h5 class="text-xl">Selected tags:</h5>
-              <div class="mb-3" id="selectedTags"><span class="opacity-60">None (will show all tags)</span></div>
-              <hr class="hr border-error-700 mb-3" />
-
-              <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
-                <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
-                <input id="searchTags" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateTags} />
-              </div>
-
-              <div id="tagsDiv">
-                {#if topTags.length}
-                  <form class="space-y-1">
-                    {#each topTags as tag}
-                      <label class="flex items-center space-x-1">
-                        <input class="checkbox tag-filter" type="checkbox" value={tag[0]} onchange={updateTags} />
-                        <p>{escape(tag[0])} <span class="opacity-60">({tag[1].toLocaleString()})</span></p>
-                      </label>
-                    {/each}
-                  </form>
-
-                  <div class="opacity-60 mt-3">{(filterTags.size - topTags.length).toLocaleString()} more tags. Use the search box above to find more</div>
-                {:else}
-                  <span class="loading loading-spinner loading-xl"></span>
-                {/if}
-              </div>
-            </div>
-
-            <button class="btn" popovertarget="categoriesPopover" style="anchor-name:--categoriesPopoverAnchor">
-              <IcBaselineSportsEsports />Categories<span id="categoryFilterCount"></span>
-            </button>
-            <div class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 shadow-sm" popover id="categoriesPopover" style="position-anchor:--categoriesPopoverAnchor">
-              <h5 class="text-xl">Selected categories:</h5>
-              <div class="mb-3" id="selectedCategories"><span class="opacity-60">None (will show all categories)</span></div>
-              <hr class="hr border-warning-700 mb-3" />
-
-              <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
-                <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
-                <input id="searchCategories" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateCategories} />
-              </div>
-
-              <div id="categoriesDiv">
-                {#if topCategories.length}
-                  <form class="space-y-1">
-                    {#each topCategories as category}
-                      <label class="flex items-center space-x-1">
-                        <input class="checkbox category-filter" type="checkbox" value={category[0]} onchange={updateCategories} />
-
-                        {#if category[0] == "No category"}
-                          <p class="opacity-60 italic">No category <span class="opacity-60">({category[1].toLocaleString()})</span></p>
-                        {:else}
-                          <p>{escape(category[0])}<span class="opacity-60">({category[1].toLocaleString()})</span></p>
-                        {/if}
-                      </label>
-                    {/each}
-                  </form>
-
-                  <div class="opacity-60 mt-3">{(filterCategories.size - topCategories.length).toLocaleString()} more categories. Use the search box above to find more</div>
-                {:else}
-                  <span class="loading loading-spinner loading-xl"></span>
-                {/if}
-              </div>
-            </div>
-
-            <button class="btn" popovertarget="ViewCountPopover" style="anchor-name:--ViewCountPopoverAnchor">
-              <svg
-                style="filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(201deg) brightness(106%) contrast(106%)"
-                width="24px"
-                height="24px"
-                version="1.1"
-                viewBox="0 0 20 20"
-                x="0px"
-                y="0px"
+              <button class="btn btn-success" popovertarget="languagePopover" style="anchor-name:--languagePopoverAnchor">
+                <IcBaselineLanguage class="text-lg" />Languages<span id="languageFilterCount"></span>
+              </button>
+              <div
+                class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 border border-success shadow-sm p-3"
+                popover
+                id="languagePopover"
+                style="position-anchor:--languagePopoverAnchor"
               >
-                <g>
-                  <path
-                    fill-rule="evenodd"
-                    d="M5 7a5 5 0 116.192 4.857A2 2 0 0013 13h1a3 3 0 013 3v2h-2v-2a1 1 0 00-1-1h-1a3.99 3.99 0 01-3-1.354A3.99 3.99 0 017 15H6a1 1 0 00-1 1v2H3v-2a3 3 0 013-3h1a2 2 0 001.808-1.143A5.002 5.002 0 015 7zm5 3a3 3 0 110-6 3 3 0 010 6z"
-                    clip-rule="evenodd"
-                  >
-                  </path>
-                </g>
-              </svg>
-              View count</button
-            >
-            <div class="dropdown dropdown-top dropdown-end w-200 rounded-box bg-base-100 shadow-sm p-2" popover id="ViewCountPopover" style="position-anchor:--ViewCountPopoverAnchor">
-              <h5 class="text-2xl">View count range</h5>
-              <div class="flex flex-row justify-between m-2">
-                <span>Minimum view count: {filterViewCount[0].toLocaleString()}</span>
-                <span>Maximum view count: {filterViewCount[1].toLocaleString()}</span>
+                <h5 class="text-xl">Selected languages:</h5>
+                <div class="mb-3" id="selectedLanguages"><span class="opacity-70">None (will show all languages)</span></div>
+                <hr class="hr border-success-700 mb-3" />
+                <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
+                  <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
+                  <input id="searchLanguages" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateLanguages} />
+                </div>
+                <div class="h-100 overflow-auto">
+                  {#if filterLanguages.size}
+                    <form class="space-y-1">
+                      {#each filterLanguages as [key, value]}
+                        <label class="flex items-center space-x-1">
+                          <input class="checkbox language-filter" type="checkbox" value={key} onchange={updateLanguages} />
+                          <p>{getLanguage(key)} <span class="opacity-70">({value.toLocaleString()})</span></p>
+                        </label>
+                      {/each}
+                    </form>
+                  {:else}
+                    <span class="loading loading-spinner loading-xl"></span>
+                  {/if}
+                </div>
               </div>
-              <Slider.Root
-                type="multiple"
-                bind:value={filterViewCountSlider}
-                min={0}
-                max={100}
-                autoSort={true}
-                class="relative flex w-190 touch-none select-none items-center p-1 mx-auto mb-3"
-              >
-                {#snippet children({ tickItems, thumbItems })}
-                  <span class="relative h-3 w-full grow rounded-full bg-base-300 cursor-pointer overflow-hidden">
-                    <Slider.Range class="absolute h-full bg-primary transition-all" />
-                  </span>
-                  {#each thumbItems as { index } (index)}
-                    <Slider.Thumb {index} class="btn btn-circle btn-sm bg-primary focus:outline-none focus:ring-1 focus:ring-primary" />
-                  {/each}
-                {/snippet}
-              </Slider.Root>
+
+              <button class="btn btn-error" popovertarget="tagsPopover" style="anchor-name:--tagsPopoverAnchor">
+                <IcBaselineLabel class="text-lg" />Tags<span id="tagFilterCount"></span>
+              </button>
+              <div class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 shadow-sm" popover id="tagsPopover" style="position-anchor:--tagsPopoverAnchor">
+                <h5 class="text-xl">Selected tags:</h5>
+                <div class="mb-3" id="selectedTags"><span class="opacity-70">None (will show all tags)</span></div>
+                <hr class="hr border-error-700 mb-3" />
+
+                <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
+                  <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
+                  <input id="searchTags" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateTags} />
+                </div>
+
+                <div id="tagsDiv">
+                  {#if topTags.length}
+                    <form class="space-y-1">
+                      {#each topTags as tag}
+                        <label class="flex items-center space-x-1">
+                          <input class="checkbox tag-filter" type="checkbox" value={tag[0]} onchange={updateTags} />
+                          <p>{escape(tag[0])} <span class="opacity-70">({tag[1].toLocaleString()})</span></p>
+                        </label>
+                      {/each}
+                    </form>
+
+                    <div class="opacity-70 mt-3">{(filterTags.size - topTags.length).toLocaleString()} more tags. Use the search box above to find more</div>
+                  {:else}
+                    <span class="loading loading-spinner loading-xl"></span>
+                  {/if}
+                </div>
+              </div>
+
+              <button class="btn btn-warning" popovertarget="categoriesPopover" style="anchor-name:--categoriesPopoverAnchor">
+                <IcBaselineSportsEsports class="text-lg" />Categories<span id="categoryFilterCount"></span>
+              </button>
+              <div class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 shadow-sm" popover id="categoriesPopover" style="position-anchor:--categoriesPopoverAnchor">
+                <h5 class="text-xl">Selected categories:</h5>
+                <div class="mb-3" id="selectedCategories"><span class="opacity-70">None (will show all categories)</span></div>
+                <hr class="hr border-warning-700 mb-3" />
+
+                <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
+                  <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
+                  <input id="searchCategories" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateCategories} />
+                </div>
+
+                <div id="categoriesDiv">
+                  {#if topCategories.length}
+                    <form class="space-y-1">
+                      {#each topCategories as category}
+                        <label class="flex items-center space-x-1">
+                          <input class="checkbox category-filter" type="checkbox" value={category[0]} onchange={updateCategories} />
+
+                          {#if category[0] == "No category"}
+                            <p class="opacity-70 italic">No category <span class="opacity-70">({category[1].toLocaleString()})</span></p>
+                          {:else}
+                            <p>{escape(category[0])}<span class="opacity-70">({category[1].toLocaleString()})</span></p>
+                          {/if}
+                        </label>
+                      {/each}
+                    </form>
+
+                    <div class="opacity-70 mt-3">{(filterCategories.size - topCategories.length).toLocaleString()} more categories. Use the search box above to find more</div>
+                  {:else}
+                    <span class="loading loading-spinner loading-xl"></span>
+                  {/if}
+                </div>
+              </div>
+
+              <button class="btn btn-info" popovertarget="ViewCountPopover" style="anchor-name:--ViewCountPopoverAnchor"> <ViewersSVG />View count</button>
+              <div class="dropdown dropdown-top dropdown-end w-200 rounded-box bg-base-100 shadow-sm p-2" popover id="ViewCountPopover" style="position-anchor:--ViewCountPopoverAnchor">
+                <h5 class="text-2xl">View count range</h5>
+                <div class="flex flex-row justify-between m-2">
+                  <span>Minimum view count: {filterViewCount[0].toLocaleString()}</span>
+                  <span>Maximum view count: {filterViewCount[1].toLocaleString()}</span>
+                </div>
+                <Slider.Root
+                  type="multiple"
+                  bind:value={filterViewCountSlider}
+                  min={0}
+                  max={100}
+                  autoSort={true}
+                  class="relative flex w-190 touch-none select-none items-center p-1 mx-auto mb-3"
+                >
+                  {#snippet children({ tickItems, thumbItems })}
+                    <span class="relative h-3 w-full grow rounded-full bg-base-300 cursor-pointer overflow-hidden">
+                      <Slider.Range class="absolute h-full bg-primary transition-all" />
+                    </span>
+                    {#each thumbItems as { index } (index)}
+                      <Slider.Thumb {index} class="btn btn-circle btn-sm bg-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                    {/each}
+                  {/snippet}
+                </Slider.Root>
+              </div>
             </div>
           </div>
         </div>
@@ -727,7 +703,7 @@
             <button disabled={previousChannels.length <= 1} type="button" onclick={previousStream} class="btn btn-lg bg-surface-500 w-30 h-12" title="Previous stream">
               <IcBaselineSkipPrevious class="align-top" />
             </button>
-            <small class="opacity-60 text-center">
+            <small class="opacity-70 text-center">
               {previousChannels.length}
               {previousChannels.length == 1 ? "stream" : "streams"} watched
             </small>
@@ -736,7 +712,7 @@
             <button type="button" onclick={nextStream} class="btn btn-lg bg-success-900 h-12" disabled={nextStreamCooldown}>
               <IcBaselineSkipNext /> Next stream
             </button>
-            <small class="opacity-60 text-center">
+            <small class="opacity-70 text-center">
               {filteredList.size.toLocaleString()}
               {filteredList.size == 1 ? "stream" : "streams"} left
             </small>

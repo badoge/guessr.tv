@@ -12,7 +12,7 @@
     <small class="text-body-secondary">Prevents you from losing your game progress when leaving the site or resetting </small>
   </label>
 </div>
-<hr />
+<div class="divider"></div>
 <h5>Reset stats</h5>
 <div class="input-group mb-3">
   <span class="input-group-text">Viewers mode high score</span>
@@ -35,7 +35,7 @@
   <button class="btn btn-outline-warning" type="button" onclick={() => resetHighScore("emoteStreak")}><i class="material-icons notranslate">restart_alt</i>Reset</button>
 </div>
 
-<hr />
+<div class="divider"></div>
 <div class="input-group mt-3">
   <span class="input-group-text">Seen Channels</span>
   <span class="input-group-text" id="seenChannels">0</span>

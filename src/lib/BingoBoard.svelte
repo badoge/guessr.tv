@@ -3,6 +3,11 @@
 
   import IcBaselineSearch from "~icons/ic/baseline-search";
   import IcOutlineInfo from "~icons/ic/outline-info";
+  import IcBaselineClear from "~icons/ic/baseline-clear";
+
+  let { size } = $props();
+  let searchBarExpanded = $state(false);
+
   onMount(async () => {
     window.addEventListener("keydown", (event) => {
       if (event.code === "F3" || ((event.ctrlKey || event.metaKey) && event.code === "KeyF")) {
@@ -15,21 +20,18 @@
         hidePreview();
       }
     });
-  });
+  }); //onMount
 
   function toggleSearchBar() {
     document.getElementById("boardSearchBar").value = "";
-    if (document.getElementById("boardSearchToggle").querySelector("i").innerText == "search") {
-      document.getElementById("boardSearchToggle").querySelector("i").innerText = "clear";
-      document.getElementById("boardSearchBar").classList.add("expanded");
+    searchBarExpanded = !searchBarExpanded;
+    if (searchBarExpanded) {
       document.getElementById("boardSearchBar").focus();
       document.getElementById("boardSearchBar").select();
     } else {
       hideSearchBar();
     }
   } //toggleSearchBar
-
-  let { size } = $props();
 
   function doBoardSearch() {
     const value = (document.getElementById("boardSearchBar").value || "").trim().toLowerCase();
@@ -42,17 +44,14 @@
       }
     }
 
-    if (document.getElementById("boardSearchBar").value) {
-      document.getElementById("boardSearchToggle").querySelector("i").innerText = "clear";
-    } else {
+    if (!document.getElementById("boardSearchBar")?.value) {
       hideSearchBar();
     }
   } //doBoardSearch
 
   function hideSearchBar() {
-    document.getElementById("boardSearchToggle").querySelector("i").innerText = "search";
-    document.getElementById("boardSearchBar").classList.remove("expanded");
-    document.getElementById("boardSearchBar").blur();
+    searchBarExpanded = false;
+    document.getElementById("boardSearchBar")?.blur();
     document.querySelectorAll(".bingo-cell").forEach((c) => c.classList.remove("matching"));
   } //hideSearchBar
 
@@ -120,22 +119,28 @@
   </div>
   <div id="boardSearch">
     <div class="tooltip" data-tip="Search board (F3 / CTRL + F)">
-      <button class="btn bg-surface-600" onclick={toggleSearchBar} id="boardSearchToggle">
-        <IcBaselineSearch class="text-2xl" />
+      <button class="btn bg-base-200 hover:bg-base-100" onclick={toggleSearchBar} id="boardSearchToggle">
+        {#if searchBarExpanded}
+          <IcBaselineClear class="text-2xl" />
+        {:else}
+          <IcBaselineSearch class="text-2xl" />
+        {/if}
       </button>
     </div>
 
-    <input type="text" class="form-control" id="boardSearchBar" placeholder="Quick search" oninput={doBoardSearch} />
+    <input type="text" class="input input-neutral {searchBarExpanded ? 'expanded' : ''}" id="boardSearchBar" placeholder="Quick search" oninput={doBoardSearch} />
   </div>
 
   <div id="bingoStats">
     <div class="tooltip">
       <div class="tooltip-content">
-        <strong>Stats</strong>
-        <hr />
-        <em>Watched channels:</em> 0<br /><em>BINGO score:</em> 0<br />
+        <span class="text-xl">Stats</span>
+        <div class="divider m-0"></div>
+        <em>Watched channels:</em> 0
+        <br />
+        <em>BINGO score:</em> 0
       </div>
-      <button class="btn bg-surface-600" id="bingoStatsTooltip">
+      <button class="btn bg-base-200 hover:bg-base-100" id="bingoStatsTooltip">
         <IcOutlineInfo class="text-2xl" />
       </button>
     </div>
@@ -146,8 +151,8 @@
   #board {
     position: fixed;
     width: max-content;
-    border: 1px solid var(--color-surface-500);
-    background-color: var(--color-surface-900);
+    border: 1px solid var(--color-neutral);
+    background-color: var(--color-base-300);
     border-radius: 0.75rem;
     padding: 20px;
     cursor: grab;
@@ -162,14 +167,16 @@
   }
 
   .bingo-cell {
-    text-align: center;
-    color: var(--color-surface-50);
-    background-color: var(--color-surface-800);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-base-content);
+    background-color: var(--color-base-100);
     min-width: 12vh;
     min-height: 12vh;
     max-width: 12vh;
     max-height: 12vh;
-    border: 2px solid var(--color-surface-600);
+    border: 2px solid var(--color-neutral);
     cursor: pointer;
     font-weight: 700;
     overflow: hidden;
@@ -179,25 +186,25 @@
   }
 
   .bingo-cell.duplicate {
-    box-shadow: 0px 0px 2rem var(--bs-danger);
+    box-shadow: 0px 0px 2rem var(--color-error);
     z-index: 2;
   }
 
   .bingo-cell.matching {
-    box-shadow: 0px 0px 2rem var(--bs-warning);
+    box-shadow: 0px 0px 2rem var(--color-warning);
     z-index: 3;
   }
 
   .bingo-cell.selected {
-    box-shadow: 0px 0px 2rem var(--bs-info);
+    box-shadow: 0px 0px 2rem var(--color-info);
     z-index: 4;
   }
 
   #boardSearch {
     position: absolute;
     display: inline-flex;
-    bottom: -4px;
-    left: -4px;
+    bottom: -6.5px;
+    left: -6.5px;
   }
 
   #boardSearchToggle {
@@ -211,7 +218,6 @@
   #boardSearchBar {
     border-radius: 20px;
     border-radius: 20px;
-    border-color: transparent;
     box-shadow: 5px 5px 10px #000000;
     position: absolute;
     width: 0;
@@ -220,7 +226,6 @@
     transition:
       width 0.3s ease,
       opacity 0.3s ease;
-    outline: none;
     z-index: 5;
   }
   #boardSearchBar.expanded {
@@ -231,8 +236,8 @@
   #bingoStats {
     position: absolute;
     display: inline-flex;
-    bottom: -4px;
-    right: -4px;
+    bottom: -6.5px;
+    right: -6.5px;
   }
 
   #bingoStatsTooltip {
@@ -244,6 +249,6 @@
   }
 
   .filled {
-    background-color: green;
+    background-color: var(--color-success);
   }
 </style>

@@ -11,10 +11,10 @@
     Adblocker :)<br />
     If you have Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. If you use Firefox you will need to
     <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow cross-site tracking cookies</a>
-    <hr />
+    <div class="divider"></div>
     If you want to optout from being picked for the guess list you can use the<kbd>=optout guessr</kbd> command in
     <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
-    <hr />
+    <div class="divider"></div>
     <span id="infoTime">Channel list updated on [updates when game starts]</span><br />
   </div>
 </div>

@@ -1,5 +1,4 @@
 <script>
-  import "../../app.css";
   import IcBaselineGridOn from "~icons/ic/baseline-grid-on";
   import IcBaselineLiveTv from "~icons/ic/baseline-live-tv";
   import IcBaselineInfo from "~icons/ic/baseline-info";

@@ -398,11 +398,11 @@ export async function getStreamerColor() {
 } //getStreamerColor
 
 /**
- * @param {string} level
+ * @param {number} level
  */
 export function showConfetti(level) {
   let c, s, d;
-  switch (parseInt(level, 10)) {
+  switch (level) {
     case 1:
       c = 100;
       s = 1;

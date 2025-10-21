@@ -8,7 +8,7 @@
     You might encounter a "Preparing your stream..." screen when clicking Next stream, to get rid of the screen you can subscribe to Twitch Turbo or get a better Adblocker :)<br />
     If you have Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. If you use Firefox you will need to
     <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow cross-site tracking cookies</a>
-    <hr />
+    <div class="divider"></div>
     If you want to optout from being randomly picked you can use the<kbd>=optout guessr</kbd> command in
     <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
   </div>

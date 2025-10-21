@@ -1,5 +1,4 @@
 <script>
-  import "../../app.css";
   import IcBaselineArrowBack from "~icons/ic/baseline-arrow-back";
   import StreamlineUltimateTreasureChestBold from "~icons/streamline-ultimate/treasure-chest-bold";
   import MdiBadge from "~icons/mdi/badge";
