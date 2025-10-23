@@ -41,20 +41,21 @@
 </dialog>
 
 <dialog id="aboutModal" class="modal">
-  <div class="modal-box">
+  <div class="modal-box w-[80vw] max-w-[800px] min-w-[400px]">
     <form method="dialog">
-      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"><IcBaselineClose /></button>
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-1 top-1 p-1"><IcBaselineClose /></button>
     </form>
-    <h3 class="text-lg font-bold">About</h3>
-    {#if page.route.id === "/(guessr)"}
-      <AboutModalGuessr />
-    {:else if page.route.id === "/(guessr)/bingo"}
-      <AboutModalBingo />
-    {:else if page.route.id === "/(guessr)/watch"}
-      <AboutModalWatch />
-    {:else}
-      <p>Nothing here</p>
-    {/if}
+    <div class="max-h-[90vh] overflow-auto">
+      {#if page.route.id === "/(guessr)"}
+        <AboutModalGuessr />
+      {:else if page.route.id === "/(guessr)/bingo"}
+        <AboutModalBingo />
+      {:else if page.route.id === "/(guessr)/watch"}
+        <AboutModalWatch />
+      {:else}
+        <p>Nothing here</p>
+      {/if}
+    </div>
   </div>
   <form method="dialog" class="modal-backdrop">
     <button>close</button>
@@ -75,7 +76,7 @@
         <li>
           <a href="/" class="text-center justify-center block w-14 p-0 hover:bg-base-100">
             <img class="w-12 mx-auto" src="/guessr.png" alt="guessr" />
-            <span>Guessr.tv beta</span>
+            <span>Guessr.tv beta - nothing working yet - do not use or you will be banned</span>
           </a>
         </li>
       </ul>

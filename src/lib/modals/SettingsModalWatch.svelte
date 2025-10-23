@@ -2,9 +2,12 @@
   import IcBaselineRestartAlt from "~icons/ic/baseline-restart-alt";
 </script>
 
-<div class="input-group mt-3">
-  <span class="input-group-text">Seen Channels:</span>
-  <span class="input-group-text" id="seenChannels">0</span>
-  <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><IcBaselineRestartAlt />Reset</button>
+<span class="text-2xl">Reset history</span>
+<br />
+<div class="join mt-2">
+  <button class="btn join-item btn-outline btn-warning">Seen Channels</button>
+  <button class="btn join-item btn-outline btn-warning" id="seenChannels">0</button>
+  <button class="btn join-item btn-warning" id="resetSeenChannels"><IcBaselineRestartAlt /></button>
 </div>
-<small>Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>
+<br />
+<small class="opacity-70">Resets your channel history. The channel history keeps track of which channels you've seen to not show them again</small>

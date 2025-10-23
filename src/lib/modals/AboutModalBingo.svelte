@@ -1,40 +1,41 @@
-<div class="card border mb-3">
-  <div class="card-header">About the site</div>
-  <div class="card-body">
-    <span class="text-info">
-      To use the shareable bingo cards: Login in with Twitch -> Edit the board -> Save the board -> share link with viewers :)
-      <br />
-      <br />
-      The streamer will fill in the viewers' boards, viewers just need to login using the shared bingo board link
-    </span>
-    <br />
-    <br />
-    You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of them you can subscribe to Twitch Turbo or get a better Adblocker :)<br />
-    If you have Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. If you use Firefox you will need to
-    <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow cross-site tracking cookies</a>
-    <br />
-    <br />
-    More info <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#readme">here</a>
-    <div class="divider"></div>
+<script>
+  import Contact from "$lib/Contact.svelte";
+</script>
 
-    If you want to optout from being picked for the guess list you can use the<kbd>=optout guessr</kbd> command in
-    <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
-    <div class="divider"></div>
-    <span id="infoTime">Channel list updated on [updates when game starts]</span><br />
-  </div>
-</div>
-<div class="card border">
-  <div class="card-header">Contact info</div>
+<div class="card card-border border-info bg-base-200 shadow-sm mb-3">
   <div class="card-body">
-    Site by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/badoge">badoge</a> :) <br />
-    <p>
-      If you find any issues or if you have suggestions or questions, you can contact me: <br /><a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://www.twitch.tv/popout/badoge/chat?popout=">in this chat</a
-      >
-      <br />or on <a target="_blank" rel="noopener noreferrer" href="https://discord.gg/FR8bgQdPUT">discord</a> <br />or by
-      <a href="mailto:help@guessr.tv">email</a>
-    </p>
+    <h2 class="card-title">About</h2>
+
+    <article class="prose max-w-none">
+      <strong>To use the shareable bingo cards:</strong>
+      <ul class="steps steps-vertical sm:steps-horizontal">
+        <li class="step step-primary">Login in with Twitch</li>
+        <li class="step step-primary">Fill the board</li>
+        <li class="step step-primary">Start the game</li>
+        <li class="step step-primary">Share link with viewers</li>
+      </ul>
+      <p>The streamer will fill in the viewers' boards, viewers just need to login using the shared bingo board link</p>
+      <div class="divider"></div>
+      <p>
+        You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of it you can subscribe to Twitch Turbo or change the video type to clips or get a
+        better Adblocker :)
+      </p>
+      <p>
+        If you have Twitch Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. You might also need to
+        <a target="_blank" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow third-party cookies</a> in some browsers
+      </p>
+      <p>More info <a target="_blank" href="https://github.com/badoge/guessr.tv#readme">here</a></p>
+      <div class="divider"></div>
+
+      <p>
+        If you want to opt out from being randomly picked for the game, use the <kbd class="kbd">=optout guessr</kbd> command in
+        <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
+      </p>
+
+      <div class="divider"></div>
+      <span id="infoTime">Channel list updated on [updates when game starts]</span><br />
+    </article>
   </div>
 </div>
+
+<Contact />

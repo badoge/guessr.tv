@@ -1,19 +1,29 @@
-<div class="form-check form-switch mb-3">
-  <input class="form-check-input" type="checkbox" role="switch" id="skipSexual" checked />
-  <label class="form-check-label" for="skipSexual">
-    <i class="material-icons notranslate">18_up_rating</i><i class="material-icons notranslate">skip_next</i>Skip streams with the "Sexual Themes" Content Classification Label
-  </label>
+<script>
+  import IcBaselineNoAdultContent from "~icons/ic/baseline-no-adult-content";
+  import IcBaselineNotificationImportant from "~icons/ic/baseline-notification-important";
+  import IcBaselineRestartAlt from "~icons/ic/baseline-restart-alt";
+</script>
+
+<label class="label text-base-content text-balance mb-3">
+  <input type="checkbox" class="toggle toggle-accent" id="skipSexual" checked />
+  <IcBaselineNoAdultContent class="text-2xl inline align-text-bottom" /> Skip streams with the "Sexual Themes" Content Classification Label
+</label>
+
+<label class="label text-base-content text-balance">
+  <input type="checkbox" class="toggle toggle-accent" id="unloadWarningBingo" />
+  <IcBaselineNotificationImportant class="text-2xl inline align-text-bottom" /> Show a warning before quitting
+</label>
+<br />
+<small class="opacity-70">Prevents you from losing your game progress or board when leaving the site</small>
+
+<div class="divider"></div>
+
+<span class="text-2xl">Reset history</span>
+<br />
+<div class="join mt-2">
+  <button class="btn join-item btn-outline btn-warning">Seen Channels</button>
+  <button class="btn join-item btn-outline btn-warning" id="seenChannels">0</button>
+  <button class="btn join-item btn-warning" id="resetSeenChannels"><IcBaselineRestartAlt /></button>
 </div>
-<div class="form-check form-switch mb-3">
-  <input class="form-check-input" type="checkbox" role="switch" id="unloadWarningBingo" checked />
-  <label class="form-check-label" for="unloadWarningBingo">
-    <i class="material-icons notranslate">notification_important</i>Show a warning before quitting <br />
-    <small class="text-body-secondary">Prevents you from losing your game progress or board when leaving the site </small>
-  </label>
-</div>
-<div class="input-group mt-3">
-  <span class="input-group-text">Seen Channels</span>
-  <span class="input-group-text" id="seenChannels">0</span>
-  <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><i class="material-icons notranslate">restart_alt</i>Reset</button>
-</div>
-<small>Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>
+<br />
+<small class="opacity-70">Resets your channel history. The channel history keeps track of which channels you've seen to not show them again</small>

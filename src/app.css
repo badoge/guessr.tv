@@ -1,9 +1,7 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @plugin "daisyui" {
-  themes:
-    dim --default,
-    lemonade;
+  themes: sunset --default;
 }
 
 iframe {

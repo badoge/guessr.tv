@@ -976,13 +976,13 @@
         <div class="col-6">
           <p>Your guess:</p>
           <div>
-            <button type="button" class="btn btn-outline-${i + 1 < roundResults.length ? "success" : "danger"} multiChoice-btn m-0">${answer}</button>
+            <button class="btn btn-outline-${i + 1 < roundResults.length ? "success" : "danger"} multiChoice-btn m-0">${answer}</button>
           </div>
         </div>
         <div class="col-6">
           <p>Correct answer</p>
           <div>
-            <button type="button" class="btn btn-outline-info multiChoice-btn m-0">${data.correct}</button>
+            <button class="btn btn-outline-info multiChoice-btn m-0">${data.correct}</button>
           </div>
         </div>`;
           break;
@@ -2191,14 +2191,12 @@
   <div class="card-body" id="leaderboardCard">
     <ul class="nav nav-tabs bg-body-tertiary" id="leaderboardTabs" role="tablist" style="display: none">
       <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="totalTab" data-bs-toggle="tab" data-bs-target="#total-tab-pane" type="button" role="tab" aria-controls="total-tab-pane" aria-selected="true">
+        <button class="nav-link active" id="totalTab" data-bs-toggle="tab" data-bs-target="#total-tab-pane" role="tab" aria-controls="total-tab-pane" aria-selected="true">
           Total standings
         </button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="roundTab" data-bs-toggle="tab" data-bs-target="#round-tab-pane" type="button" role="tab" aria-controls="round-tab-pane" aria-selected="false">
-          Round results
-        </button>
+        <button class="nav-link" id="roundTab" data-bs-toggle="tab" data-bs-target="#round-tab-pane" role="tab" aria-controls="round-tab-pane" aria-selected="false"> Round results </button>
       </li>
     </ul>
     <div class="tab-content">
@@ -2229,7 +2227,7 @@
         </div>
       </div>
       <div class="col-3">
-        <button type="button" onclick={() => guess("slider", false)} class="btn btn-lg btn-success guess">Guess</button>
+        <button onclick={() => guess("slider", false)} class="btn btn-lg btn-success guess">Guess</button>
       </div>
     </div>
 
@@ -2252,11 +2250,11 @@
       </div>
       <div class="col-xl"><label id="multiChoiceLabel" class="form-label">How many viewers does this stream have?</label></div>
       <div class="col-xl-auto">
-        <button type="button" onclick={() => guess(1, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice1">????????</button>
-        <button type="button" onclick={() => guess(2, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice2">????????</button>
-        <button type="button" onclick={() => guess(3, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice3">????????</button>
-        <button type="button" onclick={() => guess(4, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice4">????????</button>
-        <button type="button" onclick={() => guess(5, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice5">????????</button>
+        <button onclick={() => guess(1, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice1">????????</button>
+        <button onclick={() => guess(2, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice2">????????</button>
+        <button onclick={() => guess(3, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice3">????????</button>
+        <button onclick={() => guess(4, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice4">????????</button>
+        <button onclick={() => guess(5, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice5">????????</button>
       </div>
     </div>
 
@@ -2267,7 +2265,7 @@
         <datalist id="gameList"></datalist>
       </div>
       <div class="col-3">
-        <button type="button" onclick={() => guess("game", false)} class="btn btn-lg btn-success guess">Guess</button>
+        <button onclick={() => guess("game", false)} class="btn btn-lg btn-success guess">Guess</button>
       </div>
     </div>
 
@@ -2290,8 +2288,8 @@
       </div>
       <div class="col-5"><label id="higherlowerLabel" class="form-label">Does this stream have a higher or lower view count than</label><br /></div>
       <div class="col-5">
-        <button type="button" onclick={() => guess("higher", false)} class="btn btn-outline-success multiChoice-btn me-5" id="higher">Higher</button>
-        <button type="button" onclick={() => guess("lower", false)} class="btn btn-outline-danger multiChoice-btn" id="lower">Lower</button>
+        <button onclick={() => guess("higher", false)} class="btn btn-outline-success multiChoice-btn me-5" id="higher">Higher</button>
+        <button onclick={() => guess("lower", false)} class="btn btn-outline-danger multiChoice-btn" id="lower">Lower</button>
       </div>
     </div>
 
@@ -2303,17 +2301,17 @@
       <div class="col-3">
         <p id="irlCorrection">Where is this streamer?</p>
         <br />
-        <button type="button" onclick={() => guess("map", false)} class="btn btn-lg btn-success guess">Guess</button>
+        <button onclick={() => guess("map", false)} class="btn btn-lg btn-success guess">Guess</button>
       </div>
     </div>
 
     <div id="resultsDiv" class="row align-items-center" style="display: none">
       <div class="col-3">
-        <button type="button" id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
+        <button id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
         <div id="endButtons" style="display: none">
-          <button type="button" id="playAgain" class="btn btn-lg btn-warning" onclick={() => playAgain()}>Play Again</button>
-          <button type="button" id="changeMode" class="btn btn-lg btn-secondary mt-1" onclick={() => reset()}>Change mode</button>
-          <button type="button" id="breakdown" class="btn btn-lg btn-success mt-1" onclick={() => showBreakdown()}>Breakdown</button>
+          <button id="playAgain" class="btn btn-lg btn-warning" onclick={() => playAgain()}>Play Again</button>
+          <button id="changeMode" class="btn btn-lg btn-secondary mt-1" onclick={() => reset()}>Change mode</button>
+          <button id="breakdown" class="btn btn-lg btn-success mt-1" onclick={() => showBreakdown()}>Breakdown</button>
         </div>
       </div>
       <div class="col-6">

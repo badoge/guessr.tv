@@ -1,37 +1,40 @@
-<div class="card border mb-3">
-  <div class="card-header">About the site</div>
+<script>
+  import Contact from "$lib/Contact.svelte";
+</script>
+
+<div class="card card-border border-info bg-base-200 shadow-sm mb-3">
   <div class="card-body">
-    More info <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#readme">here</a><br /><br />
+    <h2 class="card-title">About</h2>
 
-    Every 30 minutes a bot fetches live channels from the Twitch API to make the channel list. The answer is updated using the API just before starting the game but it can still be off
-    because the API is not as accurate view count on the embedded stream. Some channels might also have gone offline during the time it takes the API to update.<br />
+    <article class="prose max-w-none">
+      <p>More info <a target="_blank" href="https://github.com/badoge/guessr.tv#readme">here</a></p>
 
-    <br />
-    You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of them you can subscribe to Twitch Turbo or change the video type to clips or get a better
-    Adblocker :)<br />
-    If you have Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. If you use Firefox you will need to
-    <a target="_blank" rel="noopener noreferrer" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow cross-site tracking cookies</a>
-    <div class="divider"></div>
-    If you want to optout from being picked for the guess list you can use the<kbd>=optout guessr</kbd> command in
-    <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
-    <div class="divider"></div>
-    <span id="infoTime">Channel list updated on [updates when game starts]</span><br />
+      <p>
+        <strong>Some things to look out for:</strong> The answer is updated before each round but it can still be a little bit off, because the Twitch API is not as accurate as the view count
+        on the embedded stream. Some channels might also go offline before the API updates, in that case the answer will be the view count they had just before going offline
+      </p>
+
+      <p>
+        You might encounter a "Preparing your stream..." screen at the start of each round, to get rid of it you can subscribe to Twitch Turbo or change the video type to clips or get a
+        better Adblocker :)
+      </p>
+      <p>
+        If you have Twitch Turbo but still see the screen, make sure you are logged in to Twitch on the same browser. You might also need to
+        <a target="_blank" href="https://github.com/badoge/guessr.tv#firefox-cross-site-tracking-cookies">allow third-party cookies</a> in some browsers
+      </p>
+
+      <div class="divider"></div>
+
+      <p>
+        If you want to opt out from being randomly picked for the game, use the <kbd class="kbd">=optout guessr</kbd> command in
+        <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/popout/okayegbot/chat?popout=">OkayegBOT's chat</a>
+      </p>
+
+      <div class="divider"></div>
+
+      <p>Channel list updated on <span id="infoTime">[updates when game starts]</span></p>
+    </article>
   </div>
 </div>
-<div class="card border">
-  <div class="card-header">Contact info</div>
-  <div class="card-body">
-    Site by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/badoge">badoge</a> :) <br />
-    Idea by <a target="_blank" rel="noopener noreferrer" href="https://www.twitch.tv/nymn">nymn</a><br />
-    Inspired by <a target="_blank" rel="noopener noreferrer" href="https://geoguessr.com">GeoGuessr</a><br /><br />
-    <p>
-      If you find any issues or if you have suggestions or questions, you can contact me: <br /><a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://www.twitch.tv/popout/badoge/chat?popout=">in this chat</a
-      >
-      <br />or on <a target="_blank" rel="noopener noreferrer" href="https://discord.gg/FR8bgQdPUT">discord</a> <br />or by
-      <a href="mailto:help@guessr.tv">email</a>
-    </p>
-  </div>
-</div>
+
+<Contact />

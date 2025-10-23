@@ -1,50 +1,66 @@
-<div class="form-check form-switch mb-3">
-  <input class="form-check-input" type="checkbox" role="switch" id="skipSexual" checked />
-  <label class="form-check-label" for="skipSexual">
-    <i class="material-icons notranslate">18_up_rating</i><i class="material-icons notranslate">skip_next</i>Skip streams with the "Sexual Themes" Content Classification Label
-  </label>
-</div>
+<script>
+  import IcBaselineNoAdultContent from "~icons/ic/baseline-no-adult-content";
+  import IcBaselineNotificationImportant from "~icons/ic/baseline-notification-important";
+  import IcBaselineRestartAlt from "~icons/ic/baseline-restart-alt";
+</script>
 
-<div class="form-check form-switch">
-  <input class="form-check-input" type="checkbox" role="switch" id="unloadWarning" />
-  <label class="form-check-label" for="unloadWarning">
-    <i class="material-icons notranslate">notification_important</i>Show a warning before quitting <br />
-    <small class="text-body-secondary">Prevents you from losing your game progress when leaving the site or resetting </small>
-  </label>
-</div>
-<div class="divider"></div>
-<h5>Reset stats</h5>
-<div class="input-group mb-3">
-  <span class="input-group-text">Viewers mode high score</span>
-  <span class="input-group-text" id="viewersHS">0</span>
-  <button class="btn btn-outline-warning" type="button" onclick={() => resetHighScore("viewersHS")}><i class="material-icons notranslate">restart_alt</i>Reset</button>
-</div>
-<div class="input-group mb-3">
-  <span class="input-group-text">Higher Lower mode high score</span>
-  <span class="input-group-text" id="viewersHigherlowerStreak">0</span>
-  <button class="btn btn-outline-warning" type="button" onclick={() => resetHighScore("viewersHigherlowerStreak")}><i class="material-icons notranslate">restart_alt</i>Reset</button>
-</div>
-<div class="input-group mb-3">
-  <span class="input-group-text">Game name mode high score</span>
-  <span class="input-group-text" id="gameStreak">0</span>
-  <button class="btn btn-outline-warning" type="button" onclick={() => resetHighScore("gameStreak")}><i class="material-icons notranslate">restart_alt</i>Reset</button>
-</div>
-<div class="input-group mb-3">
-  <span class="input-group-text">Emote mode high score</span>
-  <span class="input-group-text" id="emoteStreak">0</span>
-  <button class="btn btn-outline-warning" type="button" onclick={() => resetHighScore("emoteStreak")}><i class="material-icons notranslate">restart_alt</i>Reset</button>
-</div>
+<label class="label text-base-content text-balance mb-3">
+  <input type="checkbox" class="toggle toggle-accent" id="skipSexual" checked />
+  <IcBaselineNoAdultContent class="text-2xl inline align-text-bottom" /> Skip streams with the "Sexual Themes" Content Classification Label
+</label>
+
+<label class="label text-base-content text-balance">
+  <input type="checkbox" class="toggle toggle-accent" id="unloadWarning" />
+  <IcBaselineNotificationImportant class="text-2xl inline align-text-bottom" /> Show a warning before quitting
+</label>
+<br />
+<small class="opacity-70">Prevents you from losing your game progress when leaving the site or refreshing </small>
 
 <div class="divider"></div>
-<div class="input-group mt-3">
-  <span class="input-group-text">Seen Channels</span>
-  <span class="input-group-text" id="seenChannels">0</span>
-  <button class="btn btn-outline-warning" type="button" id="resetSeenChannels"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+<span class="text-2xl">Reset stats</span>
+<br />
+
+<div class="join mt-2 mb-3">
+  <button class="btn join-item btn-outline btn-warning">Viewers mode high score</button>
+  <button class="btn join-item btn-outline btn-warning" id="viewersHS">0</button>
+  <button class="btn join-item btn-warning" onclick={() => resetHighScore("viewersHS")}><IcBaselineRestartAlt /></button>
 </div>
-<small class="text-body-secondary">Resets your channel history. The channel history keeps track of which channels you've seen to not show them again.</small>
-<div class="input-group mt-3">
-  <span class="input-group-text">Seen clips</span>
-  <span class="input-group-text" id="seenClips">0</span>
-  <button class="btn btn-outline-warning" type="button" id="resetSeenClips"><i class="material-icons notranslate">restart_alt</i>Reset</button>
+
+<div class="join mb-3">
+  <button class="btn join-item btn-outline btn-warning">Higher Lower mode high score</button>
+  <button class="btn join-item btn-outline btn-warning" id="viewersHigherlowerStreak">0</button>
+  <button class="btn join-item btn-warning" onclick={() => resetHighScore("viewersHigherlowerStreak")}><IcBaselineRestartAlt /></button>
 </div>
-<small class="text-body-secondary">Resets your clip history. The clip history keeps track of the clips that you've seen to not show them again.</small>
+
+<div class="join mb-3">
+  <button class="btn join-item btn-outline btn-warning">Game name mode high score</button>
+  <button class="btn join-item btn-outline btn-warning" id="gameStreak">0</button>
+  <button class="btn join-item btn-warning" onclick={() => resetHighScore("gameStreak")}><IcBaselineRestartAlt /></button>
+</div>
+
+<div class="join">
+  <button class="btn join-item btn-outline btn-warning">Emote mode high score</button>
+  <button class="btn join-item btn-outline btn-warning" id="emoteStreak">0</button>
+  <button class="btn join-item btn-warning" onclick={() => resetHighScore("emoteStreak")}><IcBaselineRestartAlt /></button>
+</div>
+
+<div class="divider"></div>
+
+<span class="text-2xl">Reset history</span>
+<br />
+
+<div class="join mt-2">
+  <button class="btn join-item btn-outline btn-warning">Seen Channels</button>
+  <button class="btn join-item btn-outline btn-warning" id="seenChannels">0</button>
+  <button class="btn join-item btn-warning" id="resetSeenChannels"><IcBaselineRestartAlt /></button>
+</div>
+<br />
+<small class="opacity-70">Resets your channel history. The channel history keeps track of which channels you've seen to not show them again</small>
+<br />
+<div class="join mt-3">
+  <button class="btn join-item btn-outline btn-warning">Seen clips</button>
+  <button class="btn join-item btn-outline btn-warning" id="seenClips">0</button>
+  <button class="btn join-item btn-warning" id="resetSeenClips"><IcBaselineRestartAlt /></button>
+</div>
+<br />
+<small class="opacity-70">Resets your clip history. The clip history keeps track of the clips that you've seen to not show them again</small>

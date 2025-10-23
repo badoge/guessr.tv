@@ -444,6 +444,9 @@ export function encodeHTML(str) {
  * @param {string} code
  */
 export function getLanguage(code) {
+  if (!code) {
+    return "";
+  }
   const lang = new Intl.DisplayNames(["en"], { type: "language" });
   return lang.of(code);
 } //getLanguage

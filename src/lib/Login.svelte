@@ -117,8 +117,6 @@
     <h3 class="text-xl font-bold mb-3">Login expired</h3>
 
     <button
-      type="button"
-      data-bs-dismiss="modal"
       onclick={() => {
         loginExpiredModal.close();
         login();

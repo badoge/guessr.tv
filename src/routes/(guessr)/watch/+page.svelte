@@ -40,6 +40,10 @@
 
   let mainList = new Map();
   let filterLanguages = $state(new Map());
+  /**
+   * @type {any[]}
+   */
+  let selectedLanguages = $state([]);
   let filterTags = $state(new Map());
   let filterCategories = $state(new Map());
   let filterViewCountSlider = $state([0, 100]);
@@ -205,12 +209,6 @@
         </label>
       </div>`,
       );
-    }
-
-    for (let index = 0; index < languages.length; index++) {
-      if (selected.includes(languages[index][0])) {
-        continue;
-      }
     }
 
     updateFilteredCount();
@@ -574,30 +572,38 @@
                 <IcBaselineLanguage class="text-lg" />Languages<span id="languageFilterCount"></span>
               </button>
               <div
-                class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 border border-success shadow-sm p-3"
+                class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-300 border border-success shadow-sm p-3"
                 popover
                 id="languagePopover"
                 style="position-anchor:--languagePopoverAnchor"
               >
                 <h5 class="text-xl">Selected languages:</h5>
-                <div class="mb-3" id="selectedLanguages"><span class="opacity-70">None (will show all languages)</span></div>
-                <hr class="hr border-success-700 mb-3" />
-                <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
-                  <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
-                  <input id="searchLanguages" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateLanguages} />
-                </div>
-                <div class="h-100 overflow-auto">
+                <div id="selectedLanguages"><span class="opacity-70">None (will show all languages)</span></div>
+                <div class="divider"></div>
+
+                <label class="input mb-3">
+                  <IcBaselineSearch />
+                  <input id="searchLanguages" type="search" class="grow" placeholder="Search" oninput={updateLanguages} />
+                </label>
+
+                <div class="h-60 overflow-auto w-full">
                   {#if filterLanguages.size}
                     <form class="space-y-1">
                       {#each filterLanguages as [key, value]}
                         <label class="flex items-center space-x-1">
                           <input class="checkbox language-filter" type="checkbox" value={key} onchange={updateLanguages} />
-                          <p>{getLanguage(key)} <span class="opacity-70">({value.toLocaleString()})</span></p>
+                          {#if key}
+                            <p>{getLanguage(key)} <span class="opacity-70">({value.toLocaleString()})</span></p>
+                          {:else}
+                            <p class="opacity-70 italic">Unknown<span class="opacity-70">({value.toLocaleString()})</span></p>
+                          {/if}
                         </label>
                       {/each}
                     </form>
                   {:else}
-                    <span class="loading loading-spinner loading-xl"></span>
+                    <div class="text-center">
+                      <span class="loading loading-spinner loading-xl"></span>
+                    </div>
                   {/if}
                 </div>
               </div>
@@ -605,17 +611,22 @@
               <button class="btn btn-error" popovertarget="tagsPopover" style="anchor-name:--tagsPopoverAnchor">
                 <IcBaselineLabel class="text-lg" />Tags<span id="tagFilterCount"></span>
               </button>
-              <div class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 shadow-sm" popover id="tagsPopover" style="position-anchor:--tagsPopoverAnchor">
+              <div
+                class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-300 border border-error shadow-sm p-3"
+                popover
+                id="tagsPopover"
+                style="position-anchor:--tagsPopoverAnchor"
+              >
                 <h5 class="text-xl">Selected tags:</h5>
-                <div class="mb-3" id="selectedTags"><span class="opacity-70">None (will show all tags)</span></div>
-                <hr class="hr border-error-700 mb-3" />
+                <div id="selectedTags"><span class="opacity-70">None (will show all tags)</span></div>
+                <div class="divider"></div>
 
-                <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
-                  <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
-                  <input id="searchTags" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateTags} />
-                </div>
+                <label class="input mb-3">
+                  <IcBaselineSearch />
+                  <input id="searchTags" type="search" class="grow" placeholder="Search" oninput={updateTags} />
+                </label>
 
-                <div id="tagsDiv">
+                <div class="h-60 overflow-auto w-full" id="tagsDiv">
                   {#if topTags.length}
                     <form class="space-y-1">
                       {#each topTags as tag}
@@ -628,7 +639,9 @@
 
                     <div class="opacity-70 mt-3">{(filterTags.size - topTags.length).toLocaleString()} more tags. Use the search box above to find more</div>
                   {:else}
-                    <span class="loading loading-spinner loading-xl"></span>
+                    <div class="text-center">
+                      <span class="loading loading-spinner loading-xl"></span>
+                    </div>
                   {/if}
                 </div>
               </div>
@@ -636,17 +649,22 @@
               <button class="btn btn-warning" popovertarget="categoriesPopover" style="anchor-name:--categoriesPopoverAnchor">
                 <IcBaselineSportsEsports class="text-lg" />Categories<span id="categoryFilterCount"></span>
               </button>
-              <div class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-100 shadow-sm" popover id="categoriesPopover" style="position-anchor:--categoriesPopoverAnchor">
+              <div
+                class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-300 border border-warning shadow-sm p-3"
+                popover
+                id="categoriesPopover"
+                style="position-anchor:--categoriesPopoverAnchor"
+              >
                 <h5 class="text-xl">Selected categories:</h5>
-                <div class="mb-3" id="selectedCategories"><span class="opacity-70">None (will show all categories)</span></div>
-                <hr class="hr border-warning-700 mb-3" />
+                <div id="selectedCategories"><span class="opacity-70">None (will show all categories)</span></div>
+                <div class="divider"></div>
 
-                <div class="input-group grid-cols-[auto_1fr_auto] mb-3">
-                  <div class="ig-cell bg-surface-800"><IcBaselineSearch /></div>
-                  <input id="searchCategories" class="ig-input bg-surface-900" type="text" placeholder="Search" oninput={updateCategories} />
-                </div>
+                <label class="input mb-3">
+                  <IcBaselineSearch />
+                  <input id="searchCategories" type="search" class="grow" placeholder="Search" oninput={updateCategories} />
+                </label>
 
-                <div id="categoriesDiv">
+                <div class="h-60 overflow-auto w-full" id="categoriesDiv">
                   {#if topCategories.length}
                     <form class="space-y-1">
                       {#each topCategories as category}
@@ -656,7 +674,7 @@
                           {#if category[0] == "No category"}
                             <p class="opacity-70 italic">No category <span class="opacity-70">({category[1].toLocaleString()})</span></p>
                           {:else}
-                            <p>{escape(category[0])}<span class="opacity-70">({category[1].toLocaleString()})</span></p>
+                            <p>{escape(category[0])} <span class="opacity-70">({category[1].toLocaleString()})</span></p>
                           {/if}
                         </label>
                       {/each}
@@ -664,15 +682,22 @@
 
                     <div class="opacity-70 mt-3">{(filterCategories.size - topCategories.length).toLocaleString()} more categories. Use the search box above to find more</div>
                   {:else}
-                    <span class="loading loading-spinner loading-xl"></span>
+                    <div class="text-center">
+                      <span class="loading loading-spinner loading-xl"></span>
+                    </div>
                   {/if}
                 </div>
               </div>
 
               <button class="btn btn-info" popovertarget="ViewCountPopover" style="anchor-name:--ViewCountPopoverAnchor"> <ViewersSVG />View count</button>
-              <div class="dropdown dropdown-top dropdown-end w-200 rounded-box bg-base-100 shadow-sm p-2" popover id="ViewCountPopover" style="position-anchor:--ViewCountPopoverAnchor">
+              <div
+                class="dropdown dropdown-top dropdown-end w-200 rounded-box bg-base-300 border border-info shadow-sm p-3"
+                popover
+                id="ViewCountPopover"
+                style="position-anchor:--ViewCountPopoverAnchor"
+              >
                 <h5 class="text-2xl">View count range</h5>
-                <div class="flex flex-row justify-between m-2">
+                <div class="flex flex-row justify-between text-lg m-2">
                   <span>Minimum view count: {filterViewCount[0].toLocaleString()}</span>
                   <span>Maximum view count: {filterViewCount[1].toLocaleString()}</span>
                 </div>
@@ -684,12 +709,12 @@
                   autoSort={true}
                   class="relative flex w-190 touch-none select-none items-center p-1 mx-auto mb-3"
                 >
-                  {#snippet children({ tickItems, thumbItems })}
+                  {#snippet children({ thumbItems })}
                     <span class="relative h-3 w-full grow rounded-full bg-base-300 cursor-pointer overflow-hidden">
-                      <Slider.Range class="absolute h-full bg-primary transition-all" />
+                      <Slider.Range class="absolute h-full bg-info transition-all" />
                     </span>
                     {#each thumbItems as { index } (index)}
-                      <Slider.Thumb {index} class="btn btn-circle btn-sm bg-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                      <Slider.Thumb {index} class="btn btn-circle btn-sm bg-info focus:outline-none focus:ring-1 focus:ring-info" />
                     {/each}
                   {/snippet}
                 </Slider.Root>
@@ -700,7 +725,7 @@
 
         <div class="flex flex-row gap-2">
           <div class="flex flex-col">
-            <button disabled={previousChannels.length <= 1} type="button" onclick={previousStream} class="btn btn-lg bg-surface-500 w-30 h-12" title="Previous stream">
+            <button disabled={previousChannels.length <= 1} onclick={previousStream} class="btn btn-secondary btn-lg w-30 h-12" title="Previous stream">
               <IcBaselineSkipPrevious class="align-top" />
             </button>
             <small class="opacity-70 text-center">
@@ -709,7 +734,7 @@
             </small>
           </div>
           <div class="flex flex-col">
-            <button type="button" onclick={nextStream} class="btn btn-lg bg-success-900 h-12" disabled={nextStreamCooldown}>
+            <button onclick={nextStream} class="btn btn-accent btn-lg h-12" disabled={nextStreamCooldown}>
               <IcBaselineSkipNext /> Next stream
             </button>
             <small class="opacity-70 text-center">
