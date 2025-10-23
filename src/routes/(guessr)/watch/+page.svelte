@@ -689,7 +689,7 @@
                 </div>
               </div>
 
-              <button class="btn btn-info" popovertarget="ViewCountPopover" style="anchor-name:--ViewCountPopoverAnchor"> <ViewersSVG />View count</button>
+              <button class="btn btn-info" popovertarget="ViewCountPopover" style="anchor-name:--ViewCountPopoverAnchor"> <span class="text-2xl"><ViewersSVG /></span>View count</button>
               <div
                 class="dropdown dropdown-top dropdown-end w-200 rounded-box bg-base-300 border border-info shadow-sm p-3"
                 popover

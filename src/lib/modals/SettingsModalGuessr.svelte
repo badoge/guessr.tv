@@ -21,26 +21,26 @@
 <br />
 
 <div class="join mt-2 mb-3">
-  <button class="btn join-item btn-outline btn-warning">Viewers mode high score</button>
-  <button class="btn join-item btn-outline btn-warning" id="viewersHS">0</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none">Viewers mode high score</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none" id="viewersHS">0</button>
   <button class="btn join-item btn-warning" onclick={() => resetHighScore("viewersHS")}><IcBaselineRestartAlt /></button>
 </div>
 
 <div class="join mb-3">
-  <button class="btn join-item btn-outline btn-warning">Higher Lower mode high score</button>
-  <button class="btn join-item btn-outline btn-warning" id="viewersHigherlowerStreak">0</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none">Higher Lower mode high score</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none" id="viewersHigherlowerStreak">0</button>
   <button class="btn join-item btn-warning" onclick={() => resetHighScore("viewersHigherlowerStreak")}><IcBaselineRestartAlt /></button>
 </div>
 
 <div class="join mb-3">
-  <button class="btn join-item btn-outline btn-warning">Game name mode high score</button>
-  <button class="btn join-item btn-outline btn-warning" id="gameStreak">0</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none">Game name mode high score</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none" id="gameStreak">0</button>
   <button class="btn join-item btn-warning" onclick={() => resetHighScore("gameStreak")}><IcBaselineRestartAlt /></button>
 </div>
 
 <div class="join">
-  <button class="btn join-item btn-outline btn-warning">Emote mode high score</button>
-  <button class="btn join-item btn-outline btn-warning" id="emoteStreak">0</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none">Emote mode high score</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none" id="emoteStreak">0</button>
   <button class="btn join-item btn-warning" onclick={() => resetHighScore("emoteStreak")}><IcBaselineRestartAlt /></button>
 </div>
 
@@ -50,16 +50,16 @@
 <br />
 
 <div class="join mt-2">
-  <button class="btn join-item btn-outline btn-warning">Seen Channels</button>
-  <button class="btn join-item btn-outline btn-warning" id="seenChannels">0</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none">Seen Channels</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none" id="seenChannels">0</button>
   <button class="btn join-item btn-warning" id="resetSeenChannels"><IcBaselineRestartAlt /></button>
 </div>
 <br />
 <small class="opacity-70">Resets your channel history. The channel history keeps track of which channels you've seen to not show them again</small>
 <br />
 <div class="join mt-3">
-  <button class="btn join-item btn-outline btn-warning">Seen clips</button>
-  <button class="btn join-item btn-outline btn-warning" id="seenClips">0</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none">Seen clips</button>
+  <button class="btn join-item btn-outline btn-warning pointer-events-none" id="seenClips">0</button>
   <button class="btn join-item btn-warning" id="resetSeenClips"><IcBaselineRestartAlt /></button>
 </div>
 <br />

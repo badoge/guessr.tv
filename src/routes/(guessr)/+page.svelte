@@ -8,16 +8,38 @@
   import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
   import IcBaselineImportExport from "~icons/ic/baseline-import-export";
   import IcBaselineClose from "~icons/ic/baseline-close";
+  import IcBaselineLiveTv from "~icons/ic/baseline-live-tv";
+  import IcBaselineMovie from "~icons/ic/baseline-movie";
+  import IcBaselineTimer from "~icons/ic/baseline-timer";
+  import IcBaselineOndemandVideo from "~icons/ic/baseline-ondemand-video";
+  import MdiTwitch from "~icons/mdi/twitch";
+  import IcBaselineWarning from "~icons/ic/baseline-warning";
 
-  /**
-   * @type {{ [x: string]: { innerHTML: number; }; guessRange: any; guessNumber: any; infoTime: any; gameList: any; sliderDiv: any; multiChoiceDiv: any; gameNameDiv: any; higherlowerDiv: any; irlDiv: any; leaderboardList: any; leaderboardListRound: any; chatHint: any; twitchEmbed: any; menuContainer: any; gameContainer: any; round: any; score: any; scoreDiv: any; correction: any; gameEndText: any; mainCard: any; breakdown: any; nextRound: any; gameInput: any; guessRangeLabel: any; multiChoiceLabel: any; higherlowerLabel: any; clipCover: any; streamCover: any; endButtons: any; resultsDiv: any; channelName: any; progressBar: any; scoreProgressBarLabel: any; progress: any; leaderboard: any; getSettingsButton: any; guessLabel: any; disclaimer: any; clipCollection: any; timerValue: any; timerDiv: any; leaderboardTabs: any; playAgain: any; streamsVideoType: any; videoTypeDesc: any; clipCollectionDiv: any; clipsVideoType: any; seenChannels: any; seenClips: any; reset?: HTMLElement | null; multiChoice1?: HTMLElement | null; multiChoice2?: HTMLElement | null; multiChoice3?: HTMLElement | null; multiChoice4?: HTMLElement | null; multiChoice5?: HTMLElement | null; higher?: HTMLElement | null; lower?: HTMLElement | null; timer?: HTMLElement | null; skipSexual?: HTMLElement | null; unloadWarning?: HTMLElement | null; viewersHS?: HTMLElement | null; gameStreak?: HTMLElement | null; emoteStreak?: HTMLElement | null; viewersHigherlowerStreak?: HTMLElement | null; resetSeenChannels?: HTMLElement | null; resetSeenClips?: HTMLElement | null; totalTab?: HTMLElement | null; roundTab?: HTMLElement | null; }}
-   */
   let elements;
+
+  let videoType = $state("streams");
+  let gameMode = $state("viewers");
 
   import { animate, utils } from "animejs";
   import ViewersSVG from "$lib/ViewersSVG.svelte";
   import { showToast } from "../+layout.svelte";
-  import { sendUsername, showConfetti } from "$lib/functions";
+  import {
+    addBadges,
+    changeSiteLinkTarget,
+    checkSimilarity,
+    cleanString,
+    getChannelBadges,
+    getChannelId,
+    getCustomBadges,
+    getGlobalBadges,
+    getStreamerColor,
+    isInt,
+    sendUsername,
+    showConfetti,
+    shuffleArray,
+  } from "$lib/functions";
+  import { ToggleGroup } from "bits-ui";
+  import { slide } from "svelte/transition";
 
   let channelBadges = { subscriber: [], bits: [] };
   let globalBadges = {};
@@ -1300,26 +1322,10 @@
    */
   async function showSettings(mode) {
     gameSettings.mode = mode;
-
-    //add disclaimer
-    elements.disclaimer.style.display = "";
-    switch (mode) {
-      case "viewers":
-      case "higherlower":
-        elements.disclaimer.innerHTML = "The answer will not always be the same as the view count seen on the stream because the API does not update as fast";
-        break;
-      case "game":
-        elements.disclaimer.innerHTML = "Some streamers could forget to update their category or set it incorrectly, expect to be Jebaited :)";
-        break;
-      default:
-        elements.disclaimer.style.display = "none";
-    }
+    gameMode = mode;
 
     if (mode == "irl") {
-      document.getElementById("irlSettingsDiv").style.display = "";
       document.getElementById("channelId").value = "";
-    } else {
-      document.getElementById("irlSettingsDiv").style.display = "none";
     }
 
     gameSettingsModal.showModal();
@@ -1878,15 +1884,10 @@
       resetSeenClips: document.getElementById("resetSeenClips"),
       seenClips: document.getElementById("seenClips"),
 
-      streamsVideoType: document.getElementById("streamsVideoType"),
-      clipsVideoType: document.getElementById("clipsVideoType"),
-      clipCollectionDiv: document.getElementById("clipCollectionDiv"),
       clipCollection: document.getElementById("clipCollection"),
-      videoTypeDesc: document.getElementById("videoTypeDesc"),
       timerValue: document.getElementById("timerValue"),
       channelName: document.getElementById("channelName"),
       //drops: document.getElementById("drops"),
-      disclaimer: document.getElementById("disclaimer"),
       getSettingsButton: document.getElementById("getSettingsButton"),
       leaderboard: document.getElementById("leaderboard"),
       leaderboardTabs: document.getElementById("leaderboardTabs"),
@@ -1940,19 +1941,6 @@
     //   unloadWarning = this.checked;
     //   localStorage.setItem("unloadWarning", unloadWarning);
     // };
-
-    elements.streamsVideoType.onchange = function () {
-      if (this.checked) {
-        elements.videoTypeDesc.innerHTML = "A random live stream will be picked for you each round. Some streams might have preroll ads";
-        elements.clipCollectionDiv.style.display = "none";
-      }
-    };
-    elements.clipsVideoType.onchange = function () {
-      if (this.checked) {
-        elements.videoTypeDesc.innerHTML = "A random clip will be picked for you each round. Clips don't have ads";
-        elements.clipCollectionDiv.style.display = "";
-      }
-    };
 
     elements.guessRange.oninput = function () {
       let value = parseInt(this.value, 10);
@@ -2025,76 +2013,119 @@
     <form method="dialog">
       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"><IcBaselineClose /></button>
     </form>
-    <h3 class="text-lg font-bold">Game settings</h3>
-    <div id="videoTypeDiv">
-      <h4>Video type</h4>
-      <div class="btn-group" role="group" aria-label="Video type">
-        <input type="radio" class="btn-check" name="videoTypeSelect" value="streams" id="streamsVideoType" autocomplete="off" checked />
-        <label class="btn btn-outline-danger" for="streamsVideoType">Live Streams</label>
+    <h3 class="text-xl font-bold">Game settings</h3>
+    <div class="max-h-[80vh] overflow-auto">
+      {#if gameMode !== "irl"}
+        <div class="card card-border border-accent bg-base-100 my-2">
+          <div class="card-body p-3">
+            <h2 class="card-title"><IcBaselineOndemandVideo />Video type</h2>
+            <ToggleGroup.Root type="single" bind:value={videoType} class="rounded-full border border-base-300 bg-base-300 mx-auto w-fit p-2">
+              <ToggleGroup.Item
+                aria-label="Live streams"
+                value="streams"
+                class="p-1 text-lg font-bold rounded-full cursor-pointer active:bg-accent data-[state=on]:pointer-events-none data-[state=on]:bg-accent data-[state=on]:text-accent-content inline-flex  items-center justify-center transition-all"
+              >
+                <IcBaselineLiveTv />Live streams
+              </ToggleGroup.Item>
+              <ToggleGroup.Item
+                aria-label="Clips"
+                value="clips"
+                class="p-1 text-lg font-bold rounded-full cursor-pointer active:bg-dark-10 data-[state=on]:pointer-events-none data-[state=on]:bg-accent data-[state=on]:text-accent-content inline-flex  items-center justify-center transition-all"
+              >
+                <IcBaselineMovie />Clips
+              </ToggleGroup.Item>
+            </ToggleGroup.Root>
 
-        <input type="radio" class="btn-check" name="videoTypeSelect" value="clips" id="clipsVideoType" autocomplete="off" />
-        <label class="btn btn-outline-warning" for="clipsVideoType">Clips</label>
+            {#if videoType == "clips"}
+              <fieldset class="fieldset place-self-center" transition:slide>
+                <legend class="fieldset-legend text-lg text-center">Clip collection</legend>
+                <select class="select select-accent w-full" id="clipCollection">
+                  <option value="random" selected>Random</option>
+                  <option value="short">Short clips (&lt;10s)</option>
+                  <option value="long">Long clips (&gt;45s)</option>
+                  <option value="popular">Popular clips (&gt;50,000 views)</option>
+                  <option value="hottub">Pools, Hot Tubs, and Beaches section :)</option>
+                  <option value="forsen">forsen</option>
+                </select>
+                <!-- <span class="label">asd</span> -->
+              </fieldset>
+            {/if}
+
+            <p class="opacity-70 text-center">
+              {#if videoType == "streams"}
+                A random live stream will be picked for you each round. Some streams might have preroll ads
+              {:else}
+                A random clip will be picked for you each round. Clips don't have ads
+              {/if}
+            </p>
+          </div>
+        </div>
+      {/if}
+
+      <div class="card card-border border-warning bg-base-100 my-2">
+        <div class="card-body p-3">
+          <h2 class="card-title"><IcBaselineTimer />Timer</h2>
+          <div class="join mx-auto">
+            <button class="btn btn-outline btn-warning join-item pointer-events-none"><IcBaselineTimer />Round timer</button>
+            <input class="join-item input input-warning text-center" type="number" id="timerValue" value="0" min="0" max="60" />
+            <button class="btn btn-outline btn-warning join-item pointer-events-none">minutes</button>
+          </div>
+          <p class="opacity-70 text-center">Your guess will be automatically submitted when the timer runs out. Set to 0 to disable</p>
+        </div>
       </div>
-      <br />
-      <small id="videoTypeDesc">A random live stream will be picked for you each round. Some streams might have preroll ads</small>
-    </div>
 
-    <div id="clipCollectionDiv" class="mt-3" style="display: none">
-      <h5>Clip collection</h5>
-      <select class="form-select" id="clipCollection" aria-label="Default select example">
-        <option value="random" selected>Random</option>
-        <option value="short">Short clips (&lt;10s)</option>
-        <option value="long">Long clips (&gt;45s)</option>
-        <option value="popular">Popular clips (&gt;50,000 views)</option>
-        <option value="hottub">Pools, Hot Tubs, and Beaches section :)</option>
-        <option value="forsen">forsen</option>
-      </select>
-    </div>
-
-    <div class="mt-3">
-      <h5>Timer</h5>
-      <div class="input-group">
-        <div class="input-group-text">Round timer</div>
-        <input type="number" id="timerValue" value="0" min="0" max="60" class="form-control" aria-label="timer value" />
-        <div class="input-group-text">minutes</div>
+      <div class="card card-border border-primary bg-base-100 my-2">
+        <div class="card-body p-3">
+          <h2 class="card-title"><MdiTwitch />Play with chat</h2>
+          <div class="join mx-auto">
+            <button class="btn btn-outline btn-primary join-item pointer-events-none">twitch.tv/</button>
+            <input class="join-item input input-primary" type="text" id="channelName" placeholder="username" />
+          </div>
+          <p class="opacity-70 text-center">Your viewers will be able to play along by guessing in chat</p>
+        </div>
       </div>
-      <small>Your guess will be automatically submitted when the timer runs out. Set to 0 to disable</small>
-    </div>
 
-    <div class="mt-3">
-      <h4>Play with chat</h4>
-      <div class="input-group">
-        <span class="input-group-text" id="channelNameLabel">twitch.tv/</span>
-        <input type="text" id="channelName" class="form-control" placeholder="username" aria-label="channel name" aria-describedby="channelNameLabel" />
+      {#if gameMode == "irl"}
+        <div class="card card-border border-secondary bg-base-100 my-2">
+          <div class="card-body p-3">
+            <h2 class="card-title"><IcBaselinePublic />IRL stream channel id</h2>
+            <div class="join mx-auto">
+              <button class="btn btn-outline btn-secondary join-item pointer-events-none">https://rtirl.com/twitch:</button>
+              <input class="join-item input input-secondary" type="text" id="channelId" placeholder="123456789" />
+            </div>
+            <p class="opacity-70 text-center">
+              Go to <a href="https://rtirl.com/" target="_blank" rel="noopener noreferrer">RealtimeIRL</a> and pick a random stream and enter their twitch user id above. Example: when you
+              click a stream the url will change to https://rtirl.com/twitch:123456789, so enter 123456789 in the field above :)<br />Scuffed proof of concept :) try to get someone else to
+              pick a stream for you to not spoil the location
+            </p>
+          </div>
+        </div>
+      {/if}
+
+      <div id="drops" class="alert alert-info mt-3" role="alert" style="display: none">
+        <span class="badge text-bg-success">NEW</span>
+        Stream in the <a href="https://www.twitch.tv/directory/category/guessr-tv" target="_blank" rel="noopener noreferrer">Guessr.tv</a> Twitch category for 30 minutes to earn a special
+        Donk badge! <img src="https://chat.vote/badges/donk.png" height="24px" /> <a href="/drops.html" target="_blank" rel="noopener noreferrer">More info</a>
+        <br />
+        <small class="text-danger">Not a Twitch chat badge, the badge will only show up on this site</small>
       </div>
-      <small class="mb-3">Your viewers will be able to play along by guessing in chat</small>
+
+      {#if gameMode == "viewers" || gameMode == "higherlower"}
+        <div role="alert" class="alert alert-warning my-2">
+          <IcBaselineWarning />
+          <span>The answer will not always be the same as the view count seen on the stream because the API does not update as fast</span>
+        </div>
+      {:else if gameMode == "game"}
+        <div role="alert" class="alert alert-warning my-2">
+          <IcBaselineWarning />
+          <span>Some streamers could forget to update their category or set it incorrectly, expect to be Jebaited :)</span>
+        </div>
+      {/if}
     </div>
 
-    <div id="irlSettingsDiv" class="mt-3">
-      <h4>IRL stream channel id</h4>
-      <div class="input-group">
-        <span class="input-group-text" id="channelIdLabel">https://rtirl.com/twitch:</span>
-        <input type="text" id="channelId" class="form-control" placeholder="123456789" aria-label="channel id" aria-describedby="channelIdLabel" />
-      </div>
-      <small class="mb-3">
-        Go to <a href="https://rtirl.com/" target="_blank" rel="noopener noreferrer">RealtimeIRL</a> and pick a random stream and enter their twitch user id above. Example: when you click a
-        stream the url will change to https://rtirl.com/twitch:123456789, so enter 123456789 in the field above :)<br />Scuffed proof of concept :) try to get someone else to pick a stream
-        for you to not spoil the location
-      </small>
-    </div>
-
-    <div id="drops" class="alert alert-info mt-3" role="alert" style="display: none">
-      <span class="badge text-bg-success">NEW</span>
-      Stream in the <a href="https://www.twitch.tv/directory/category/guessr-tv" target="_blank" rel="noopener noreferrer">Guessr.tv</a> Twitch category for 30 minutes to earn a special Donk
-      badge! <img src="https://chat.vote/badges/donk.png" height="24px" /> <a href="/drops.html" target="_blank" rel="noopener noreferrer">More info</a>
-      <br />
-      <small class="text-danger">Not a Twitch chat badge, the badge will only show up on this site</small>
-    </div>
-
-    <div id="disclaimer" class="alert alert-warning mt-3" role="alert" style="display: none"></div>
     <div class="modal-action">
       <form method="dialog">
-        <button type="button" class="btn btn-success" id="getSettingsButton" onclick={() => getSettings()}>Start</button>
+        <button type="button" class="btn btn-xl btn-success" id="getSettingsButton" onclick={() => getSettings()}>Start</button>
       </form>
     </div>
   </div>
@@ -2121,63 +2152,59 @@
   </form>
 </dialog>
 
-<div id="scoreDiv" class="bg-body-tertiary" style="display: none">
+<div id="scoreDiv" class="bg-base-300" style="display: none">
   <span id="round">Round <br />1/5</span>
   <span id="score">Score <br />0</span>
 </div>
 
-<div id="timerDiv" class="bg-body-tertiary" style="display: none">
+<div id="timerDiv" class="bg-base-300" style="display: none">
   <span>Round ends in</span>
   <span id="timer">0</span>
 </div>
 
-<div class="card game-card cursor-pointer bg-body-tertiary" role="button" tabindex="0" onclick={() => showSettings("viewers")}>
-  <div class="card-body">
-    <h2>
-      <ViewersSVG />
-      Viewers
-    </h2>
-    <div class="hidden">Guess how many viewers the random streamer has</div>
-  </div>
-</div>
+<div class="w-full mt-10">
+  <div class="grid grid-cols-2 gap-2 w-2xl text-center mx-auto">
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_interactive_supports_focus -->
+    <div class="card cursor-pointer bg-base-300" role="button" onclick={() => showSettings("viewers")}>
+      <div class="card-body">
+        <span class="text-3xl inline"><ViewersSVG />Viewers</span>
+      </div>
+    </div>
 
-<div class="card game-card cursor-pointer bg-body-tertiary" role="button" tabindex="1" onclick={() => showSettings("higherlower")}>
-  <div class="card-body">
-    <h2>
-      <IcBaselineImportExport />
-      Higher Lower
-    </h2>
-    <div class="hidden">Guess if the streamer has a higher or lower view count than the previous one</div>
-  </div>
-</div>
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_interactive_supports_focus -->
+    <div class="card cursor-pointer bg-base-300" role="button" onclick={() => showSettings("higherlower")}>
+      <div class="card-body">
+        <span class="text-3xl"><IcBaselineImportExport class="inline" />Higher Lower</span>
+      </div>
+    </div>
 
-<div class="card game-card cursor-pointer bg-body-tertiary" role="button" tabindex="2" onclick={() => showSettings("game")}>
-  <div class="card-body">
-    <h2>
-      <IcBaselineSportsEsports />
-      Game
-    </h2>
-    <div class="hidden">Guess what game the random streamer is playing</div>
-  </div>
-</div>
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_interactive_supports_focus -->
+    <div class="card cursor-pointer bg-base-300" role="button" onclick={() => showSettings("game")}>
+      <div class="card-body">
+        <span class="text-3xl"><IcBaselineSportsEsports class="inline" />Game</span>
+      </div>
+    </div>
 
-<div class="card game-card cursor-pointer bg-body-tertiary" role="button" tabindex="3" onclick={() => showSettings("emote")}>
-  <div class="card-body">
-    <h2>
-      <IcBaselineEmojiEmotions />
-      Emote
-    </h2>
-    <div class="hidden">Guess which emote belongs to the random streamer</div>
-  </div>
-</div>
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_interactive_supports_focus -->
+    <div class="card cursor-pointer bg-base-300" role="button" onclick={() => showSettings("emote")}>
+      <div class="card-body">
+        <span class="text-3xl"><IcBaselineEmojiEmotions class="inline" />Emote</span>
+      </div>
+    </div>
 
-<div class="card game-card cursor-pointer bg-body-tertiary" role="button" tabindex="4" onclick={() => showSettings("irl")}>
-  <div class="card-body">
-    <h2>
-      <IcBaselinePublic />
-      IRL streams
-    </h2>
-    <div class="hidden">Guess where the streamer is</div>
+    <div class="col-span-2">
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_interactive_supports_focus -->
+      <div class="card cursor-pointer bg-base-300" role="button" onclick={() => showSettings("irl")}>
+        <div class="card-body">
+          <span class="text-3xl"><IcBaselinePublic class="inline" />IRL streams</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
