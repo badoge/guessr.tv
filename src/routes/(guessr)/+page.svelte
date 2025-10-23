@@ -1324,10 +1324,6 @@
     gameSettings.mode = mode;
     gameMode = mode;
 
-    if (mode == "irl") {
-      document.getElementById("channelId").value = "";
-    }
-
     gameSettingsModal.showModal();
   } //showSettings
 
@@ -1380,7 +1376,7 @@
 
     if (gameSettings.mode == "irl") {
       irlid = parseInt(document.getElementById("channelId").value, 10);
-
+      document.getElementById("channelId").value = "";
       if (!irlid) {
         showToast("no irl channel id provided", "error", 3000);
 
@@ -1992,7 +1988,7 @@
     if (urlParams.get("irl") === "true") {
       document.getElementById("irl").style.display = "";
     }
-  });
+  }); //onMount
 
   // window.onbeforeunload = function () {
   //   if (unloadWarning && gameRunning) {
@@ -2163,45 +2159,74 @@
 </div>
 
 <div class="w-full mt-10">
-  <div class="grid grid-cols-2 gap-2 w-2xl text-center mx-auto">
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_interactive_supports_focus -->
-    <div class="card cursor-pointer bg-base-300" role="button" onclick={() => showSettings("viewers")}>
-      <div class="card-body">
-        <span class="text-3xl inline"><ViewersSVG />Viewers</span>
-      </div>
-    </div>
-
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_interactive_supports_focus -->
-    <div class="card cursor-pointer bg-base-300" role="button" onclick={() => showSettings("higherlower")}>
-      <div class="card-body">
-        <span class="text-3xl"><IcBaselineImportExport class="inline" />Higher Lower</span>
-      </div>
-    </div>
-
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_interactive_supports_focus -->
-    <div class="card cursor-pointer bg-base-300" role="button" onclick={() => showSettings("game")}>
-      <div class="card-body">
-        <span class="text-3xl"><IcBaselineSportsEsports class="inline" />Game</span>
-      </div>
-    </div>
-
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_interactive_supports_focus -->
-    <div class="card cursor-pointer bg-base-300" role="button" onclick={() => showSettings("emote")}>
-      <div class="card-body">
-        <span class="text-3xl"><IcBaselineEmojiEmotions class="inline" />Emote</span>
-      </div>
-    </div>
-
-    <div class="col-span-2">
+  <div class="w-2xl text-center mx-auto">
+    <div class="flex flex-row h-25 mb-2">
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_interactive_supports_focus -->
-      <div class="card cursor-pointer bg-base-300" role="button" onclick={() => showSettings("irl")}>
+      <div class="card border border-neutral cursor-pointer bg-base-300 w-1/2 h-25 hover:h-35 hover:z-10 overflow-clip mx-1" role="button" onclick={() => showSettings("viewers")}>
         <div class="card-body">
-          <span class="text-3xl"><IcBaselinePublic class="inline" />IRL streams</span>
+          <span class="text-3xl inline m-1"><ViewersSVG />Viewers</span>
+          <div class="card-subtitle">
+            {#each "Guess how many viewers the random streamer has".split(" ") as word, index}
+              <span class="card-subtitle-word text-lg" style="transition-delay:{index * 40}ms">{word} </span>
+            {/each}
+          </div>
+        </div>
+      </div>
+
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_interactive_supports_focus -->
+      <div class="card border border-neutral cursor-pointer bg-base-300 w-1/2 h-25 hover:h-35 hover:z-10 overflow-clip mx-1" role="button" onclick={() => showSettings("higherlower")}>
+        <div class="card-body">
+          <span class="text-3xl m-1"><IcBaselineImportExport class="inline align-text-bottom" />Higher Lower</span>
+          <div class="card-subtitle">
+            {#each "Guess if the streamer has a higher or lower view count than the previous one".split(" ") as word, index}
+              <span class="card-subtitle-word text-lg" style="transition-delay:{index * 40}ms">{word} </span>
+            {/each}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-row h-25 mb-2">
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_interactive_supports_focus -->
+      <div class="card border border-neutral cursor-pointer bg-base-300 w-1/2 h-25 hover:h-35 hover:z-10 overflow-clip mx-1" role="button" onclick={() => showSettings("emote")}>
+        <div class="card-body">
+          <span class="text-3xl m-1"><IcBaselineEmojiEmotions class="inline align-text-bottom" />Emote</span>
+          <div class="card-subtitle">
+            {#each "Guess which emote belongs to the random streamer".split(" ") as word, index}
+              <span class="card-subtitle-word text-lg" style="transition-delay:{index * 40}ms">{word} </span>
+            {/each}
+          </div>
+        </div>
+      </div>
+
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_interactive_supports_focus -->
+      <div class="card border border-neutral cursor-pointer bg-base-300 w-1/2 h-25 hover:h-35 hover:z-10 overflow-clip mx-1" role="button" onclick={() => showSettings("game")}>
+        <div class="card-body">
+          <span class="text-3xl m-1"><IcBaselineSportsEsports class="inline align-text-bottom" />Game</span>
+          <div class="card-subtitle">
+            {#each "Guess what game the random streamer is playing".split(" ") as word, index}
+              <span class="card-subtitle-word text-lg" style="transition-delay:{index * 40}ms">{word} </span>
+            {/each}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-row h-25">
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_interactive_supports_focus -->
+      <div class="card border border-neutral cursor-pointer bg-base-300 w-full h-25 hover:h-30 hover:z-10 overflow-clip mx-1" role="button" onclick={() => showSettings("irl")}>
+        <div class="card-body">
+          <span class="text-3xl m-1"><IcBaselinePublic class="inline align-text-bottom" />IRL streams</span>
+          <div class="card-subtitle">
+            {#each "Guess where the streamer is".split(" ") as word, index}
+              <span class="card-subtitle-word text-lg" style="transition-delay:{index * 40}ms">{word} </span>
+            {/each}
+          </div>
         </div>
       </div>
     </div>
@@ -2359,3 +2384,27 @@
     </div>
   </div>
 </div>
+
+<style>
+  /* https://codepen.io/Hyperplexed/pen/QWQRGdO */
+  .card:hover > .card-body > .card-subtitle > .card-subtitle-word {
+    opacity: 1;
+    transform: translateY(0%);
+    transition:
+      opacity 0ms,
+      transform 200ms cubic-bezier(0.9, 0.06, 0.15, 0.9);
+  }
+
+  .card {
+    transition: height 0.1s ease;
+  }
+
+  .card-subtitle-word {
+    display: inline-block;
+    margin: 0vmin 0.3vmin;
+    opacity: 0;
+    position: relative;
+    transform: translateY(40%);
+    transition: none;
+  }
+</style>
