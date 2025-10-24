@@ -107,7 +107,7 @@
 
     await getMainList();
     loadFilters();
-    //nextStream();
+    nextStream();
   });
 
   async function getMainList() {
