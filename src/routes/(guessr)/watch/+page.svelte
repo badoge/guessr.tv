@@ -1,18 +1,21 @@
 <script>
   import { onMount } from "svelte";
   import { Slider } from "bits-ui";
-
   import localforage from "localforage";
   import { getLanguage } from "$lib/functions";
+  import { showToast } from "../../+layout.svelte";
+  import { SvelteMap } from "svelte/reactivity";
+
   import IcBaselineSkipNext from "~icons/ic/baseline-skip-next";
   import IcBaselineSkipPrevious from "~icons/ic/baseline-skip-previous";
   import IcBaselineSearch from "~icons/ic/baseline-search";
   import IcBaselineLanguage from "~icons/ic/baseline-language";
   import IcBaselineLabel from "~icons/ic/baseline-label";
   import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
-  import pkg from "validator";
-  import { showToast } from "../../+layout.svelte";
+  import IcBaselineArrowRightAlt from "~icons/ic/baseline-arrow-right-alt";
   import ViewersSVG from "$lib/ViewersSVG.svelte";
+
+  import pkg from "validator";
   const { escape } = pkg;
 
   let nextStreamCooldown = $state(false);
@@ -36,39 +39,35 @@
     tags: [],
   });
 
+  let mainList = new Map();
   let filteredList = $state(new Map());
 
-  let mainList = new Map();
-  let filterLanguages = $state(new Map());
-  /**
-   * @type {any[]}
-   */
-  let selectedLanguages = $state([]);
-  let filterTags = $state(new Map());
-  let filterCategories = $state(new Map());
-  let filterViewCountSlider = $state([0, 100]);
-  let maxViewCount = $state(0);
-  let filterViewCount = $derived.by(() => {
-    let min = Math.round(Math.exp((Math.log(maxViewCount) / 100) * filterViewCountSlider[0]));
-    let max = Math.round(Math.exp((Math.log(maxViewCount) / 100) * filterViewCountSlider[1]));
+  let allLanguages = new SvelteMap();
+  let selectedLanguages = new SvelteMap();
+  let filteredLanguages = new SvelteMap();
 
-    if (filterViewCountSlider[0] == 0) {
+  let allTags = new SvelteMap();
+  let selectedTags = new SvelteMap();
+  let filteredTags = new SvelteMap();
+
+  let allCategories = new SvelteMap();
+  let selectedCategories = new SvelteMap();
+  let filteredCategories = new SvelteMap();
+
+  let maxViewCount = $state(0);
+  let viewCountFilterSlider = $state([0, 100]);
+  let viewCountFilter = $derived.by(() => {
+    let min = Math.round(Math.exp((Math.log(maxViewCount) / 100) * viewCountFilterSlider[0]));
+    let max = Math.round(Math.exp((Math.log(maxViewCount) / 100) * viewCountFilterSlider[1]));
+
+    if (viewCountFilterSlider[0] == 0) {
       min = 0;
     }
-    if (filterViewCountSlider[1] == 0) {
+    if (viewCountFilterSlider[1] == 0) {
       max = 0;
     }
     return [min, max];
   });
-
-  /**
-   * @type {[any, any][]}
-   */
-  let topTags = $state([]);
-  /**
-   * @type {string | any[]}
-   */
-  let topCategories = $state([]);
 
   /**
    * @type {any[]}
@@ -87,26 +86,7 @@
 
   let retryLimit = 0;
 
-  let elements;
-
   onMount(async () => {
-    elements = {
-      selectedLanguages: document.getElementById("selectedLanguages"),
-      searchLanguages: document.getElementById("searchLanguages"),
-
-      selectedTags: document.getElementById("selectedTags"),
-      searchTags: document.getElementById("searchTags"),
-      tagsDiv: document.getElementById("tagsDiv"),
-
-      selectedCategories: document.getElementById("selectedCategories"),
-      searchCategories: document.getElementById("searchCategories"),
-      categoriesDiv: document.getElementById("categoriesDiv"),
-
-      languageFilterCount: document.getElementById("languageFilterCount"),
-      tagFilterCount: document.getElementById("tagFilterCount"),
-      categoryFilterCount: document.getElementById("categoryFilterCount"),
-    };
-
     localforage.config({
       driver: localforage.INDEXEDDB,
       name: "guessr.tv/watch",
@@ -127,7 +107,7 @@
 
     await getMainList();
     loadFilters();
-    nextStream();
+    //nextStream();
   });
 
   async function getMainList() {
@@ -150,7 +130,7 @@
       }
 
       mainList = new Map(result);
-      filteredList = new Map(mainList);
+      filteredList = new Map(result);
     } catch (error) {
       showToast("Could not load channel list :(", "error", 5000);
 
@@ -172,196 +152,170 @@
       }
     });
 
-    //sort the maps and update the values of the state filter vars so that the filter popovers load
-    filterLanguages = new Map([...languages.entries()].sort((a, b) => b[1] - a[1]));
-    filterTags = new Map([...tags.entries()].sort((a, b) => b[1] - a[1]));
-    filterCategories = new Map([...categories.entries()].sort((a, b) => b[1] - a[1]));
+    const sortedLanguages = [...languages.entries()].sort((a, b) => b[1] - a[1]);
+    for (const [key, value] of sortedLanguages) {
+      allLanguages.set(key, value);
+      filteredLanguages.set(key, value);
+    }
 
-    topTags = Array.from(filterTags.entries()).slice(0, 10);
-    topCategories = Array.from(filterCategories.entries()).slice(0, 10);
+    const sortedTags = [...tags.entries()].sort((a, b) => b[1] - a[1]);
+    for (const [key, value] of sortedTags) {
+      allTags.set(key, value);
+      if (filteredTags.size < 10) {
+        filteredTags.set(key, value);
+      }
+    }
+
+    const sortedCategories = [...categories.entries()].sort((a, b) => b[1] - a[1]);
+    for (const [key, value] of sortedCategories) {
+      allCategories.set(key, value);
+      if (filteredCategories.size < 10) {
+        filteredCategories.set(key, value);
+      }
+    }
   } //loadFilters
 
-  function updateLanguages() {
-    const selected = Array.from(document.querySelectorAll(".language-filter:checked")).map((e) => e.value);
-    const search = elements.searchLanguages.value;
-    let languages;
-
-    if (search) {
-      languages = Array.from(filterLanguages.entries()).filter(([key, value]) => getLanguage(key).toLowerCase().includes(search));
-    } else {
-      languages = Array.from(filterLanguages.entries());
-    }
-
-    if (selected.length == 0) {
-      elements.selectedLanguages.innerHTML = `<span class="opacity-70">None (will show all languages)</span>`;
-    } else {
-      elements.selectedLanguages.innerHTML = "";
-    }
-
-    for (let index = 0; index < selected.length; index++) {
-      elements.selectedLanguages.insertAdjacentHTML(
-        `beforeend`,
-        `
-      <div class="form-check">
-        <input checked class="form-check-input language-filter" type="checkbox" value="${selected[index]}" id="${selected[index]}_language_checkbox" onchange="updateLanguages()">
-        <label class="form-check-label" for="${selected[index]}_language_checkbox">
-          ${getLanguage(selected[index])} <span class="opacity-70">(${filterLanguages.get(selected[index]).toLocaleString()})</span>
-        </label>
-      </div>`,
-      );
-    }
-
-    updateFilteredCount();
-  } //updateLanguages
-
-  function updateTags() {
-    const selected = Array.from(document.querySelectorAll(".tag-filter:checked")).map((e) => e.value);
-    const search = elements.searchTags.value;
-    let tags;
-
-    if (search) {
-      tags = Array.from(filterTags.entries())
-        .filter(([key, value]) => key.toLowerCase().includes(search))
-        .slice(0, 10);
-    } else {
-      tags = Array.from(filterTags.entries()).slice(0, 10);
-    }
-
-    if (selected.length == 0) {
-      elements.selectedTags.innerHTML = `<span class="opacity-70">None (will show all tags)</span>`;
-    } else {
-      elements.selectedTags.innerHTML = "";
-    }
-    elements.tagsDiv.innerHTML = "";
-
-    for (let index = 0; index < selected.length; index++) {
-      elements.selectedTags.insertAdjacentHTML(
-        `beforeend`,
-        `
-      <div class="form-check">
-        <input checked class="form-check-input tag-filter" type="checkbox" value="${selected[index]}" id="${selected[index]}_tag_checkbox" onchange="updateTags()">
-        <label class="form-check-label" for="${selected[index]}_tag_checkbox">
-          ${selected[index]} <span class="opacity-70">(${filterTags.get(selected[index]).toLocaleString()})</span>
-        </label>
-      </div>`,
-      );
-    }
-
-    for (let index = 0; index < tags.length; index++) {
-      if (selected.includes(tags[index][0])) {
-        continue;
-      }
-      elements.tagsDiv.insertAdjacentHTML(
-        `beforeend`,
-        `
-      <div class="form-check">
-        <input class="form-check-input tag-filter" type="checkbox" value="${tags[index][0]}" id="${tags[index][0]}_tag_checkbox" onchange="updateTags()">
-        <label class="form-check-label" for="${tags[index][0]}_tag_checkbox">
-          ${tags[index][0]} <span class="opacity-70">(${tags[index][1].toLocaleString()})</span>
-        </label>
-      </div>`,
-      );
-    }
-    if (tags.length == 0) {
-      elements.tagsDiv.innerHTML = `<span class="opacity-70">No results</span>`;
-    }
-    updateFilteredCount();
-  } //updateTags
-
-  function updateCategories() {
-    const selected = Array.from(document.querySelectorAll(".category-filter:checked")).map((e) => e.value);
-    const search = elements.searchCategories.value;
-    let categories;
-
-    if (search) {
-      categories = Array.from(filterCategories.entries())
-        .filter(([key, value]) => key.toLowerCase().includes(search))
-        .slice(0, 10);
-    } else {
-      categories = Array.from(filterCategories.entries()).slice(0, 10);
-    }
-
-    if (selected.length == 0) {
-      elements.selectedCategories.innerHTML = `<span class="opacity-70">None (will show all categories)</span>`;
-    } else {
-      elements.selectedCategories.innerHTML = "";
-    }
-    elements.categoriesDiv.innerHTML = "";
-
-    for (let index = 0; index < selected.length; index++) {
-      elements.selectedCategories.insertAdjacentHTML(
-        `beforeend`,
-        `
-      <div class="form-check">
-        <input checked class="form-check-input category-filter" type="checkbox" value="${selected[index]}" id="${selected[index].replace(
-          /\s+/g,
-          "_",
-        )}_category_checkbox" onchange="updateCategories()">
-        <label class="form-check-label" for="${selected[index].replace(/\s+/g, "_")}_category_checkbox">
-          ${selected[index] == "No category" ? `<em class="opacity-70">No category</em>` : escape(selected[index])} <span class="opacity-70">(${filterCategories
-            .get(selected[index])
-            .toLocaleString()})</span>
-        </label>
-      </div>`,
-      );
-    }
-
-    for (let index = 0; index < categories.length; index++) {
-      if (selected.includes(categories[index][0])) {
-        continue;
-      }
-      elements.categoriesDiv.insertAdjacentHTML(
-        `beforeend`,
-        `
-      <div class="form-check">
-        <input class="form-check-input category-filter" type="checkbox" value="${categories[index][0]}" id="${categories[index][0].replace(
-          /\s+/g,
-          "_",
-        )}_category_checkbox" onchange="updateCategories()">
-        <label class="form-check-label" for="${categories[index][0].replace(/\s+/g, "_")}_category_checkbox">
-          ${categories[index][0] == "No category" ? `<em class="opacity-70">No category</em>` : escape(categories[index][0])} <span class="opacity-70">(${categories[
-            index
-          ][1].toLocaleString()})</span>
-        </label>
-      </div>`,
-      );
-    }
-    if (categories.length == 0) {
-      elements.categoriesDiv.innerHTML = `<span class="opacity-70">No results</span>`;
-    }
-    updateFilteredCount();
-  } //updateCategories
-
-  function updateFilteredCount() {
+  function updateFilteredList() {
     filteredList = new Map(mainList);
-    let selectedLanguages = Array.from(document.querySelectorAll(".language-filter:checked")).map((e) => e.value);
-    let selectedTags = Array.from(document.querySelectorAll(".tag-filter:checked")).map((e) => e.value);
-    let selectedCategories = Array.from(document.querySelectorAll(".category-filter:checked")).map((e) => e.value);
+
+    const languages = Array.from(selectedLanguages).map(([key]) => key);
+    const tags = Array.from(selectedTags).map(([key]) => key);
+    const categories = Array.from(selectedCategories).map(([key]) => key);
 
     for (const [key, value] of filteredList) {
-      if (selectedLanguages.length && !selectedLanguages.includes(value.language)) {
+      if (languages.length && !languages.includes(value.language)) {
         filteredList.delete(key);
       }
-      if (selectedTags.length && !selectedTags.some((tag) => value.tags?.includes(tag))) {
+      if (tags.length && !tags.some((tag) => value.tags?.includes(tag))) {
         filteredList.delete(key);
       }
-      if (selectedCategories.length && !selectedCategories.includes(value.game_name)) {
-        filteredList.delete(key);
-      }
-
-      if (value.viewer_count < filterViewCount[0]) {
+      if (categories.length && !categories.includes(value.game_name)) {
         filteredList.delete(key);
       }
 
-      if (value.viewer_count > filterViewCount[1]) {
+      if (value.viewer_count < viewCountFilter[0]) {
+        filteredList.delete(key);
+      }
+
+      if (value.viewer_count > viewCountFilter[1]) {
         filteredList.delete(key);
       }
     }
+  } //updateFilteredList
 
-    elements.languageFilterCount.innerHTML = selectedLanguages.length ? ` (${selectedLanguages.length})` : "";
-    elements.tagFilterCount.innerHTML = selectedTags.length ? ` (${selectedTags.length})` : "";
-    elements.categoryFilterCount.innerHTML = selectedCategories.length ? ` (${selectedCategories.length})` : "";
-  } //updateFilteredCount
+  function updateSelectedLanguages() {
+    const selected = Array.from(document.querySelectorAll(".language-filter:checked")).map((e) => e.value);
+    for (const [key, value] of allLanguages) {
+      if (selected.includes(key)) {
+        selectedLanguages.set(key, value);
+      } else {
+        selectedLanguages.delete(key);
+      }
+    }
+    updateFilteredList();
+  } //updateSelectedLanguages
+
+  function updateSelectedTags() {
+    const selected = Array.from(document.querySelectorAll(".tag-filter:checked")).map((e) => e.value);
+    for (const [key, value] of allTags) {
+      if (selected.includes(key)) {
+        selectedTags.set(key, value);
+      } else {
+        selectedTags.delete(key);
+      }
+    }
+    updateFilteredList();
+  } //updateSelectedTags
+
+  function updateSelectedCategories() {
+    const selected = Array.from(document.querySelectorAll(".category-filter:checked")).map((e) => e.value);
+    for (const [key, value] of allCategories) {
+      if (selected.includes(key)) {
+        selectedCategories.set(key, value);
+      } else {
+        selectedCategories.delete(key);
+      }
+    }
+    updateFilteredList();
+  } //updateSelectedCategories
+
+  function searchLanguages() {
+    const search = document.getElementById("searchLanguages")?.value;
+    let searchedLanguages;
+
+    if (search) {
+      searchedLanguages = Array.from(allLanguages.entries())
+        .filter(([key, value]) => getLanguage(key).toLowerCase().includes(search))
+        .map(([key]) => key);
+    } else {
+      for (const [key, value] of allLanguages) {
+        filteredLanguages.set(key, value);
+      }
+      return;
+    }
+
+    for (const [key, value] of allLanguages) {
+      if (searchedLanguages?.includes(key)) {
+        filteredLanguages.set(key, value);
+      } else {
+        filteredLanguages.delete(key);
+      }
+    }
+  } //searchLanguages
+
+  function searchTags() {
+    const search = document.getElementById("searchTags")?.value;
+    let searchedTags;
+
+    if (search) {
+      searchedTags = Array.from(allTags.entries())
+        .filter(([key, value]) => key.toLowerCase().includes(search))
+        .map(([key]) => key)
+        .slice(0, 10);
+    } else {
+      for (const [key, value] of allTags) {
+        if (filteredTags.size - selectedTags.size == 10) {
+          return;
+        }
+        filteredTags.set(key, value);
+      }
+    }
+
+    for (const [key, value] of allTags) {
+      if (searchedTags?.includes(key)) {
+        filteredTags.set(key, value);
+      } else {
+        filteredTags.delete(key);
+      }
+    }
+  } //searchTags
+
+  function searchCategories() {
+    const search = document.getElementById("searchCategories")?.value;
+    let searchedCategories;
+
+    if (search) {
+      searchedCategories = Array.from(allCategories.entries())
+        .filter(([key, value]) => key.toLowerCase().includes(search))
+        .map(([key]) => key)
+        .slice(0, 10);
+    } else {
+      for (const [key, value] of allCategories) {
+        if (filteredCategories.size - selectedCategories.size == 10) {
+          return;
+        }
+        filteredCategories.set(key, value);
+      }
+    }
+
+    for (const [key, value] of allCategories) {
+      if (searchedCategories?.includes(key)) {
+        filteredCategories.set(key, value);
+      } else {
+        filteredCategories.delete(key);
+      }
+    }
+  } //searchCategories
 
   async function nextStream() {
     let embeddedChannel = player?.getChannel() || 0;
@@ -397,12 +351,10 @@
 
     if (filteredList.size == 0 || !channelID) {
       showToast("No more channels left on the list, change your filters or refresh to get a new list", "error", 5000);
-
       return;
     }
     if (retryLimit > 5) {
       showToast("Too many retries, something might be wrong :(", "error", 4000);
-
       return;
     }
 
@@ -569,7 +521,7 @@
               <span style="writing-mode: sideways-lr; text-orientation: mixed">Filters</span>
 
               <button class="btn btn-success" popovertarget="languagePopover" style="anchor-name:--languagePopoverAnchor">
-                <IcBaselineLanguage class="text-lg" />Languages<span id="languageFilterCount"></span>
+                <IcBaselineLanguage class="text-lg" />Languages ({selectedLanguages.size || allLanguages.size})
               </button>
               <div
                 class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-300 border border-success shadow-sm p-3"
@@ -578,20 +530,12 @@
                 style="position-anchor:--languagePopoverAnchor"
               >
                 <h5 class="text-xl">Selected languages:</h5>
-                <div id="selectedLanguages"><span class="opacity-70">None (will show all languages)</span></div>
-                <div class="divider"></div>
-
-                <label class="input mb-3">
-                  <IcBaselineSearch />
-                  <input id="searchLanguages" type="search" class="grow" placeholder="Search" oninput={updateLanguages} />
-                </label>
-
-                <div class="h-60 overflow-auto w-full">
-                  {#if filterLanguages.size}
+                <div class="max-h-60 overflow-auto w-full">
+                  {#if selectedLanguages.size}
                     <form class="space-y-1">
-                      {#each filterLanguages as [key, value]}
+                      {#each Array.from(selectedLanguages) as [key, value] (key)}
                         <label class="flex items-center space-x-1">
-                          <input class="checkbox language-filter" type="checkbox" value={key} onchange={updateLanguages} />
+                          <input checked class="checkbox language-filter" type="checkbox" value={key} onchange={updateSelectedLanguages} />
                           {#if key}
                             <p>{getLanguage(key)} <span class="opacity-70">({value.toLocaleString()})</span></p>
                           {:else}
@@ -601,6 +545,38 @@
                       {/each}
                     </form>
                   {:else}
+                    <span class="opacity-70">None (will show all languages)</span>
+                  {/if}
+                </div>
+
+                <div class="divider"></div>
+
+                <label class="input mb-3">
+                  <IcBaselineSearch />
+                  <input id="searchLanguages" type="search" class="grow" placeholder="Search" oninput={searchLanguages} />
+                </label>
+
+                <div class="h-60 overflow-auto w-full">
+                  {#if filteredLanguages.size}
+                    <form class="space-y-1">
+                      {#each Array.from(filteredLanguages) as [key, value] (key)}
+                        {#if !selectedLanguages.get(key)}
+                          <label class="flex items-center space-x-1">
+                            <input class="checkbox language-filter" type="checkbox" value={key} onchange={updateSelectedLanguages} />
+                            {#if key}
+                              <p>{getLanguage(key)} <span class="opacity-70">({value.toLocaleString()})</span></p>
+                            {:else}
+                              <p class="opacity-70 italic">Unknown<span class="opacity-70">({value.toLocaleString()})</span></p>
+                            {/if}
+                          </label>
+                        {/if}
+                      {/each}
+                    </form>
+                  {:else if filteredLanguages.size == 0 && allLanguages.size}
+                    <div class="text-center">
+                      <span class="opacity-70">No results</span>
+                    </div>
+                  {:else}
                     <div class="text-center">
                       <span class="loading loading-spinner loading-xl"></span>
                     </div>
@@ -609,7 +585,7 @@
               </div>
 
               <button class="btn btn-error" popovertarget="tagsPopover" style="anchor-name:--tagsPopoverAnchor">
-                <IcBaselineLabel class="text-lg" />Tags<span id="tagFilterCount"></span>
+                <IcBaselineLabel class="text-lg" />Tags ({(selectedTags.size || allTags.size).toLocaleString()})
               </button>
               <div
                 class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-300 border border-error shadow-sm p-3"
@@ -618,26 +594,46 @@
                 style="position-anchor:--tagsPopoverAnchor"
               >
                 <h5 class="text-xl">Selected tags:</h5>
-                <div id="selectedTags"><span class="opacity-70">None (will show all tags)</span></div>
+                <div class="max-h-60 overflow-auto w-full">
+                  {#if selectedTags.size}
+                    <form class="space-y-1">
+                      {#each Array.from(selectedTags) as [key, value] (key)}
+                        <label class="flex items-center space-x-1">
+                          <input checked class="checkbox tag-filter" type="checkbox" value={key} onchange={updateSelectedTags} />
+                          <p>{escape(key)} <span class="opacity-70">({value.toLocaleString()})</span></p>
+                        </label>
+                      {/each}
+                    </form>
+                  {:else}
+                    <span class="opacity-70">None (will show all tags)</span>
+                  {/if}
+                </div>
+
                 <div class="divider"></div>
 
                 <label class="input mb-3">
                   <IcBaselineSearch />
-                  <input id="searchTags" type="search" class="grow" placeholder="Search" oninput={updateTags} />
+                  <input id="searchTags" type="search" class="grow" placeholder="Search" oninput={searchTags} />
                 </label>
 
-                <div class="h-60 overflow-auto w-full" id="tagsDiv">
-                  {#if topTags.length}
-                    <form class="space-y-1">
-                      {#each topTags as tag}
-                        <label class="flex items-center space-x-1">
-                          <input class="checkbox tag-filter" type="checkbox" value={tag[0]} onchange={updateTags} />
-                          <p>{escape(tag[0])} <span class="opacity-70">({tag[1].toLocaleString()})</span></p>
-                        </label>
+                <div class="h-60 overflow-auto w-full">
+                  {#if filteredTags.size}
+                    <form class="space-y-1 mb-3">
+                      {#each Array.from(filteredTags) as [key, value] (key)}
+                        {#if !selectedTags.get(key)}
+                          <label class="flex items-center space-x-1">
+                            <input class="checkbox tag-filter" type="checkbox" value={key} onchange={updateSelectedTags} />
+                            <p>{escape(key)} <span class="opacity-70">({value.toLocaleString()})</span></p>
+                          </label>
+                        {/if}
                       {/each}
                     </form>
 
-                    <div class="opacity-70 mt-3">{(filterTags.size - topTags.length).toLocaleString()} more tags. Use the search box above to find more</div>
+                    <small class="opacity-70">{allTags?.size?.toLocaleString()} tags total. Use the search box above to filter them</small>
+                  {:else if filteredTags.size == 0 && allTags.size}
+                    <div class="text-center">
+                      <span class="opacity-70">No results</span>
+                    </div>
                   {:else}
                     <div class="text-center">
                       <span class="loading loading-spinner loading-xl"></span>
@@ -647,7 +643,7 @@
               </div>
 
               <button class="btn btn-warning" popovertarget="categoriesPopover" style="anchor-name:--categoriesPopoverAnchor">
-                <IcBaselineSportsEsports class="text-lg" />Categories<span id="categoryFilterCount"></span>
+                <IcBaselineSportsEsports class="text-lg" />Categories ({(selectedCategories.size || allCategories.size).toLocaleString()})
               </button>
               <div
                 class="dropdown dropdown-top dropdown-center w-52 rounded-box bg-base-300 border border-warning shadow-sm p-3"
@@ -656,31 +652,46 @@
                 style="position-anchor:--categoriesPopoverAnchor"
               >
                 <h5 class="text-xl">Selected categories:</h5>
-                <div id="selectedCategories"><span class="opacity-70">None (will show all categories)</span></div>
+                <div class="max-h-60 overflow-auto w-full">
+                  {#if selectedCategories.size}
+                    <form class="space-y-1">
+                      {#each Array.from(selectedCategories) as [key, value] (key)}
+                        <label class="flex items-center space-x-1">
+                          <input checked class="checkbox category-filter" type="checkbox" value={key} onchange={updateSelectedCategories} />
+                          <p>{escape(key)} <span class="opacity-70">({value.toLocaleString()})</span></p>
+                        </label>
+                      {/each}
+                    </form>
+                  {:else}
+                    <span class="opacity-70">None (will show all categories)</span>
+                  {/if}
+                </div>
+
                 <div class="divider"></div>
 
                 <label class="input mb-3">
                   <IcBaselineSearch />
-                  <input id="searchCategories" type="search" class="grow" placeholder="Search" oninput={updateCategories} />
+                  <input id="searchCategories" type="search" class="grow" placeholder="Search" oninput={searchCategories} />
                 </label>
 
-                <div class="h-60 overflow-auto w-full" id="categoriesDiv">
-                  {#if topCategories.length}
-                    <form class="space-y-1">
-                      {#each topCategories as category}
-                        <label class="flex items-center space-x-1">
-                          <input class="checkbox category-filter" type="checkbox" value={category[0]} onchange={updateCategories} />
-
-                          {#if category[0] == "No category"}
-                            <p class="opacity-70 italic">No category <span class="opacity-70">({category[1].toLocaleString()})</span></p>
-                          {:else}
-                            <p>{escape(category[0])} <span class="opacity-70">({category[1].toLocaleString()})</span></p>
-                          {/if}
-                        </label>
+                <div class="h-60 overflow-auto w-full">
+                  {#if filteredCategories.size}
+                    <form class="space-y-1 mb-3">
+                      {#each Array.from(filteredCategories) as [key, value] (key)}
+                        {#if !selectedCategories.get(key)}
+                          <label class="flex items-center space-x-1">
+                            <input class="checkbox category-filter" type="checkbox" value={key} onchange={updateSelectedCategories} />
+                            <p>{escape(key)} <span class="opacity-70">({value.toLocaleString()})</span></p>
+                          </label>
+                        {/if}
                       {/each}
                     </form>
 
-                    <div class="opacity-70 mt-3">{(filterCategories.size - topCategories.length).toLocaleString()} more categories. Use the search box above to find more</div>
+                    <small class="opacity-70">{allCategories?.size?.toLocaleString()} categories total. Use the search box above to filter them</small>
+                  {:else if filteredCategories.size == 0 && allCategories.size}
+                    <div class="text-center">
+                      <span class="opacity-70">No results</span>
+                    </div>
                   {:else}
                     <div class="text-center">
                       <span class="loading loading-spinner loading-xl"></span>
@@ -689,7 +700,18 @@
                 </div>
               </div>
 
-              <button class="btn btn-info" popovertarget="ViewCountPopover" style="anchor-name:--ViewCountPopoverAnchor"> <span class="text-2xl"><ViewersSVG /></span>View count</button>
+              <button class="btn btn-info" popovertarget="ViewCountPopover" style="anchor-name:--ViewCountPopoverAnchor">
+                <span class="text-2xl"><ViewersSVG /></span>View count
+                {#if !viewCountFilter[0] && viewCountFilter[1] == maxViewCount}
+                  <span></span>
+                {:else if viewCountFilter[0] > 0 && viewCountFilter[1] == maxViewCount}
+                  &gt;{viewCountFilter[0].toLocaleString()}
+                {:else if !viewCountFilter[0] && viewCountFilter[1]}
+                  &lt;{viewCountFilter[1].toLocaleString()}
+                {:else if viewCountFilter[0] && viewCountFilter[1]}
+                  {viewCountFilter[0].toLocaleString()}<IcBaselineArrowRightAlt />{viewCountFilter[1].toLocaleString()}
+                {/if}
+              </button>
               <div
                 class="dropdown dropdown-top dropdown-end w-200 rounded-box bg-base-300 border border-info shadow-sm p-3"
                 popover
@@ -698,12 +720,13 @@
               >
                 <h5 class="text-2xl">View count range</h5>
                 <div class="flex flex-row justify-between text-lg m-2">
-                  <span>Minimum view count: {filterViewCount[0].toLocaleString()}</span>
-                  <span>Maximum view count: {filterViewCount[1].toLocaleString()}</span>
+                  <span>Minimum view count: {viewCountFilter[0].toLocaleString()}</span>
+                  <span>Maximum view count: {viewCountFilter[1].toLocaleString()}</span>
                 </div>
                 <Slider.Root
                   type="multiple"
-                  bind:value={filterViewCountSlider}
+                  bind:value={viewCountFilterSlider}
+                  onValueChange={updateFilteredList}
                   min={0}
                   max={100}
                   autoSort={true}
