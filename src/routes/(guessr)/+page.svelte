@@ -14,11 +14,8 @@
   import IcBaselineOndemandVideo from "~icons/ic/baseline-ondemand-video";
   import MdiTwitch from "~icons/mdi/twitch";
   import IcBaselineWarning from "~icons/ic/baseline-warning";
-
-  let elements;
-
-  let videoType = $state("streams");
-  let gameMode = $state("viewers");
+  import IcBaselineKeyboardDoubleArrowDown from "~icons/ic/baseline-keyboard-double-arrow-down";
+  import IcBaselineKeyboardDoubleArrowUp from "~icons/ic/baseline-keyboard-double-arrow-up";
 
   import { animate, utils } from "animejs";
   import ViewersSVG from "$lib/ViewersSVG.svelte";
@@ -40,6 +37,11 @@
   } from "$lib/functions";
   import { ToggleGroup } from "bits-ui";
   import { slide } from "svelte/transition";
+
+  let elements;
+
+  let videoType = $state("streams");
+  let gameMode = $state("viewers");
 
   let channelBadges = { subscriber: [], bits: [] };
   let globalBadges = {};
@@ -202,7 +204,7 @@
   function toggleControls(hide = false) {
     if (hide) {
       elements.sliderDiv.style.display = "none";
-      elements.multiChoiceDiv.style.display = "none";
+      elements.emotesDiv.style.display = "none";
       elements.gameNameDiv.style.display = "none";
       elements.higherlowerDiv.style.display = "none";
       elements.irlDiv.style.display = "none";
@@ -212,35 +214,35 @@
     switch (gameSettings.mode) {
       case "viewers":
         elements.sliderDiv.style.display = "";
-        elements.multiChoiceDiv.style.display = "none";
+        elements.emotesDiv.style.display = "none";
         elements.gameNameDiv.style.display = "none";
         elements.higherlowerDiv.style.display = "none";
         elements.irlDiv.style.display = "none";
         break;
       case "emote":
         elements.sliderDiv.style.display = "none";
-        elements.multiChoiceDiv.style.display = "";
+        elements.emotesDiv.style.display = "";
         elements.gameNameDiv.style.display = "none";
         elements.higherlowerDiv.style.display = "none";
         elements.irlDiv.style.display = "none";
         break;
       case "game":
         elements.sliderDiv.style.display = "none";
-        elements.multiChoiceDiv.style.display = "none";
+        elements.emotesDiv.style.display = "none";
         elements.gameNameDiv.style.display = "";
         elements.higherlowerDiv.style.display = "none";
         elements.irlDiv.style.display = "none";
         break;
       case "higherlower":
         elements.sliderDiv.style.display = "none";
-        elements.multiChoiceDiv.style.display = "none";
+        elements.emotesDiv.style.display = "none";
         elements.gameNameDiv.style.display = "none";
         elements.higherlowerDiv.style.display = "";
         elements.irlDiv.style.display = "none";
         break;
       case "irl":
         elements.sliderDiv.style.display = "none";
-        elements.multiChoiceDiv.style.display = "none";
+        elements.emotesDiv.style.display = "none";
         elements.gameNameDiv.style.display = "none";
         elements.higherlowerDiv.style.display = "none";
         elements.irlDiv.style.display = "";
@@ -564,8 +566,7 @@
     }
 
     if (gameSettings.mode == "emote") {
-      elements.multiChoiceDiv.style.display = "none"; //hide now and show in generateEmoteChoices when it is done so that all emotes load at once
-      elements.multiChoiceLabel.innerHTML = "Which emote belongs to this channel?";
+      elements.emotesDiv.style.display = "none"; //hide now and show in generateEmoteChoices when it is done so that all emotes load at once
       await generateEmoteChoices(guessList[round - 1].userid);
     }
 
@@ -689,7 +690,7 @@
     ${gameSettings.chat ? Object.keys(emoteChoices).find((e) => emoteChoices[e] === index + 1) : ""} 
     <img src="https://static-cdn.jtvnw.net/emoticons/v2/${random[index].emote}/default/dark/3.0" alt="emote #${index + 1}">`;
     }
-    elements.multiChoiceDiv.style.display = "";
+    elements.emotesDiv.style.display = "";
   } //generateEmoteChoices
 
   /**
@@ -1286,7 +1287,7 @@
     elements.score.innerHTML = `Score <br />0`;
     elements.scoreDiv.style.display = "none";
     elements.sliderDiv.style.display = "none";
-    elements.multiChoiceDiv.style.display = "none";
+    elements.emotesDiv.style.display = "none";
     elements.gameNameDiv.style.display = "none";
     elements.higherlowerDiv.style.display = "none";
     elements.irlDiv.style.display = "none";
@@ -1722,7 +1723,7 @@
         if (gameSettings.mode === "emote") {
           const correct = Number(guessList[round - 1].userid);
 
-          const choiceBtns = Array.from(document.querySelectorAll("#multiChoiceDiv .multiChoice-btn"));
+          const choiceBtns = Array.from(document.querySelectorAll("#emotesDiv .multiChoice-btn"));
           const answers = choiceBtns.map((el) => parseInt(el.dataset.answer, 10));
 
           const indexList = shuffleArray(answers.map((e, i) => i));
@@ -1828,8 +1829,7 @@
       guessLabel: document.getElementById("guessLabel"),
       guessNumber: document.getElementById("guessNumber"),
 
-      multiChoiceDiv: document.getElementById("multiChoiceDiv"),
-      multiChoiceLabel: document.getElementById("multiChoiceLabel"),
+      emotesDiv: document.getElementById("emotesDiv"),
       multiChoice1: document.getElementById("multiChoice1"),
       multiChoice2: document.getElementById("multiChoice2"),
       multiChoice3: document.getElementById("multiChoice3"),
@@ -1988,7 +1988,31 @@
     if (urlParams.get("irl") === "true") {
       document.getElementById("irl").style.display = "";
     }
+
+    higherAnimation = animate(".higher-arrow", {
+      keyframes: [{ translateY: { from: 0, to: "-100%" } }, { translateY: { from: "100%", to: 0 } }],
+      duration: 600,
+      ease: "linear",
+      autoplay: false,
+      loop: true,
+    });
+
+    lowerAnimation = animate(".lower-arrow", {
+      keyframes: [{ translateY: { from: 0, to: "100%" } }, { translateY: { from: "-100%", to: 0 } }],
+      duration: 600,
+      ease: "linear",
+      autoplay: false,
+      loop: true,
+    });
   }); //onMount
+  /**
+   * @type {import("animejs").JSAnimation}
+   */
+  let higherAnimation;
+  /**
+   * @type {import("animejs").JSAnimation}
+   */
+  let lowerAnimation;
 
   // window.onbeforeunload = function () {
   //   if (unloadWarning && gameRunning) {
@@ -2000,8 +2024,8 @@
 
 <svelte:head>
   <script src="https://embed.twitch.tv/embed/v1.js" async></script>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js" async></script>
-  <script src="https://cdn.jsdelivr.net/npm/@rtirl/api@latest/lib/index.min.js" async></script>
+  <!-- <script src="https://unpkg.com/leaflet/dist/leaflet.js" async></script> -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/@rtirl/api@latest/lib/index.min.js" async></script> -->
 </svelte:head>
 
 <dialog id="gameSettingsModal" class="modal">
@@ -2148,17 +2172,7 @@
   </form>
 </dialog>
 
-<div id="scoreDiv" class="bg-base-300" style="display: none">
-  <span id="round">Round <br />1/5</span>
-  <span id="score">Score <br />0</span>
-</div>
-
-<div id="timerDiv" class="bg-base-300" style="display: none">
-  <span>Round ends in</span>
-  <span id="timer">0</span>
-</div>
-
-<div class="w-full mt-10">
+<div id="gameSelector" class="w-full mt-10" style="display: none;">
   <div class="w-2xl text-center mx-auto">
     <div class="flex flex-row h-25 mb-2">
       <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -2216,9 +2230,7 @@
       </div>
     </div>
 
-    <div class="flex flex-row h-25">
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <!-- svelte-ignore a11y_interactive_supports_focus -->
+    <!-- <div class="flex flex-row h-25">
       <div class="card border border-neutral cursor-pointer bg-base-300 w-full h-25 hover:h-30 hover:z-10 overflow-clip mx-1" role="button" onclick={() => showSettings("irl")}>
         <div class="card-body">
           <span class="text-3xl m-1"><IcBaselinePublic class="inline align-text-bottom" />IRL streams</span>
@@ -2229,157 +2241,236 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </div>
 
-<div class="col-8 position-relative pe-1">
-  <div id="twitchEmbed"></div>
-  <div id="streamCover" style="display: none"></div>
-  <div id="clipCover" style="display: none"></div>
-</div>
+<div class="flex flex-col h-screen gap-3 p-3 items-center w-full">
+  <div class="flex flex-row flex-1 gap-3 max-w-[80vw] w-full">
+    <div id="twitchPlayer" class="grow rounded-xl bg-base-300">
+      <div id="twitchEmbed"></div>
+      <div id="streamCover" style="display: none"></div>
+      <div id="clipCover" style="display: none"></div>
+    </div>
 
-<div class="card" id="leaderboard" style="display: none">
-  <div class="card-body" id="leaderboardCard">
-    <ul class="nav nav-tabs bg-body-tertiary" id="leaderboardTabs" role="tablist" style="display: none">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="totalTab" data-bs-toggle="tab" data-bs-target="#total-tab-pane" role="tab" aria-controls="total-tab-pane" aria-selected="true">
-          Total standings
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="roundTab" data-bs-toggle="tab" data-bs-target="#round-tab-pane" role="tab" aria-controls="round-tab-pane" aria-selected="false"> Round results </button>
-      </li>
-    </ul>
-    <div class="tab-content">
-      <div class="tab-pane fade show active" id="total-tab-pane" role="tabpanel" aria-labelledby="totalTab" tabindex="0">
-        <ul class="list-group mt-1" id="leaderboardList"></ul>
+    <div id="leaderboard" class="tabs tabs-lift w-70">
+      <label class="tab rounded-t-xl [--tab-bg:theme(colors.base-300)]">
+        <input type="radio" name="leaderboardTabs" checked />
+        Total standings
+      </label>
+      <div class="tab-content rounded-b-xl bg-base-300 border-base-300 p-6">
+        <div class="mt-1" id="leaderboardList"></div>
+        <div class="chat-hint">Type a number in chat to guess</div>
       </div>
-      <div class="tab-pane fade" id="round-tab-pane" role="tabpanel" aria-labelledby="roundTab" tabindex="0">
-        <ul class="list-group mt-1" id="leaderboardListRound"></ul>
+
+      <label class="tab rounded-t-xl [--tab-bg:theme(colors.base-300)]">
+        <input type="radio" name="leaderboardTabs" />
+        Round results
+      </label>
+      <div class="tab-content rounded-b-xl bg-base-300 border-base-300 p-6">
+        <div class="mt-1" id="leaderboardList"></div>
+        <div class="chat-hint">Type a number in chat to guess</div>
       </div>
     </div>
   </div>
-  <div class="card-footer" id="chatHint">
-    <h4>Type a number in chat to guess</h4>
-  </div>
-</div>
 
-<div class="card" id="mainCard" style="display: none">
-  <div class="card-body container-fluid">
-    <div id="sliderDiv" class="row align-items-center" style="display: none">
-      <div class="col-6">
-        <label for="guessRange" id="guessRangeLabel" class="form-label">How many viewers does this stream have?</label>
-        <input type="range" min="0" max="100" step="1" value="0" class="form-range" id="guessRange" />
-      </div>
-      <div class="col-3">
-        <div class="input-group justify-content-center" id="guessInputDiv">
-          <span class="input-group-text" id="guessLabel">View count</span>
-          <input type="number" id="guessNumber" min="0" max="5000" step="1" value="" placeholder="Guess" class="form-control" aria-label="View count" aria-describedby="guessLabel" />
+  <div class="flex flex-row h-[20vh] max-w-[80vw] w-full">
+    <div id="controls" class="card grow rounded-xl bg-base-300">
+      <div class="card-body flex-row">
+        <div id="scoreDiv" style="display: none">
+          <span id="round">Round <br />1/5</span>
+          <span id="score">Score <br />0</span>
         </div>
-      </div>
-      <div class="col-3">
-        <button onclick={() => guess("slider", false)} class="btn btn-lg btn-success guess">Guess</button>
-      </div>
-    </div>
 
-    <div id="multiChoiceDiv" class="row align-items-center" style="display: none">
-      <div class="col-xl-2">
-        <div class="d-flex flex-column gap-1" id="multiChoicePowerupCard">
-          <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("pSkip")}>
-            <div><IcBaselineSkipNext /> Skip</div>
-            <div class="flex-grow-1"></div>
-            <div class="powerup-added powerup-pSkip-added"></div>
-            <div class="powerup-count powerup-pSkip-count">0</div>
-          </button>
-          <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("p5050")}>
-            <div><IcBaselineTheaterComedy /> 50/50</div>
-            <div class="flex-grow-1"></div>
-            <div class="powerup-added powerup-p5050-added"></div>
-            <div class="powerup-count powerup-p5050-count">0</div>
-          </button>
+        <div id="timerDiv" style="display: none">
+          <span>Round ends in</span>
+          <span id="timer">0</span>
         </div>
-      </div>
-      <div class="col-xl"><label id="multiChoiceLabel" class="form-label">How many viewers does this stream have?</label></div>
-      <div class="col-xl-auto">
-        <button onclick={() => guess(1, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice1">????????</button>
-        <button onclick={() => guess(2, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice2">????????</button>
-        <button onclick={() => guess(3, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice3">????????</button>
-        <button onclick={() => guess(4, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice4">????????</button>
-        <button onclick={() => guess(5, false)} class="btn btn-outline-success multiChoice-btn" id="multiChoice5">????????</button>
-      </div>
-    </div>
 
-    <div id="gameNameDiv" class="row" style="display: none">
-      <div class="col-9">
-        <label class="form-label">What is this game?</label>
-        <input type="text" class="form-control" placeholder="Start typing for suggestions" list="gameList" id="gameInput" />
-        <datalist id="gameList"></datalist>
-      </div>
-      <div class="col-3">
-        <button onclick={() => guess("game", false)} class="btn btn-lg btn-success guess">Guess</button>
-      </div>
-    </div>
+        <div id="sliderDiv" class="flex grow" style="display: none">
+          <div class="flex-1 flex flex-col">
+            <div class="text-2xl text-center" id="guessRangeLabel">How many viewers does this stream have?</div>
 
-    <div id="higherlowerDiv" class="row align-items-center" style="display: none">
-      <div class="col-2">
-        <div class="d-flex flex-column gap-1" id="higherLowerPowerupCard">
-          <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("pSkip")}>
-            <div><IcBaselineSkipNext /> Skip</div>
-            <div class="flex-grow-1"></div>
-            <div class="powerup-added powerup-pSkip-added"></div>
-            <div class="powerup-count powerup-pSkip-count">0</div>
-          </button>
-          <button class="btn btn-outline-primary btn-powerup" onclick={() => usePowerup("p5050")} disabled>
-            <div><IcBaselineTheaterComedy /> 50/50</div>
-            <div class="flex-grow-1"></div>
-            <div class="powerup-added powerup-p5050-added visually-hidden"></div>
-            <div class="powerup-count powerup-p5050-count visually-hidden">0</div>
-          </button>
-        </div>
-      </div>
-      <div class="col-5"><label id="higherlowerLabel" class="form-label">Does this stream have a higher or lower view count than</label><br /></div>
-      <div class="col-5">
-        <button onclick={() => guess("higher", false)} class="btn btn-outline-success multiChoice-btn me-5" id="higher">Higher</button>
-        <button onclick={() => guess("lower", false)} class="btn btn-outline-danger multiChoice-btn" id="lower">Lower</button>
-      </div>
-    </div>
-
-    <div id="irlDiv" class="row align-items-center" style="display: none">
-      <div class="col">
-        <div id="map" style="height: 300px"></div>
-      </div>
-
-      <div class="col-3">
-        <p id="irlCorrection">Where is this streamer?</p>
-        <br />
-        <button onclick={() => guess("map", false)} class="btn btn-lg btn-success guess">Guess</button>
-      </div>
-    </div>
-
-    <div id="resultsDiv" class="row align-items-center" style="display: none">
-      <div class="col-3">
-        <button id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
-        <div id="endButtons" style="display: none">
-          <button id="playAgain" class="btn btn-lg btn-warning" onclick={() => playAgain()}>Play Again</button>
-          <button id="changeMode" class="btn btn-lg btn-secondary mt-1" onclick={() => reset()}>Change mode</button>
-          <button id="breakdown" class="btn btn-lg btn-success mt-1" onclick={() => showBreakdown()}>Breakdown</button>
-        </div>
-      </div>
-      <div class="col-6">
-        <div id="scoreProgressBar">
-          <span id="scoreProgressBarLabel">0 points</span><br />
-          <div class="progress" id="progress" role="progressbar" aria-label="score" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-            <div class="progress-bar" id="progressBar"></div>
+            <div class="flex gap-3 my-auto">
+              <input type="range" class="range range-accent range-xl flex-1 self-center" min="0" max="100" step="1" value="0" id="guessRange" />
+              <div class="join">
+                <button class="btn btn-xl btn-accent join-item">View count</button>
+                <input type="number" id="guessNumber" class="input input-xl input-accent join-item" min="0" max="5000" step="1" value="" placeholder="Guess" />
+              </div>
+            </div>
+          </div>
+          <div class="divider divider-horizontal"></div>
+          <div class="justify-end">
+            <button onclick={() => guess("slider", false)} class="btn btn-xl btn-success h-full w-50 rounded-xl text-4xl">Guess</button>
           </div>
         </div>
-        <div id="gameEndText">
-          Final Score: 0<br />
-          High Score: 0
+
+        <div id="emotesDiv" class="flex grow" style="display: none">
+          <div class="justify-start my-auto">
+            <div class="flex flex-col gap-2 w-45">
+              <button class="btn btn-outline btn-primary btn-lg btn-powerup" onclick={() => usePowerup("pSkip")}>
+                <div><IcBaselineSkipNext class="inline align-text-bottom" /> Skip</div>
+                <div class="grow"></div>
+                <div class="powerup-added powerup-pSkip-added"></div>
+                <div class="powerup-count powerup-pSkip-count">0</div>
+              </button>
+              <button class="btn btn-outline btn-primary btn-lg btn-powerup" onclick={() => usePowerup("p5050")}>
+                <div><IcBaselineTheaterComedy class="inline align-text-bottom" /> 50/50</div>
+                <div class="grow"></div>
+                <div class="powerup-added powerup-p5050-added"></div>
+                <div class="powerup-count powerup-p5050-count">0</div>
+              </button>
+            </div>
+          </div>
+          <div class="divider divider-horizontal"></div>
+
+          <div class="flex-1 flex flex-row gap-3 justify-evenly">
+            <div class="text-2xl text-start my-auto">Which emote belongs to this channel?</div>
+
+            <div class="flex gap-3 my-auto">
+              <button onclick={() => guess(1, false)} class="btn btn-xl btn-outline btn-success multiChoice-btn w-fit h-fit p-0 m-0" id="multiChoice1">
+                <div class="skeleton w-30 h-30">asd</div>
+              </button>
+              <button onclick={() => guess(2, false)} class="btn btn-xl btn-outline btn-success multiChoice-btn w-fit h-fit p-0 m-0" id="multiChoice2">
+                <div class="skeleton w-30 h-30">asd</div>
+              </button>
+              <button onclick={() => guess(3, false)} class="btn btn-xl btn-outline btn-success multiChoice-btn w-fit h-fit p-0 m-0" id="multiChoice3">
+                <div class="skeleton w-30 h-30">asd</div>
+              </button>
+              <button onclick={() => guess(4, false)} class="btn btn-xl btn-outline btn-success multiChoice-btn w-fit h-fit p-0 m-0" id="multiChoice4">
+                <div class="skeleton w-30 h-30">asd</div>
+              </button>
+              <button onclick={() => guess(5, false)} class="btn btn-xl btn-outline btn-success multiChoice-btn w-fit h-fit p-0 m-0" id="multiChoice5">
+                <div class="skeleton w-30 h-30">asd</div>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="col-3">
-        <div id="correction"></div>
+
+        <div id="gameNameDiv" class="flex grow" style="display: none">
+          <div class="justify-start my-auto">
+            <div class="flex flex-col gap-2 w-45">
+              <button class="btn btn-outline btn-primary btn-lg btn-powerup" onclick={() => usePowerup("pSkip")}>
+                <div><IcBaselineSkipNext class="inline align-text-bottom" /> Skip</div>
+                <div class="grow"></div>
+                <div class="powerup-added powerup-pSkip-added"></div>
+                <div class="powerup-count powerup-pSkip-count">0</div>
+              </button>
+              <button class="btn btn-outline btn-primary btn-lg btn-powerup" onclick={() => usePowerup("p5050")}>
+                <div><IcBaselineTheaterComedy class="inline align-text-bottom" /> 50/50</div>
+                <div class="grow"></div>
+                <div class="powerup-added powerup-p5050-added"></div>
+                <div class="powerup-count powerup-p5050-count">0</div>
+              </button>
+            </div>
+          </div>
+          <div class="divider divider-horizontal"></div>
+
+          <div class="flex-1 flex flex-col">
+            <div class="text-2xl text-center">What is this game?</div>
+            <div class="flex my-auto">
+              <input type="text" class="input input-xl grow" placeholder="Start typing for suggestions" list="gameList" id="gameInput" />
+              <datalist id="gameList"></datalist>
+            </div>
+          </div>
+
+          <div class="divider divider-horizontal"></div>
+
+          <div class="justify-end">
+            <button onclick={() => guess("game", false)} class="btn btn-xl btn-success h-full w-50 rounded-xl text-4xl">Guess</button>
+          </div>
+        </div>
+
+        <div id="higherlowerDiv" class="flex grow" style="display: none">
+          <div class="justify-start my-auto">
+            <div class="flex flex-col gap-2 w-45">
+              <button class="btn btn-outline btn-primary btn-lg btn-powerup" onclick={() => usePowerup("pSkip")}>
+                <div><IcBaselineSkipNext class="inline align-text-bottom" /> Skip</div>
+                <div class="grow"></div>
+                <div class="powerup-added powerup-pSkip-added"></div>
+                <div class="powerup-count powerup-pSkip-count">0</div>
+              </button>
+              <button class="btn btn-outline btn-primary btn-lg btn-powerup" onclick={() => usePowerup("p5050")}>
+                <div><IcBaselineTheaterComedy class="inline align-text-bottom" /> 50/50</div>
+                <div class="grow"></div>
+                <div class="powerup-added powerup-p5050-added"></div>
+                <div class="powerup-count powerup-p5050-count">0</div>
+              </button>
+            </div>
+          </div>
+          <div class="divider divider-horizontal"></div>
+
+          <div class="flex-1 flex flex-row gap-3 justify-evenly">
+            <div class="text-2xl text-start my-auto" id="higherlowerLabel">Does this stream have a higher or lower view count than asd</div>
+
+            <div class="flex flex-col gap-3 my-auto w-60">
+              <button
+                onmouseenter={() => {
+                  higherAnimation.play();
+                }}
+                onmouseleave={() => {
+                  higherAnimation.reset();
+                }}
+                onclick={() => guess("higher", false)}
+                class="btn btn-xl btn-success text-3xl font-extrabold justify-between overflow-hidden"
+                id="higher"
+              >
+                <IcBaselineKeyboardDoubleArrowUp class="higher-arrow" />Higher
+              </button>
+              <button
+                onmouseenter={() => {
+                  lowerAnimation.play();
+                }}
+                onmouseleave={() => {
+                  lowerAnimation.reset();
+                }}
+                onclick={() => guess("lower", false)}
+                class="btn btn-xl btn-error text-3xl font-extrabold justify-between overflow-hidden"
+                id="lower"
+              >
+                <IcBaselineKeyboardDoubleArrowDown class="lower-arrow" />Lower
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="irlDiv" class="row align-items-center" style="display: none">
+          <div class="col">
+            <div id="map" style="height: 300px"></div>
+          </div>
+
+          <div class="col-3">
+            <p id="irlCorrection">Where is this streamer?</p>
+            <br />
+            <button onclick={() => guess("map", false)} class="btn btn-lg btn-success guess">Guess</button>
+          </div>
+        </div>
+
+        <div id="resultsDiv" class="row align-items-center">
+          <div class="col-3">
+            <button id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
+            <div id="endButtons" style="display: none">
+              <button id="playAgain" class="btn btn-lg btn-warning" onclick={() => playAgain()}>Play Again</button>
+              <button id="changeMode" class="btn btn-lg btn-secondary mt-1" onclick={() => reset()}>Change mode</button>
+              <button id="breakdown" class="btn btn-lg btn-success mt-1" onclick={() => showBreakdown()}>Breakdown</button>
+            </div>
+          </div>
+          <div class="col-6">
+            <div id="scoreProgressBar">
+              <span id="scoreProgressBarLabel">0 points</span><br />
+              <div class="progress" id="progress" role="progressbar" aria-label="score" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" id="progressBar"></div>
+              </div>
+            </div>
+            <div id="gameEndText">
+              Final Score: 0<br />
+              High Score: 0
+            </div>
+          </div>
+          <div class="col-3">
+            <div id="correction"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
