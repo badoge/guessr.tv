@@ -167,15 +167,15 @@ export async function getTwitchPFP(username, access_token) {
  * @param {any} channel
  */
 export async function loadBadges(channel) {
-  if (Object.keys(globalBadges).length == 0) {
-    globalBadges = await getGlobalBadges();
-  }
-  if (channelBadges.subscriber.length == 0) {
-    channelBadges = await getChannelBadges(channel);
-  }
-  if (customBadges.length == 0) {
-    customBadges = await getCustomBadges();
-  }
+  // if (Object.keys(globalBadges).length == 0) {
+  //   globalBadges = await getGlobalBadges();
+  // }
+  // if (channelBadges.subscriber.length == 0) {
+  //   channelBadges = await getChannelBadges(channel);
+  // }
+  // if (customBadges.length == 0) {
+  //   customBadges = await getCustomBadges();
+  // }
 } //loadBadges
 
 /**
