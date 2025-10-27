@@ -261,7 +261,6 @@
     score = 0;
     elements.leaderboardList.innerHTML = "";
     elements.leaderboardListRound.innerHTML = "";
-    elements.chatHint.style.display = "";
 
     //get a new clip set and then use helper to update view count and make sure clips still exist
     if (gameSettings.clips) {
@@ -281,8 +280,8 @@
     //reset player
     if (!player) {
       elements.twitchEmbed.innerHTML = "";
-      elements.menuContainer.style.display = "none";
-      elements.gameContainer.style.display = "";
+      document.getElementById("gameSelector").style.display = "none";
+      document.getElementById("gameContainer").style.display = "";
     }
 
     //change score label for streaks
@@ -303,7 +302,6 @@
 
     elements.correction.innerHTML = "";
     elements.gameEndText.innerHTML = "";
-    elements.mainCard.style.display = "";
     elements.breakdown.disabled = false;
 
     round = 0;
@@ -499,7 +497,6 @@
 
   async function nextRound() {
     elements.nextRound.disabled = true;
-    elements.nextRound.innerHTML = spinner;
 
     //get new clip set if game uses streaks after 5 rounds
     if (round == 5 && gameSettings.clips && gameSettings.mode !== "viewers") {
@@ -631,8 +628,8 @@
     preload="auto" 
     >
     </iframe>`;
-      elements.menuContainer.style.display = "none";
-      elements.gameContainer.style.display = "";
+      document.getElementById("gameSelector").style.display = "none";
+      document.getElementById("gameContainer").style.display = "";
       seenClips.push(guessList[round - 1].id);
     }
 
@@ -1043,10 +1040,9 @@
       </div>
     </div>
   </div>`;
-    elements.menuContainer.style.display = "none";
-    elements.gameContainer.style.display = "";
+    document.getElementById("gameSelector").style.display = "none";
+    document.getElementById("gameContainer").style.display = "";
     elements.scoreDiv.style.display = "none";
-    elements.chatHint.style.display = "none";
     elements.breakdown.disabled = true;
 
     player = null;
@@ -1292,7 +1288,6 @@
     elements.higherlowerDiv.style.display = "none";
     elements.irlDiv.style.display = "none";
     elements.resultsDiv.style.display = "none";
-    elements.mainCard.style.display = "none";
     elements.streamCover.style.display = "none";
     elements.clipCover.style.display = "none";
     elements.leaderboard.style.display = "none";
@@ -1301,7 +1296,6 @@
     elements.guessLabel.innerHTML = "View count";
     elements.leaderboardList.innerHTML = "";
     elements.gameEndText.innerHTML = "";
-    elements.chatHint.style.display = "";
 
     round = 0;
     score = 0;
@@ -1314,8 +1308,8 @@
       client = null;
     }
     elements.twitchEmbed.innerHTML = "";
-    elements.menuContainer.style.display = "";
-    elements.gameContainer.style.display = "none";
+    document.getElementById("gameSelector").style.display = "";
+    document.getElementById("gameContainer").style.display = "none";
   } //reset
 
   /**
@@ -1331,11 +1325,10 @@
   let irlid = "";
   let irlstream = "";
   async function getSettings() {
-    elements.getSettingsButton.innerHTML = spinner;
     elements.getSettingsButton.disabled = true;
 
-    gameSettings.clips = document.querySelector('input[name="videoTypeSelect"]:checked').value == "clips" ?? false;
-    gameSettings.collection = elements.clipCollection.value || "random";
+    gameSettings.clips = videoType == "clips" ?? false;
+    gameSettings.collection = elements?.clipCollection?.value || "random";
 
     if (gameSettings.mode == "game" && gameSettings.collection == "hottub" && gameSettings.clips) {
       showToast("Hmmm today I'll pick game guessr mode then pick a clip collection that has 1 category only 🤙", "info", 5000);
@@ -1351,20 +1344,20 @@
     }
 
     //update chat hint based on mode
-    switch (gameSettings.mode) {
-      case "viewers":
-        elements.chatHint.innerHTML = `<h4>Type a number in chat to guess</h4>`;
-        break;
-      case "emote":
-        elements.chatHint.innerHTML = `<h4>Type an emote's letter (a/b/c/d/e) in chat to guess</h4>`;
-        break;
-      case "game":
-        elements.chatHint.innerHTML = `<h4>Type <kbd class="notranslate">!guess [game name]</kbd> in chat to guess</h4>`;
-        break;
-      case "higherlower":
-        elements.chatHint.innerHTML = `<h4>Type <kbd class="notranslate">higher</kbd> or <kbd class="notranslate">lower</kbd> in chat to guess</h4>`;
-        break;
-    }
+    // switch (gameSettings.mode) {
+    //   case "viewers":
+    //     elements?.chatHint.innerHTML = `<h4>Type a number in chat to guess</h4>`;
+    //     break;
+    //   case "emote":
+    //     elements?.chatHint.innerHTML = `<h4>Type an emote's letter (a/b/c/d/e) in chat to guess</h4>`;
+    //     break;
+    //   case "game":
+    //     elements?.chatHint.innerHTML = `<h4>Type <kbd class="notranslate">!guess [game name]</kbd> in chat to guess</h4>`;
+    //     break;
+    //   case "higherlower":
+    //     elements?.chatHint.innerHTML = `<h4>Type <kbd class="notranslate">higher</kbd> or <kbd class="notranslate">lower</kbd> in chat to guess</h4>`;
+    //     break;
+    // }
 
     channelName = elements.channelName.value.replace(/\s+/g, "").toLowerCase();
 
@@ -1677,7 +1670,6 @@
   async function playAgain() {
     const oldContent = elements.playAgain.innerHTML;
     elements.playAgain.disabled = true;
-    elements.playAgain.innerHTML = spinner;
     await startGame();
     nextRound();
     elements.playAgain.innerHTML = oldContent;
@@ -1818,10 +1810,7 @@
   onMount(async () => {
     elements = {
       reset: document.getElementById("reset"),
-      menuContainer: document.getElementById("menuContainer"),
-      gameContainer: document.getElementById("gameContainer"),
       twitchEmbed: document.getElementById("twitchEmbed"),
-      mainCard: document.getElementById("mainCard"),
 
       sliderDiv: document.getElementById("sliderDiv"),
       guessRangeLabel: document.getElementById("guessRangeLabel"),
@@ -1891,7 +1880,6 @@
       roundTab: document.getElementById("roundTab"),
       leaderboardList: document.getElementById("leaderboardList"),
       leaderboardListRound: document.getElementById("leaderboardListRound"),
-      chatHint: document.getElementById("chatHint"),
     };
 
     localforage.config({
@@ -2172,7 +2160,7 @@
   </form>
 </dialog>
 
-<div id="gameSelector" class="w-full mt-10" style="display: none;">
+<div id="gameSelector" class="w-full mt-10">
   <div class="w-2xl text-center mx-auto">
     <div class="flex flex-row h-25 mb-2">
       <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -2245,10 +2233,10 @@
   </div>
 </div>
 
-<div class="flex flex-col h-screen gap-3 p-3 items-center w-full">
+<div id="gameContainer" class="flex flex-col h-screen gap-3 p-3 items-center w-full" style="display: none">
   <div class="flex flex-row flex-1 gap-3 max-w-[80vw] w-full">
-    <div id="twitchPlayer" class="grow rounded-xl bg-base-300">
-      <div id="twitchEmbed"></div>
+    <div class="relative grow rounded-xl bg-base-300">
+      <div class="h-full" id="twitchEmbed"></div>
       <div id="streamCover" style="display: none"></div>
       <div id="clipCover" style="display: none"></div>
     </div>
@@ -2268,7 +2256,7 @@
         Round results
       </label>
       <div class="tab-content rounded-b-xl bg-base-300 border-base-300 p-6">
-        <div class="mt-1" id="leaderboardList"></div>
+        <div class="mt-1" id="leaderboardListRound"></div>
         <div class="chat-hint">Type a number in chat to guess</div>
       </div>
     </div>
@@ -2446,7 +2434,7 @@
           </div>
         </div>
 
-        <div id="resultsDiv" class="row align-items-center">
+        <div id="resultsDiv" class="flex grow" style="display: none">
           <div class="col-3">
             <button id="nextRound" class="btn btn-lg btn-info" style="display: none">Next Round</button>
             <div id="endButtons" style="display: none">
@@ -2497,5 +2485,29 @@
     position: relative;
     transform: translateY(40%);
     transition: none;
+  }
+
+  #streamCover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 9rem;
+    width: 30rem;
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    border-top-left-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
+  }
+
+  #clipCover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 6rem;
+    width: 30rem;
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    border-top-left-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
   }
 </style>
