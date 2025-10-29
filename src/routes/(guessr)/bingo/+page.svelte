@@ -3,7 +3,7 @@
   import localforage from "localforage";
   import { ToggleGroup } from "bits-ui";
 
-  import { addBadges, changeSiteLinkTarget, getCustomBadges, sendUsername, showConfetti, shuffleArray, shuffleArraySeed } from "$lib/functions";
+  import { addBadges, getCustomBadges, sendUsername, showConfetti, shuffleArray, shuffleArraySeed } from "$lib/functions";
   import { createDraggable } from "animejs";
   import IcBaselineLeaderboard from "~icons/ic/baseline-leaderboard";
   import IcBaselineClose from "~icons/ic/baseline-close";
@@ -421,7 +421,6 @@
     input.value = random;
     loadItems();
     userInteracted = true;
-    changeSiteLinkTarget("_blank");
   } //randomize
 
   function randomizeAll() {
@@ -447,7 +446,6 @@
     }
     loadItems();
     userInteracted = true;
-    changeSiteLinkTarget("_blank");
   } //randomizeAll
 
   function clearAll() {
@@ -459,7 +457,6 @@
       bingoCells[index].classList.remove("duplicate");
     }
     userInteracted = false;
-    changeSiteLinkTarget("_self");
   } //clearAll
 
   async function start() {
@@ -482,7 +479,6 @@
     elements.board.style.display = "";
     elements.mainCard.style.display = "";
     userInteracted = true;
-    changeSiteLinkTarget("_blank");
   } //start
 
   function loadItems() {

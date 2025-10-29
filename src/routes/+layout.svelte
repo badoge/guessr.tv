@@ -5,6 +5,7 @@
    * @param {any} timeout
    */
   export function showToast(msg, type, timeout) {
+    type = `alert-${type}`;
     let id = Date.now().toString();
     let toast = `
     <div id="${id}" class="alert ${type} text-lg font-bold">
@@ -33,8 +34,9 @@
 
 <style>
   #toastContainer {
-    margin-top: 55px;
-    z-index: 1056;
+    margin-top: 10px;
+    z-index: 2000;
     font-weight: bold;
+    max-width: 30vw;
   }
 </style>

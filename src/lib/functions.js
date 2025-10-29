@@ -215,18 +215,6 @@ export async function checkToken(access_token) {
 } //checkToken
 
 /**
- * @param {string} target
- */
-export function changeSiteLinkTarget(target) {
-  let links = document.getElementsByClassName("site-link");
-  for (let index = 0; index < links.length; index++) {
-    links[index].setAttribute("target", target);
-  }
-} //changeSiteLinkTarget
-// changeSiteLinkTarget("_self");
-// changeSiteLinkTarget("_blank");
-
-/**
  * @param {string | any[]} array
  */
 export function shuffleArray(array) {
