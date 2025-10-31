@@ -38,6 +38,7 @@
   import MdiTwitch from "~icons/mdi/twitch";
   import ViewersSVG from "$lib/ViewersSVG.svelte";
   import TwitchEmbed from "$lib/TwitchEmbed.svelte";
+  import ScoreProgress from "$lib/ScoreProgress.svelte";
 
   let elements;
 
@@ -1136,11 +1137,7 @@
     }
   } //showCorrection
 
-  function reset(logoClicked = false) {
-    if (logoClicked && gameState == "active") {
-      resetGameModal.showModal();
-      return;
-    }
+  function reset() {
     stopTimer();
     guessList = [];
 
@@ -1656,7 +1653,6 @@
 
       playAgain: document.getElementById("playAgain"),
       breakdown: document.getElementById("breakdown"),
-      scoreProgressBarLabel: document.getElementById("scoreProgressBarLabel"),
       progress: document.getElementById("progress"),
       progressBar: document.getElementById("progressBar"),
 
@@ -2262,43 +2258,45 @@
             {/if}
           {:else if gameState == "roundEnded"}
             <div class="flex grow">
-              <div class="col-3">
-                <button class="btn btn-lg btn-info" onclick={nextRoundOnClick}>Next Round</button>
-              </div>
-              <div class="col-6">
-                <div id="scoreProgressBar">
-                  <span id="scoreProgressBarLabel">0 points</span><br />
-                  <div class="progress" id="progress" role="progressbar" aria-label="score" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                    <div class="progress-bar" id="progressBar"></div>
-                  </div>
+              {#if gameMode == "viewers"}
+                <div class="content-evenly">
+                  <div><strong>Round</strong> <br />{round}/5</div>
+                  <div><strong>Score</strong> <br />{score.toLocaleString()}</div>
                 </div>
-              </div>
-              <div class="col-3">
-                <div id="correction"></div>
-              </div>
+              {:else}
+                <div class="content-evenly">
+                  <div><strong>Round</strong> <br />{round}</div>
+                  <div><strong>Score</strong> <br />{score.toLocaleString()}</div>
+                </div>
+              {/if}
+              <div class="divider divider-horizontal"></div>
+
+              <button onclick={nextRoundOnClick} class="btn btn-xl btn-info h-full w-50 rounded-xl text-4xl">Next Round</button>
+              <div class="divider divider-horizontal"></div>
+
+              <ScoreProgress gameMode />
+
+              <div class="divider divider-horizontal"></div>
+
+              <div id="correction">asd</div>
             </div>
           {:else if gameState == "gameEnded"}
             <div class="flex grow">
-              <div class="col-3">
-                <button id="playAgain" class="btn btn-lg btn-warning" onclick={() => playAgain()}>Play Again</button>
-                <button id="changeMode" class="btn btn-lg btn-secondary mt-1" onclick={() => reset()}>Change mode</button>
-                <button id="breakdown" class="btn btn-lg btn-success mt-1" onclick={() => showBreakdown()}>Breakdown</button>
+              <div class="grid gap-2 w-65">
+                <button id="playAgain" onclick={playAgain} class="btn btn-lg btn-warning h-full rounded-xl text-2xl">Play Again</button>
+                <button id="changeMode" onclick={reset} class="btn btn-lg btn-secondary h-full rounded-xl text-2xl">Change mode</button>
+                <button id="breakdown" onclick={showBreakdown} class="btn btn-lg btn-success h-full rounded-xl text-2xl col-span-2">Breakdown</button>
               </div>
-              <div class="col-6">
-                <div id="scoreProgressBar">
-                  <span id="scoreProgressBarLabel">0 points</span><br />
-                  <div class="progress" id="progress" role="progressbar" aria-label="score" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                    <div class="progress-bar" id="progressBar"></div>
-                  </div>
-                </div>
-                <div id="gameEndText">
-                  Final Score: 0<br />
-                  High Score: 0
-                </div>
+              <div class="divider divider-horizontal"></div>
+              <ScoreProgress gameMode />
+              <div class="divider divider-horizontal"></div>
+              <div id="gameEndText">
+                Final Score: 0<br />
+                High Score: 0
               </div>
-              <div class="col-3">
-                <div id="correction"></div>
-              </div>
+              <div class="divider divider-horizontal"></div>
+
+              <div id="correction">asd</div>
             </div>
           {/if}
         </div>
