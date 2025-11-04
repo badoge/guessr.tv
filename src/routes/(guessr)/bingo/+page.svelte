@@ -1352,7 +1352,7 @@
       </button>
       <ul class="dropdown-menu dropdown-menu-end">
         <li>
-          <a class="dropdown-item" href="#" onclick={logout}><IcBaselineLogout />Logout</a>
+          <!-- <a class="dropdown-item" href="#" onclick={logout}><IcBaselineLogout />Logout</a> -->
         </li>
       </ul>
       <input readonly value="asd" id="bingoLink" type="text" class="form-control" aria-label="Bingo share link" />
