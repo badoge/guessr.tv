@@ -76,7 +76,7 @@
         <li>
           <a href="/" class="text-center justify-center block w-14 p-0 hover:bg-base-100">
             <img class="w-12 mx-auto" src="/guessr.png" alt="guessr" />
-            <span>Guessr.tv beta - nothing working yet - do not use or you will be banned</span>
+            <span>Guessr.tv beta - very broken - do not use or you will be banned</span>
           </a>
         </li>
       </ul>

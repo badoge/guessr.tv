@@ -532,7 +532,7 @@
                 <h5 class="text-xl">Selected languages:</h5>
                 <div class="max-h-60 overflow-auto w-full">
                   {#if selectedLanguages.size}
-                    <form class="space-y-1">
+                    <form class="space-y-2">
                       {#each Array.from(selectedLanguages) as [key, value] (key)}
                         <label class="flex items-center space-x-1">
                           <input checked class="checkbox language-filter" type="checkbox" value={key} onchange={updateSelectedLanguages} />
@@ -558,7 +558,7 @@
 
                 <div class="h-60 overflow-auto w-full">
                   {#if filteredLanguages.size}
-                    <form class="space-y-1">
+                    <form class="space-y-2">
                       {#each Array.from(filteredLanguages) as [key, value] (key)}
                         {#if !selectedLanguages.get(key)}
                           <label class="flex items-center space-x-1">
@@ -596,7 +596,7 @@
                 <h5 class="text-xl">Selected tags:</h5>
                 <div class="max-h-60 overflow-auto w-full">
                   {#if selectedTags.size}
-                    <form class="space-y-1">
+                    <form class="space-y-2">
                       {#each Array.from(selectedTags) as [key, value] (key)}
                         <label class="flex items-center space-x-1">
                           <input checked class="checkbox tag-filter" type="checkbox" value={key} onchange={updateSelectedTags} />
@@ -618,7 +618,7 @@
 
                 <div class="h-60 overflow-auto w-full">
                   {#if filteredTags.size}
-                    <form class="space-y-1 mb-3">
+                    <form class="space-y-2 mb-3">
                       {#each Array.from(filteredTags) as [key, value] (key)}
                         {#if !selectedTags.get(key)}
                           <label class="flex items-center space-x-1">
@@ -654,7 +654,7 @@
                 <h5 class="text-xl">Selected categories:</h5>
                 <div class="max-h-60 overflow-auto w-full">
                   {#if selectedCategories.size}
-                    <form class="space-y-1">
+                    <form class="space-y-2">
                       {#each Array.from(selectedCategories) as [key, value] (key)}
                         <label class="flex items-center space-x-1">
                           <input checked class="checkbox category-filter" type="checkbox" value={key} onchange={updateSelectedCategories} />
@@ -676,7 +676,7 @@
 
                 <div class="h-60 overflow-auto w-full">
                   {#if filteredCategories.size}
-                    <form class="space-y-1 mb-3">
+                    <form class="space-y-2 mb-3">
                       {#each Array.from(filteredCategories) as [key, value] (key)}
                         {#if !selectedCategories.get(key)}
                           <label class="flex items-center space-x-1">

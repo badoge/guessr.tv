@@ -105,7 +105,7 @@
   /**
    * @type {{ name: any; }[]}
    */
-  let gameList = [];
+  let gameList = $state([]);
   /**
    * @type {string | any[]}
    */
@@ -123,7 +123,7 @@
    */
   let seenClips = [];
   /**
-   * @type {{ answer: any; correct: any; points: number; percent: number; diff: number; color: string | undefined; }[]}
+   * @type {{ answer: any; correct: any; points: number; diff: number; color: string | undefined; }[]}
    */
   let roundResults = []; // collecting stuff for final screen
   /**
@@ -131,10 +131,9 @@
    */
   let usedPowerups = []; // list of powerups used in current round
   let round = $state(0);
-  let score = $state(0);
-  /**
-   * @type {{ setChannel: (arg0: any) => void; } | null}
-   */
+  let totalScore = $state(0);
+  let roundPoints = $state(0);
+
   let max = 0;
   /**
    * @type {number | null}
@@ -153,12 +152,16 @@
 
   let skipSexual = true;
   let unloadWarning = false;
-  let highscores = {
-    viewersHS: 0,
-    gameStreak: 0,
-    emoteStreak: 0,
-    viewersHigherlowerStreak: 0,
-  };
+
+  /**
+   * @type {any}
+   */
+  let highScores = $state({
+    viewers: 0,
+    game: 0,
+    emote: 0,
+    higherlower: 0,
+  });
 
   /**
    * @type {{ disconnect: () => void; on: (arg0: string, arg1: { (target: any, context: any, msg: any, self: any): Promise<void>; (address: any, port: any): void; (reason: any): void; (channel: any, msgid: any, message: any): void; }) => void; connect: () => Promise<any>; } | null}
@@ -215,12 +218,7 @@
 
   async function loadGameList() {
     let response = await fetch(`/games.json`);
-    gameList = await response.json();
-    elements.gameList.innerHTML = "";
-    shuffleArray(gameList);
-    for (let index = 0; index < gameList.length; index++) {
-      elements.gameList.innerHTML += `<option value="${gameList[index].name}"></option>`;
-    }
+    gameList = shuffleArray(await response.json());
   } //loadGameList
 
   async function startGame() {
@@ -228,7 +226,7 @@
     guessList = [];
     chatters = new Map();
     roundResults = [];
-    score = 0;
+    totalScore = 0;
 
     //get a new clip set and then use helper to update view count and make sure clips still exist
     if (videoType == "clip") {
@@ -491,12 +489,8 @@
     if (gameMode == "game") {
       //add the answer to the options list
       if (!gameList.some((e) => e.name === guessList[round - 1].game_name)) {
-        elements.gameList.innerHTML = "";
         gameList.push({ name: guessList[round - 1].game_name });
         shuffleArray(gameList);
-        for (let index = 0; index < gameList.length; index++) {
-          elements.gameList.innerHTML += `<option value="${gameList[index].name}"></option>`;
-        }
       }
     }
 
@@ -532,7 +526,7 @@
       //totalTab.show();
     }
 
-    elements.correction.innerHTML = "";
+    //elements.correction.innerHTML = "";
 
     startTimer();
   } //nextRound
@@ -704,62 +698,49 @@
     roundResult.powerups = usedPowerups;
     roundResults.push(roundResult);
 
-    let { points, percent, diff, color } = roundResult;
-
-    score += points;
+    let { points, diff, color } = roundResult;
+    totalScore += points;
+    roundPoints = points;
 
     //show progress bar and correction for viewers mode - streams or clips
     if (gameMode == "viewers") {
-      animateScore(points, percent);
-      showCorrection(guessList[round - 1].viewers, answer, diff, points, color);
+      //showCorrection(guessList[round - 1].viewers, answer, diff, points, color);
     }
 
     //show progress bar and correction for gamename game - text controls - streams or clips
     if (gameMode == "game") {
-      percent = (score / highscores.gameStreak) * 100;
-
-      animateScore(score, percent, highscores.gameStreak);
-      showCorrection(guessList[round - 1].game_name, answer == -1 ? answer : document.getElementById("gameInput").value, null, points, color);
-
-      if (score > highscores.gameStreak) {
-        highscores.gameStreak = score;
-        localStorage.setItem("gameStreak", highscores.gameStreak);
+      //showCorrection(guessList[round - 1].game_name, answer == -1 ? answer : document.getElementById("gameInput").value, null, points, color);
+      if (totalScore > highScores.game) {
+        highScores.game = totalScore;
+        localStorage.setItem("gameStreak", totalScore.toString());
       }
     }
 
     //show progress bar and correction for emote mode - multi choice controls - streams or clips
     if (gameMode == "emote") {
       let emote = choice === null ? null : elements[`multiChoice${choice}`].dataset.emote;
-
-      percent = (score / highscores.emoteStreak) * 100;
-
-      animateScore(score, percent, highscores.emoteStreak);
-      showCorrection(guessList[round - 1].emote, answer == -1 ? answer : emote, null, points, null);
-
-      if (score > highscores.emoteStreak) {
-        highscores.emoteStreak = score;
-        localStorage.setItem("emoteStreak", highscores.emoteStreak);
+      //showCorrection(guessList[round - 1].emote, answer == -1 ? answer : emote, null, points, null);
+      if (totalScore > highScores.emote) {
+        highScores.emote = totalScore;
+        localStorage.setItem("emoteStreak", totalScore.toString());
       }
     }
 
     //show progress bar and correction for higherlower mode - streams or clips
     if (gameMode == "higherlower") {
-      let streak = highscores.viewersHigherlowerStreak;
-      percent = (score / streak) * 100;
-
-      animateScore(score, percent, streak);
-      showCorrection(guessList[round - 1].viewers, answer, null, points, null);
+      //showCorrection(guessList[round - 1].viewers, answer, null, points, null);
+      console.log("asd");
+      console.log(guessList[round - 1].viewers);
 
       higherlowerPreviousNumber = guessList[round - 1].viewers; //set now for next round
-
-      if (score > streak) {
-        highscores.viewersHigherlowerStreak = score;
-        localStorage.setItem("viewersHigherlowerStreak", score);
+      if (totalScore > highScores.higherlower) {
+        highScores.higherlower = totalScore;
+        localStorage.setItem("viewersHigherlowerStreak", totalScore.toString());
       }
     }
 
     // remember the correction content - will reuse it on the final screen
-    roundResult.correctionHTML = elements.correction.innerHTML;
+    //roundResult.correctionHTML = elements.correction.innerHTML;
 
     //update streamer's answer in the chatters map and then update all viewers' scores when updating the leaderboard
     if (chatEnabled) {
@@ -788,13 +769,13 @@
 
     //end game if game on 5th round and mode is viewers
     if (round == 5 && gameMode == "viewers") {
-      elements.gameEndText.innerHTML = `Final Score: ${score.toLocaleString()}`;
-      if (score > highscores.viewersHS) {
+      elements.gameEndText.innerHTML = `Final Score: ${totalScore.toLocaleString()}`;
+      if (totalScore > highScores.viewers) {
         elements.gameEndText.innerHTML += `<br>New High Score!`;
-        highscores.viewersHS = score;
-        localStorage.setItem("viewersHS", highscores.viewersHS);
+        highScores.viewers = totalScore;
+        localStorage.setItem("viewersHS", highScores.viewers.toString());
       } else {
-        elements.gameEndText.innerHTML += `<br>High Score: ${highscores.viewersHS.toLocaleString()}`;
+        elements.gameEndText.innerHTML += `<br>High Score: ${highScores.viewers.toLocaleString()}`;
       }
       elements.gameEndText.style.display = "";
       gameState = "gameEnded";
@@ -914,13 +895,12 @@
   } //showBreakdown
 
   /**
-   * @param {number} answer
+   * @param {number|string} answer
    */
   function calculateScore(answer, skipped = false) {
     const result = {};
 
     let points = 0;
-    let percent = 0;
     let diff = 0;
     let color;
 
@@ -946,7 +926,6 @@
       let decay = (guessList[round - 1].viewers / roundMax) * (5000 - 100) + 100;
       diff = Math.abs(answer - guessList[round - 1].viewers);
       points = Math.round(5000 * Math.exp(-diff / decay));
-      percent = Math.round((points / 5000) * 100);
       result.answer = answer;
       result.correct = guessList[round - 1].viewers;
     }
@@ -954,12 +933,12 @@
     //check if answer is corrent for higherlower mode - streams or clips
     if (gameMode == "higherlower") {
       let correctAnswer = answer; // will match if prev number is equal to current number
-      if (guessList[round - 1].viewers > higherlowerPreviousNumber) {
+      if (guessList[round - 1].viewers > (higherlowerPreviousNumber || 0)) {
         correctAnswer = "higher";
-      }
-      if (guessList[round - 1].viewers < higherlowerPreviousNumber) {
+      } else {
         correctAnswer = "lower";
       }
+
       if (answer === correctAnswer) {
         points = 1;
       } else {
@@ -1005,7 +984,6 @@
           points = 0;
           break;
       }
-      percent = 0;
       result.answer = gameMode == "viewers" ? 0 : "⏱️ timed out";
     }
 
@@ -1019,57 +997,11 @@
     }
 
     result.points = points;
-    result.percent = percent;
     result.diff = diff;
     result.color = color;
 
     return result;
   } //calculateScore
-
-  /**
-   * @param {number} points
-   * @param {number} percent
-   */
-  function animateScore(points, percent, streak = null) {
-    elements.progressBar.style.width = 0;
-    let score = {
-      points: 0,
-      percent: 0,
-    };
-
-    if (streak === null) {
-      animate(score, {
-        points: points,
-        percent: percent,
-        modifier: utils.round(0),
-        duration: 1000,
-        ease: "inOutExpo",
-        onUpdate: function () {
-          elements.scoreProgressBarLabel.innerHTML = `${score.points.toLocaleString()} ${points == 1 ? "Point" : "Points"}`;
-          elements.progressBar.style.width = `${score.percent}%`;
-        },
-      });
-    } else {
-      animate(score, {
-        points: points,
-        percent: percent,
-        modifier: utils.round(0),
-        duration: 1000,
-        ease: "inOutExpo",
-        onUpdate: function () {
-          elements.scoreProgressBarLabel.innerHTML =
-            points > streak
-              ? `You beat your high score! Your new highscore is ${score.points.toLocaleString()}`
-              : `${streak - score.points + 1} more ${streak - score.points + 1 == 1 ? "round" : "rounds"} till you beat your highscore`;
-          elements.progressBar.style.width = `${points > streak ? 100 : score.percent}%`;
-        },
-      });
-    }
-    if (points == 0) {
-      elements.scoreProgressBarLabel.innerHTML += " 💀";
-    }
-    elements.progress.ariaValueNow = percent;
-  } //animateScore
 
   /**
    * temp lidl function that just groups the correction stuff from guess() :)
@@ -1130,7 +1062,7 @@
           : `This ${videoType} has a <i>${answer}</i> view count than the previous ${videoType}`
         : answer == -1
           ? "You did not select an answer"
-          : `The previous ${videoType} had ${higherlowerPreviousNumber.toLocaleString()} ${
+          : `The previous ${videoType} had ${higherlowerPreviousNumber?.toLocaleString()} ${
               higherlowerPreviousNumber == 1 ? `${videoType == "clip" ? "view" : "viewer"}` : `${videoType == "clip" ? "views" : "viewers"}`
             }`
     }`;
@@ -1147,7 +1079,7 @@
     elements.leaderboardList.innerHTML = "";
 
     round = 0;
-    score = 0;
+    totalScore = 0;
 
     if (client) {
       client.disconnect();
@@ -1164,7 +1096,6 @@
    */
   async function showSettings(mode) {
     gameMode = mode;
-
     gameSettingsModal.showModal();
   } //showSettings
 
@@ -1174,38 +1105,19 @@
 
     if (gameMode == "game" && clipCollection == "hottub" && videoType == "clip") {
       showToast("Hmmm today I'll pick game guessr mode then pick a clip collection that has 1 category only 🤙", "info", 5000);
-
       reset();
       return;
     }
     if (gameMode == "emote" && clipCollection == "forsen" && videoType == "clip") {
       showToast("Hmmm today I'll pick emote guessr mode then pick a clip collection that has 1 channel only 🤙", "info", 5000);
-
       reset();
       return;
     }
-
-    //update chat hint based on mode
-    // switch (gameMode) {
-    //   case "viewers":
-    //     elements?.chatHint.innerHTML = `<h4>Type a number in chat to guess</h4>`;
-    //     break;
-    //   case "emote":
-    //     elements?.chatHint.innerHTML = `<h4>Type an emote's letter (a/b/c/d/e) in chat to guess</h4>`;
-    //     break;
-    //   case "game":
-    //     elements?.chatHint.innerHTML = `<h4>Type <kbd class="notranslate">!guess [game name]</kbd> in chat to guess</h4>`;
-    //     break;
-    //   case "higherlower":
-    //     elements?.chatHint.innerHTML = `<h4>Type <kbd class="notranslate">higher</kbd> or <kbd class="notranslate">lower</kbd> in chat to guess</h4>`;
-    //     break;
-    // }
 
     channelName = channelName.replace(/\s+/g, "").toLowerCase();
 
     if (channelName.includes("://") || channelName.includes(".")) {
       showToast("Invalid username. Input your username only not the link", "warning", 3000);
-
       reset();
       return;
     }
@@ -1215,7 +1127,6 @@
       document.getElementById("channelId").value = "";
       if (!irlid) {
         showToast("no irl channel id provided", "error", 3000);
-
         reset();
         return;
       }
@@ -1224,7 +1135,6 @@
       let stream = await response.json();
       if (!stream?.data[0] || !stream?.data[0]?.user_login) {
         showToast("stream offline/not found", "warning", 3000);
-
         reset();
         return;
       }
@@ -1275,7 +1185,7 @@
         return;
       }
 
-      let results = { points: "", percent: "", diff: "", color: "" };
+      let results = { points: "", diff: "", color: "" };
 
       let input = msg.split(" ").filter(Boolean);
 
@@ -1507,8 +1417,8 @@
    * @param {string} scoreName
    */
   function resetHighScore(scoreName) {
-    localStorage.setItem(scoreName, 0);
-    highscores[scoreName] = 0;
+    localStorage.setItem(scoreName, "0");
+    highScores[scoreName] = 0;
     elements[scoreName].innerHTML = 0;
   } //resetHighScore
 
@@ -1646,8 +1556,6 @@
       multiChoice4: document.getElementById("multiChoice4"),
       multiChoice5: document.getElementById("multiChoice5"),
 
-      gameList: document.getElementById("gameList"),
-
       higher: document.getElementById("higher"),
       lower: document.getElementById("lower"),
 
@@ -1699,16 +1607,16 @@
     //elements.skipSexual.checked = skipSexual;
     unloadWarning = (localStorage.getItem("unloadWarning") || "false") === "true";
     //elements.unloadWarning.checked = unloadWarning;
-    highscores.viewersHS = parseInt(localStorage.getItem("viewersHS"), 10) || 0;
-    highscores.gameStreak = parseInt(localStorage.getItem("gameStreak"), 10) || 0;
-    highscores.emoteStreak = parseInt(localStorage.getItem("emoteStreak"), 10) || 0;
-    highscores.viewersHigherlowerStreak = parseInt(localStorage.getItem("viewersHigherlowerStreak"), 10) || 0;
+    highScores.viewers = parseInt(localStorage.getItem("viewersHS"), 10) || 0;
+    highScores.game = parseInt(localStorage.getItem("gameStreak"), 10) || 0;
+    highScores.emote = parseInt(localStorage.getItem("emoteStreak"), 10) || 0;
+    highScores.higherlower = parseInt(localStorage.getItem("viewersHigherlowerStreak"), 10) || 0;
     channelName = localStorage.getItem("channelName") || "";
 
-    // elements.viewersHS.innerHTML = highscores.viewersHS.toLocaleString();
-    // elements.gameStreak.innerHTML = highscores.gameStreak.toLocaleString();
-    // elements.emoteStreak.innerHTML = highscores.emoteStreak.toLocaleString();
-    // elements.viewersHigherlowerStreak.innerHTML = highscores.viewersHigherlowerStreak.toLocaleString();
+    // elements.viewersHS.innerHTML = highScores.viewers.toLocaleString();
+    // elements.gameStreak.innerHTML = highScores.game.toLocaleString();
+    // elements.emoteStreak.innerHTML = highScores.emote.toLocaleString();
+    // elements.viewersHigherlowerStreak.innerHTML = highScores.higherlower.toLocaleString();
 
     // elements.skipSexual.onchange = function () {
     //   skipSexual = this.checked;
@@ -1757,7 +1665,7 @@
       autoplay: false,
       loop: true,
     });
-  }
+  } //higherlowerAnimation
 
   /**
    * @type {import("animejs").JSAnimation}
@@ -1949,7 +1857,11 @@
       <div class="flex flex-row h-25 mb-2">
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <!-- svelte-ignore a11y_interactive_supports_focus -->
-        <div class="card border border-neutral cursor-pointer bg-base-300 w-1/2 h-25 hover:h-35 hover:z-10 overflow-clip mx-1" role="button" onclick={() => showSettings("viewers")}>
+        <div
+          class="card border border-neutral-700 cursor-pointer bg-base-300 w-1/2 h-25 hover:h-35 hover:z-10 hover:border-neutral-500 overflow-clip mx-1"
+          role="button"
+          onclick={() => showSettings("viewers")}
+        >
           <div class="card-body">
             <span class="text-3xl inline m-1"><ViewersSVG />Viewers</span>
             <div class="card-subtitle">
@@ -1962,7 +1874,11 @@
 
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <!-- svelte-ignore a11y_interactive_supports_focus -->
-        <div class="card border border-neutral cursor-pointer bg-base-300 w-1/2 h-25 hover:h-35 hover:z-10 overflow-clip mx-1" role="button" onclick={() => showSettings("higherlower")}>
+        <div
+          class="card border border-neutral-700 cursor-pointer bg-base-300 w-1/2 h-25 hover:h-41 hover:z-10 hover:border-neutral-500 overflow-clip mx-1"
+          role="button"
+          onclick={() => showSettings("higherlower")}
+        >
           <div class="card-body">
             <span class="text-3xl m-1"><IcBaselineImportExport class="inline align-text-bottom" />Higher Lower</span>
             <div class="card-subtitle">
@@ -1977,7 +1893,11 @@
       <div class="flex flex-row h-25 mb-2">
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <!-- svelte-ignore a11y_interactive_supports_focus -->
-        <div class="card border border-neutral cursor-pointer bg-base-300 w-1/2 h-25 hover:h-35 hover:z-10 overflow-clip mx-1" role="button" onclick={() => showSettings("emote")}>
+        <div
+          class="card border border-neutral-700 cursor-pointer bg-base-300 w-1/2 h-25 hover:h-35 hover:z-10 hover:border-neutral-500 overflow-clip mx-1"
+          role="button"
+          onclick={() => showSettings("emote")}
+        >
           <div class="card-body">
             <span class="text-3xl m-1"><IcBaselineEmojiEmotions class="inline align-text-bottom" />Emote</span>
             <div class="card-subtitle">
@@ -1990,7 +1910,11 @@
 
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <!-- svelte-ignore a11y_interactive_supports_focus -->
-        <div class="card border border-neutral cursor-pointer bg-base-300 w-1/2 h-25 hover:h-35 hover:z-10 overflow-clip mx-1" role="button" onclick={() => showSettings("game")}>
+        <div
+          class="card border border-neutral-700 cursor-pointer bg-base-300 w-1/2 h-25 hover:h-35 hover:z-10 hover:border-neutral-500 overflow-clip mx-1"
+          role="button"
+          onclick={() => showSettings("game")}
+        >
           <div class="card-body">
             <span class="text-3xl m-1"><IcBaselineSportsEsports class="inline align-text-bottom" />Game</span>
             <div class="card-subtitle">
@@ -2032,23 +1956,39 @@
       </div>
 
       {#if chatEnabled}
-        <div class="tabs tabs-lift w-70">
-          <label class="tab rounded-t-xl [--tab-bg:theme(colors.base-300)]">
-            <input type="radio" name="leaderboardTabs" checked />
-            Total standings
-          </label>
-          <div class="tab-content rounded-b-xl bg-base-300 border-base-300 p-6">
-            <div class="mt-1" id="leaderboardList"></div>
-            <div class="chat-hint">Type a number in chat to guess</div>
+        <div class="flex flex-col w-70">
+          <div class="card bg-base-300 mb-2">
+            <div class="card-body p-2">
+              <p class="font-bold text-center text-pretty">
+                <MdiTwitch class="inline text-lg" />
+                {#if gameMode == "viewers"}
+                  Type a number in chat to guess
+                {:else if gameMode == "emote"}
+                  Type an emote's letter <kbd class="notranslate kbd">a/b/c/d/e</kbd> in chat to guess
+                {:else if gameMode == "game"}
+                  Type <kbd class="notranslate kbd">!guess [game name]</kbd> in chat to guess
+                {:else if gameMode == "higherlower"}
+                  Type <kbd class="notranslate kbd">higher</kbd> or <kbd class="notranslate kbd">lower</kbd> in chat to guess
+                {/if}
+              </p>
+            </div>
           </div>
+          <div class="tabs tabs-lift grow">
+            <label class="tab rounded-t-xl [--tab-bg:theme(colors.base-300)]">
+              <input type="radio" name="leaderboardTabs" checked />
+              Total standings
+            </label>
+            <div class="tab-content rounded-b-xl bg-base-300 border-base-300 p-6">
+              <div class="mt-1" id="leaderboardList"></div>
+            </div>
 
-          <label class="tab rounded-t-xl [--tab-bg:theme(colors.base-300)]">
-            <input type="radio" name="leaderboardTabs" />
-            Round results
-          </label>
-          <div class="tab-content rounded-b-xl bg-base-300 border-base-300 p-6">
-            <div class="mt-1" id="leaderboardListRound"></div>
-            <div class="chat-hint">Type a number in chat to guess</div>
+            <label class="tab rounded-t-xl [--tab-bg:theme(colors.base-300)]">
+              <input type="radio" name="leaderboardTabs" />
+              Round results
+            </label>
+            <div class="tab-content rounded-b-xl bg-base-300 border-base-300 p-6">
+              <div class="mt-1" id="leaderboardListRound"></div>
+            </div>
           </div>
         </div>
       {/if}
@@ -2061,12 +2001,12 @@
             {#if gameMode == "viewers"}
               <div class="content-evenly">
                 <div><strong>Round</strong> <br />{round}/5</div>
-                <div><strong>Score</strong> <br />{score.toLocaleString()}</div>
+                <div><strong>Score</strong> <br />{totalScore.toLocaleString()}</div>
               </div>
             {:else}
               <div class="content-evenly">
                 <div><strong>Round</strong> <br />{round}</div>
-                <div><strong>Score</strong> <br />{score.toLocaleString()}</div>
+                <div><strong>Score</strong> <br />{totalScore.toLocaleString()}</div>
               </div>
             {/if}
 
@@ -2191,7 +2131,11 @@
                   <div class="text-2xl text-center">What is this game?</div>
                   <div class="flex my-auto">
                     <input type="text" class="input input-xl grow" placeholder="Start typing for suggestions" list="gameList" id="gameInput" />
-                    <datalist id="gameList"></datalist>
+                    <datalist id="gameList">
+                      {#each gameList as game}
+                        <option value={game.name}></option>
+                      {/each}
+                    </datalist>
                   </div>
                 </div>
 
@@ -2261,12 +2205,12 @@
               {#if gameMode == "viewers"}
                 <div class="content-evenly">
                   <div><strong>Round</strong> <br />{round}/5</div>
-                  <div><strong>Score</strong> <br />{score.toLocaleString()}</div>
+                  <div><strong>Score</strong> <br />{totalScore.toLocaleString()}</div>
                 </div>
               {:else}
                 <div class="content-evenly">
                   <div><strong>Round</strong> <br />{round}</div>
-                  <div><strong>Score</strong> <br />{score.toLocaleString()}</div>
+                  <div><strong>Score</strong> <br />{totalScore.toLocaleString()}</div>
                 </div>
               {/if}
               <div class="divider divider-horizontal"></div>
@@ -2274,7 +2218,7 @@
               <button onclick={nextRoundOnClick} class="btn btn-xl btn-info h-full w-50 rounded-xl text-4xl">Next Round</button>
               <div class="divider divider-horizontal"></div>
 
-              <ScoreProgress gameMode />
+              <ScoreProgress {gameMode} {roundPoints} {totalScore} {highScores} />
 
               <div class="divider divider-horizontal"></div>
 
@@ -2288,7 +2232,7 @@
                 <button id="breakdown" onclick={showBreakdown} class="btn btn-lg btn-success h-full rounded-xl text-2xl col-span-2">Breakdown</button>
               </div>
               <div class="divider divider-horizontal"></div>
-              <ScoreProgress gameMode />
+              <ScoreProgress {gameMode} {roundPoints} {totalScore} {highScores} />
               <div class="divider divider-horizontal"></div>
               <div id="gameEndText">
                 Final Score: 0<br />
