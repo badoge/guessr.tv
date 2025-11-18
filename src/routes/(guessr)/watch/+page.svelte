@@ -102,7 +102,7 @@
     //   localforage.setItem("seenChannels", JSON.stringify([]));
     //   elements.seenChannels.innerHTML = 0;
     //   seenChannels = [];
-    //   showToast("Seen channels reset", "success", 2000);
+    //   showToast("Seen channels reset", "alert-success", 2000);
     // };
 
     await getMainList();
@@ -132,8 +132,7 @@
       mainList = new Map(result);
       filteredList = new Map(result);
     } catch (error) {
-      showToast("Could not load channel list :(", "error", 5000);
-
+      showToast("Could not load channel list :(", "alert-error", 5000);
       console.log(error);
     }
   } //getMainList
@@ -350,11 +349,11 @@
     }
 
     if (filteredList.size == 0 || !channelID) {
-      showToast("No more channels left on the list, change your filters or refresh to get a new list", "error", 5000);
+      showToast("No more channels left on the list, change your filters or refresh to get a new list", "alert-error", 5000);
       return;
     }
     if (retryLimit > 5) {
-      showToast("Too many retries, something might be wrong :(", "error", 4000);
+      showToast("Too many retries, something might be wrong :(", "alert-error", 4000);
       return;
     }
 
@@ -406,8 +405,7 @@
     let embeddedChannel = player.getChannel();
     let currentIndex = previousChannels.findIndex((x) => x.username == embeddedChannel);
     if (currentIndex == 0) {
-      showToast("Can't go further back", "error", 3000);
-
+      showToast("Can't go further back", "alert-error", 3000);
       return;
     }
     showPreviousStream(currentIndex, false);

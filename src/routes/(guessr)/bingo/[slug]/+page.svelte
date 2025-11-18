@@ -168,15 +168,13 @@
       }
       loadBoard();
       updateLeaderboard(result.users);
-      showToast("Board & leaderboard refreshed", "info", 3000);
-
+      showToast("Board & leaderboard refreshed", "alert-info", 3000);
       elements.refresh.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
       setTimeout(() => {
         elements.refresh.disabled = false;
       }, 30000);
     } catch (error) {
-      showToast("Could not refresh board", "error", 3000);
-
+      showToast("Could not refresh board", "alert-error", 3000);
       console.log("refresh error", error);
       elements.refresh.innerHTML = `<i class="material-icons notranslate">refresh</i>`;
       setTimeout(() => {
@@ -301,10 +299,9 @@
       console.log(result);
       board = result.data.board;
       allowDiagonals = result.data.allowDiagonals;
-      showToast(result.message, "info", 3000);
+      showToast(result.message, "alert-info", 3000);
     } catch (error) {
-      showToast("Could not join game", "error", 3000);
-
+      showToast("Could not join game", "alert-error", 3000);
       console.log("join error", error);
     }
   } //join

@@ -39,6 +39,7 @@
   import ViewersSVG from "$lib/ViewersSVG.svelte";
   import TwitchEmbed from "$lib/TwitchEmbed.svelte";
   import ScoreProgress from "$lib/ScoreProgress.svelte";
+  import Correction from "$lib/Correction.svelte";
 
   let elements;
 
@@ -134,6 +135,9 @@
   let totalScore = $state(0);
   let roundPoints = $state(0);
 
+  let correctAnswer = $state();
+  let userAnswer = $state();
+
   let max = 0;
   /**
    * @type {number | null}
@@ -169,7 +173,6 @@
   let client;
   let chatters = new Map();
   let usernameSent = false;
-  let totalTab, roundTab;
 
   async function getMainList() {
     let requestOptions = {
@@ -243,7 +246,6 @@
       await getEmoteList();
     }
 
-    //elements.correction.innerHTML = "";
     //elements.breakdown.disabled = false;
 
     round = 0;
@@ -288,7 +290,7 @@
               let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
               while (!(await checkEmote(emote))) {
                 if (++tries > 3) {
-                  showToast("Something went wrong while fetching the channel's emotes :(", "error", 3000);
+                  showToast("Something went wrong while fetching the channel's emotes :(", "alert-error", 3000);
                   //console.log(error);
                   return await getRandomStream();
                 }
@@ -296,12 +298,12 @@
               }
               randomStream.emote = emote;
             } else {
-              showToast("Channel has no emotes, getting new channel...", "info", 3000);
+              showToast("Channel has no emotes, getting new channel...", "alert-info", 3000);
 
               return await getRandomStream();
             }
           } catch (error) {
-            showToast("Something went wrong while fetching the channel's emotes :(", "error", 3000);
+            showToast("Something went wrong while fetching the channel's emotes :(", "alert-error", 3000);
 
             console.log(error);
             return await getRandomStream();
@@ -336,7 +338,7 @@
         return await getRandomStream();
       }
     } catch (error) {
-      showToast("Something went wrong while updating the view count :(", "error", 3000);
+      showToast("Something went wrong while updating the view count :(", "alert-error", 3000);
 
       console.log(error);
       return await getRandomStream();
@@ -349,7 +351,7 @@
     try {
       let response = await fetch(`https://helper.guessr.tv/twitch/clips?id=${ids.join(",")}`);
       if (response.status != 200) {
-        showToast("Something went wrong while updating clip view counts :(", "error", 3000);
+        showToast("Something went wrong while updating clip view counts :(", "alert-error", 3000);
 
         // await getClipsGuessList();
         return;
@@ -364,16 +366,14 @@
       //remove deleted clips
       guessList = mainList.filter((n) => clips.data.some((/** @type {{ id: any; }} */ n2) => n.id == n2.id));
       if (guessList.length < 5) {
-        showToast("Clip set contains deleted clips, getting new set...", "info", 2000);
-
+        showToast("Clip set contains deleted clips, getting new set...", "alert-info", 2000);
         return await getClipsGuessList();
       }
 
       //remove seen clips
       guessList = guessList.filter((n) => !seenClips.includes(n.id));
       if (guessList.length < 5) {
-        showToast("Clip set contains already seen clips, getting new set...", "info", 2000);
-
+        showToast("Clip set contains already seen clips, getting new set...", "alert-info", 2000);
         return await getClipsGuessList();
       }
 
@@ -386,8 +386,7 @@
         await getClipsEmotes();
       }
     } catch (error) {
-      showToast("Something went wrong while updating clip view counts :(", "error", 3000);
-
+      showToast("Something went wrong while updating clip view counts :(", "alert-error", 3000);
       //await getClipsGuessList();
       console.log(error);
     }
@@ -400,8 +399,7 @@
       try {
         let response = await fetch(`https://helper.guessr.tv/twitch/chat/emotes?broadcaster_id=${guessList[index].userid}`);
         if (response.status != 200) {
-          showToast("Something went wrong while fetching the channel's emotes :(", "error", 3000);
-
+          showToast("Something went wrong while fetching the channel's emotes :(", "alert-error", 3000);
           return;
         }
         let emotes = await response.json();
@@ -409,9 +407,7 @@
           let emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
           while (!(await checkEmote(emote))) {
             if (++tries > 3) {
-              showToast("Something went wrong while fetching the channel's emotes :(", "error", 3000);
-
-              console.log(error);
+              showToast("Something went wrong while fetching the channel's emotes :(", "alert-error", 3000);
               return await getClipsGuessList();
             }
             emote = emotes.data[Math.floor(Math.random() * emotes.data.length)].id;
@@ -419,20 +415,17 @@
           guessList[index].emote = emote;
           fetched++;
         } else {
-          showToast("Channel has no emotes, getting new clip set...", "info", 3000);
-
+          showToast("Channel has no emotes, getting new clip set...", "alert-info", 3000);
           return await getClipsGuessList();
         }
       } catch (error) {
-        showToast("Something went wrong while fetching the channel's emotes :(", "error", 3000);
-
+        showToast("Something went wrong while fetching the channel's emotes :(", "alert-error", 3000);
         console.log(error);
       }
     }
     if (fetched < 5) {
       guessList = [];
-      showToast("Clip set contains deleted clips, getting new set...", "info", 3000);
-
+      showToast("Clip set contains deleted clips, getting new set...", "alert-info", 3000);
       return await getClipsGuessList();
     }
   } //getClipsEmotes
@@ -459,6 +452,15 @@
     }
     if (gameMode == "game") {
       document.getElementById("gameInput").value = "";
+    }
+
+    //set random number for higherlowerPreviousNumber in first round or update it for next round on other rounds
+    if (gameMode == "higherlower") {
+      if (higherlowerPreviousNumber === null) {
+        higherlowerPreviousNumber = Math.floor(Math.random() * 100);
+      } else {
+        higherlowerPreviousNumber = guessList[round - 2].viewers;
+      }
     }
 
     // update powerup count
@@ -498,13 +500,6 @@
       await generateEmoteChoices(guessList[round - 1].userid);
     }
 
-    //set random number for higherlowerPreviousNumber in first round
-    if (gameMode == "higherlower") {
-      if (higherlowerPreviousNumber === null) {
-        higherlowerPreviousNumber = Math.floor(Math.random() * 100);
-      }
-    }
-
     if (videoType == "stream") {
       embeddedChannel = guessList[round - 1].username;
       seenChannels.push(guessList[round - 1].username);
@@ -523,10 +518,7 @@
     if (gameMode == "viewers") {
       //reset round leaderboard and switch to total tab
       //elements.leaderboardListRound.innerHTML = "";
-      //totalTab.show();
     }
-
-    //elements.correction.innerHTML = "";
 
     startTimer();
   } //nextRound
@@ -609,15 +601,9 @@
    * @param {string | number | null} choice
    */
   async function guess(choice, timeUp = false, skipped = false) {
-    /**
-     * @type {number | null}
-     */
-    let answer;
-
     if (gameMode == "irl") {
       if (!markerAnswer) {
-        showToast("No location selected", "warning", 2000);
-
+        showToast("No location selected", "alert-warning", 2000);
         return;
       }
 
@@ -637,9 +623,9 @@
 
     switch (choice) {
       case "slider":
-        answer = parseInt(document.getElementById("guessNumber").value, 10);
-        if (timeUp && !answer) {
-          answer = -1;
+        userAnswer = parseInt(document.getElementById("guessNumber").value, 10);
+        if (timeUp && !userAnswer) {
+          userAnswer = -1;
         }
         break;
 
@@ -648,42 +634,42 @@
       case 3:
       case 4:
       case 5:
-        answer = parseInt(elements[`multiChoice${choice}`].dataset.answer, 10);
+        userAnswer = parseInt(elements[`multiChoice${choice}`].dataset.answer, 10);
         break;
 
       case "higher":
       case "lower":
-        answer = choice;
+        userAnswer = choice;
         break;
 
       case "game":
-        answer = cleanString(document.getElementById("gameInput").value);
+        userAnswer = cleanString(document.getElementById("gameInput").value);
         //show warning if no answer is provided but only if timer is not over
-        if (!answer && !timeUp) {
-          showToast("Invalid answer", "warning", 2000);
+        if (!userAnswer && !timeUp) {
+          showToast("Invalid answer", "alert-warning", 2000);
           document.getElementById("gameInput").value = "";
           return;
         }
         //show warning if answer does not exist in the game list
-        if (!gameList.some((x) => cleanString(x.name) === answer) && !timeUp) {
-          showToast("Answer must be from the suggestions list", "warning", 2000);
+        if (!gameList.some((x) => cleanString(x.name) === userAnswer) && !timeUp) {
+          showToast("Answer must be from the suggestions list", "alert-warning", 2000);
           document.getElementById("gameInput").value = "";
           return;
         }
-        if (timeUp && !answer) {
-          answer = -1;
+        if (timeUp && !userAnswer) {
+          userAnswer = -1;
         }
         break;
 
       default:
-        //user did not answer and time is up so set answer to -1 so they lose a point when calculateScore() is called
+        //user did not answer and time is up so set userAnswer to -1 so they lose a point when calculateScore() is called
         //also works when `skipped` is 'true'
-        answer = -1;
+        userAnswer = -1;
     }
 
     //show warning if no answer is selected
-    if ((isNaN(answer) || answer === null) && gameMode !== "game" && gameMode !== "higherlower" && !timeUp) {
-      showToast("Invalid answer", "warning", 2000);
+    if ((isNaN(userAnswer) || userAnswer === null) && gameMode !== "game" && gameMode !== "higherlower" && !timeUp) {
+      showToast("Invalid answer", "alert-warning", 2000);
       return;
     }
 
@@ -691,25 +677,30 @@
     stopTimer();
     gameState = "roundEnded";
 
-    let roundResult = calculateScore(answer, skipped);
+    let points = calculateScore(userAnswer, skipped);
 
     // store some data for final screen:
-    roundResult.task = guessList[round - 1];
-    roundResult.powerups = usedPowerups;
+    let roundResult = {
+      userAnswer: userAnswer,
+      points: points,
+      task: guessList[round - 1],
+      powerups: usedPowerups,
+    };
     roundResults.push(roundResult);
 
-    let { points, diff, color } = roundResult;
     totalScore += points;
     roundPoints = points;
 
     //show progress bar and correction for viewers mode - streams or clips
     if (gameMode == "viewers") {
-      //showCorrection(guessList[round - 1].viewers, answer, diff, points, color);
+      correctAnswer = guessList[round - 1].viewers;
     }
 
     //show progress bar and correction for gamename game - text controls - streams or clips
     if (gameMode == "game") {
-      //showCorrection(guessList[round - 1].game_name, answer == -1 ? answer : document.getElementById("gameInput").value, null, points, color);
+      correctAnswer = guessList[round - 1].game_name;
+      userAnswer = userAnswer == -1 ? userAnswer : document.getElementById("gameInput").value;
+
       if (totalScore > highScores.game) {
         highScores.game = totalScore;
         localStorage.setItem("gameStreak", totalScore.toString());
@@ -718,8 +709,10 @@
 
     //show progress bar and correction for emote mode - multi choice controls - streams or clips
     if (gameMode == "emote") {
+      correctAnswer = guessList[round - 1].emote;
       let emote = choice === null ? null : elements[`multiChoice${choice}`].dataset.emote;
-      //showCorrection(guessList[round - 1].emote, answer == -1 ? answer : emote, null, points, null);
+      userAnswer = userAnswer == -1 ? userAnswer : emote;
+
       if (totalScore > highScores.emote) {
         highScores.emote = totalScore;
         localStorage.setItem("emoteStreak", totalScore.toString());
@@ -728,11 +721,8 @@
 
     //show progress bar and correction for higherlower mode - streams or clips
     if (gameMode == "higherlower") {
-      //showCorrection(guessList[round - 1].viewers, answer, null, points, null);
-      console.log("asd");
-      console.log(guessList[round - 1].viewers);
+      correctAnswer = guessList[round - 1].viewers;
 
-      higherlowerPreviousNumber = guessList[round - 1].viewers; //set now for next round
       if (totalScore > highScores.higherlower) {
         highScores.higherlower = totalScore;
         localStorage.setItem("viewersHigherlowerStreak", totalScore.toString());
@@ -749,14 +739,15 @@
       if (!streamer) {
         chatters.set(username, {
           username: username,
-          score: 0,
-          round: 0,
-          answer: { points: points },
+          totalScore: 0,
+          currentRound: points,
+          currentAnswer: userAnswer,
           color: streamerColor,
           badges: addBadges("streamer", channelId),
         });
       } else {
-        streamer.answer = { points: points };
+        streamer.currentRound = points;
+        streamer.currentAnswer = userAnswer;
         chatters.set(username, streamer);
       }
       updateLeaderboard();
@@ -898,11 +889,7 @@
    * @param {number|string} answer
    */
   function calculateScore(answer, skipped = false) {
-    const result = {};
-
     let points = 0;
-    let diff = 0;
-    let color;
 
     //check emote mode answer
     if (gameMode == "emote") {
@@ -914,8 +901,6 @@
       if (skipped) {
         points = 0;
       }
-      result.answer = answer;
-      result.correct = guessList[round - 1].userid;
     }
 
     //calculate score for viewers mode - streams or clips
@@ -924,10 +909,8 @@
       let roundMax = Math.max(...guessList.slice(0, 5).map((o) => o.viewers || 0));
       //get scaled decay between 100 and 5000
       let decay = (guessList[round - 1].viewers / roundMax) * (5000 - 100) + 100;
-      diff = Math.abs(answer - guessList[round - 1].viewers);
+      let diff = Math.abs(answer - guessList[round - 1].viewers);
       points = Math.round(5000 * Math.exp(-diff / decay));
-      result.answer = answer;
-      result.correct = guessList[round - 1].viewers;
     }
 
     //check if answer is corrent for higherlower mode - streams or clips
@@ -947,8 +930,6 @@
       if (skipped) {
         points = 0;
       }
-      result.answer = answer;
-      result.correct = correctAnswer;
     }
 
     //get points for game guesser mode
@@ -968,11 +949,9 @@
       if (skipped) {
         points = 0;
       }
-      result.answer = String(document.getElementById("gameInput").value);
-      result.correct = guessList[round - 1].game_name;
     }
 
-    //guess() was called by the timer and user did not provide an answer so give user 0 points for slider and -1 for other modes
+    //guess() was called by the timer and user did not provide an answer so give user 0 points for viewers mode and -1 for other modes
     if (!skipped && answer == -1) {
       switch (gameMode) {
         case "higherlower":
@@ -984,90 +963,10 @@
           points = 0;
           break;
       }
-      result.answer = gameMode == "viewers" ? 0 : "⏱️ timed out";
     }
 
-    //get color class name for correction text
-    if (points >= 4500) {
-      color = "text-success";
-    } else if (points < 4500 && points >= 2000) {
-      color = "text-warning";
-    } else if (points < 2000) {
-      color = "text-danger";
-    }
-
-    result.points = points;
-    result.diff = diff;
-    result.color = color;
-
-    return result;
+    return points;
   } //calculateScore
-
-  /**
-   * temp lidl function that just groups the correction stuff from guess() :)
-   * @param {number} correct
-   * @param {number} answer
-   * @param {number | null} diff
-   * @param {number} points
-   * @param {string | null | undefined} color
-   */
-  function showCorrection(correct, answer, diff, points, color) {
-    let overUnder = answer - correct > 0 ? `<i class="material-icons notranslate">arrow_upward</i>` : `<i class="material-icons notranslate">arrow_downward</i>`;
-
-    if (gameMode == "viewers") {
-      elements.correction.innerHTML = `
-    The ${videoType} has <viewersSVG/><strong>${correct.toLocaleString()}</strong>
-    ${correct == 1 ? `${videoType == "clip" ? "view" : "viewer"}` : `${videoType == "clip" ? "views" : "viewers"}`}<br>
-    ${
-      diff == 0
-        ? "You nailed the view count perfectly ✌"
-        : `${
-            answer == -1
-              ? "You did not submit an answer"
-              : `Your guess was off by ${overUnder} <span class="${color}">${diff.toLocaleString()}</span> ${
-                  diff == 1 ? `${videoType == "clip" ? "view" : "viewer"}` : `${videoType == "clip" ? "views" : "viewers"}`
-                }`
-          }`
-    }`;
-    }
-
-    if (gameMode == "emote") {
-      elements.correction.innerHTML = `
-    The streamer's emote is <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${correct}/default/dark/3.0" alt="emote"><br>
-    ${
-      points > -1
-        ? answer == -1
-          ? "You skipped this round 🤷"
-          : "You guessed the emote correctly ✌"
-        : answer == -1
-          ? "You did not select an emote"
-          : `You guessed <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${answer}/default/dark/3.0" alt="emote">`
-    }`;
-    }
-
-    if (gameMode == "game") {
-      elements.correction.innerHTML = `
-    The streamer is playing <strong>${correct}</strong><br>
-    ${points == 1 ? "You guessed the game correctly ✌" : `${answer == -1 ? "You did not select an answer" : `You guessed <span class="${color}">${answer}</span>`}`}`;
-    }
-
-    if (gameMode == "higherlower") {
-      elements.correction.innerHTML = `
-    The ${videoType} has <viewersSVG/><strong>${guessList[round - 1].viewers.toLocaleString()}</strong>
-    ${correct == 1 ? "viewer" : "viewers"}${correct == higherlowerPreviousNumber ? ` (same as previous ${videoType}!)` : ""}<br>
-    ${
-      points > -1
-        ? answer == -1
-          ? "<br>You skipped this round 🤷"
-          : `This ${videoType} has a <i>${answer}</i> view count than the previous ${videoType}`
-        : answer == -1
-          ? "You did not select an answer"
-          : `The previous ${videoType} had ${higherlowerPreviousNumber?.toLocaleString()} ${
-              higherlowerPreviousNumber == 1 ? `${videoType == "clip" ? "view" : "viewer"}` : `${videoType == "clip" ? "views" : "viewers"}`
-            }`
-    }`;
-    }
-  } //showCorrection
 
   function reset() {
     stopTimer();
@@ -1104,12 +1003,12 @@
     elements.getSettingsButton.disabled = true;
 
     if (gameMode == "game" && clipCollection == "hottub" && videoType == "clip") {
-      showToast("Hmmm today I'll pick game guessr mode then pick a clip collection that has 1 category only 🤙", "info", 5000);
+      showToast("Hmmm today I'll pick game guessr mode then pick a clip collection that has 1 category only 🤙", "alert-info", 5000);
       reset();
       return;
     }
     if (gameMode == "emote" && clipCollection == "forsen" && videoType == "clip") {
-      showToast("Hmmm today I'll pick emote guessr mode then pick a clip collection that has 1 channel only 🤙", "info", 5000);
+      showToast("Hmmm today I'll pick emote guessr mode then pick a clip collection that has 1 channel only 🤙", "alert-info", 5000);
       reset();
       return;
     }
@@ -1117,7 +1016,7 @@
     channelName = channelName.replace(/\s+/g, "").toLowerCase();
 
     if (channelName.includes("://") || channelName.includes(".")) {
-      showToast("Invalid username. Input your username only not the link", "warning", 3000);
+      showToast("Invalid username. Input your username only not the link", "alert-warning", 3000);
       reset();
       return;
     }
@@ -1126,7 +1025,7 @@
       irlid = parseInt(document.getElementById("channelId").value, 10);
       document.getElementById("channelId").value = "";
       if (!irlid) {
-        showToast("no irl channel id provided", "error", 3000);
+        showToast("no irl channel id provided", "alert-error", 3000);
         reset();
         return;
       }
@@ -1134,7 +1033,7 @@
       let response = await fetch(`https://helper.guessr.tv/twitch/streams?user_id=${irlid}`);
       let stream = await response.json();
       if (!stream?.data[0] || !stream?.data[0]?.user_login) {
-        showToast("stream offline/not found", "warning", 3000);
+        showToast("stream offline/not found", "alert-warning", 3000);
         reset();
         return;
       }
@@ -1185,38 +1084,40 @@
         return;
       }
 
-      let results = { points: "", diff: "", color: "" };
-
+      let points = 0;
+      let chatterAnswer;
       let input = msg.split(" ").filter(Boolean);
 
       if (gameMode == "viewers") {
-        let answer = parseAnswer(input[0]);
-        if (answer === null || answer === undefined || answer === "" || answer < 0) {
+        chatterAnswer = parseAnswer(input[0]);
+        if (chatterAnswer === null || chatterAnswer === undefined || chatterAnswer === "" || chatterAnswer < 0) {
           return;
         }
-        results = calculateScore(answer);
+        points = calculateScore(chatterAnswer);
       }
 
       if (gameMode == "higherlower") {
-        if (input[0]?.toLowerCase() !== "higher" && input[0]?.toLowerCase() !== "lower") {
+        chatterAnswer = input[0]?.toLowerCase();
+        if (chatterAnswer !== "higher" && chatterAnswer !== "lower") {
           return;
         }
-        results = calculateScore(input[0].toLowerCase());
+        points = calculateScore(input[0].toLowerCase());
       }
 
       if (gameMode == "game") {
         if (input[0]?.toLowerCase() !== "!guess") {
           return;
         }
-        results = calculateScore(cleanString(input.slice(1).join("")));
+        chatterAnswer = input.slice(1);
+        points = calculateScore(cleanString(input.slice(1).join("")));
       }
 
       if (gameMode == "emote") {
         if (!emoteChoices.hasOwnProperty(input[0]?.toLowerCase())) {
           return;
         }
-        let answer = parseInt(elements[`multiChoice${emoteChoices[input[0].toLowerCase()]}`].dataset.answer, 10);
-        results = calculateScore(answer);
+        chatterAnswer = parseInt(elements[`multiChoice${emoteChoices[input[0].toLowerCase()]}`].dataset.answer, 10);
+        points = calculateScore(chatterAnswer);
       }
 
       let chatter = chatters.get(context.username);
@@ -1225,12 +1126,13 @@
         let badges = addBadges(context.badges, context["user-id"]);
         chatters.set(context.username, {
           username: context.username,
-          score: 0,
-          round: 0,
-          answer: results,
+          totalScore: 0,
+          currentRound: points,
+          currentAnswer: chatterAnswer,
           color: context.color,
           badges: badges,
         });
+
         //add chatter to the top of the leaderboard if 1st round or at the end otherwise
         elements.leaderboardList.insertAdjacentHTML(
           `${round == 1 ? "afterbegin" : "beforeend"}`,
@@ -1253,7 +1155,8 @@
             `<li class="list-group-item"><span style="color:${context.color || "#FFFFFF"};">${chatter.badges} ${context.username}:</span> 🙈</li>`,
           );
         }
-        chatter.answer = results;
+        chatter.currentRound = points;
+        chatter.currentAnswer = chatterAnswer;
         chatters.set(context.username, chatter);
         document.getElementById(`${context.username}_dot`).style.visibility = "visible";
       }
@@ -1263,15 +1166,15 @@
       if (!usernameSent && channelName) {
         sendUsername();
       }
-      showToast(`Connected to ${channelName}`, "success", 2000);
+      showToast(`Connected to ${channelName}`, "alert-success", 2000);
     }); //connected
 
     client.on("disconnected", (/** @type {any} */ reason) => {
-      showToast(`Disconnected: ${reason}`, "error", 2000);
+      showToast(`Disconnected: ${reason}`, "alert-error", 2000);
     }); //disconnected
 
     client.on("notice", (/** @type {any} */ channel, /** @type {any} */ msgid, /** @type {any} */ message) => {
-      showToast(`Disconnected: ${message}`, "error", 2000);
+      showToast(`Disconnected: ${message}`, "alert-error", 2000);
     }); //notice
 
     client.connect().catch(console.error);
@@ -1358,40 +1261,40 @@
 
   function updateLeaderboard() {
     //update the scores for everyone
+    //needed bcz users can change answer so we need to add the current round points to the total now when the round is over
     for (const [key, value] of chatters.entries()) {
-      if (!value?.answer) {
+      if (value?.currentAnswer === null || value?.currentAnswer === undefined) {
         //skip chatters that didn't play this round
         continue;
       }
-      value.score += value?.answer.points;
-      value.round = value?.answer.points;
+      value.totalScore += value?.currentRound;
       chatters.set(key, value);
     }
 
-    const sortedChatters = new Map([...chatters.entries()].sort((a, b) => b[1].score - a[1].score));
+    const sortedChatters = new Map([...chatters.entries()].sort((a, b) => b[1].totalScore - a[1].totalScore));
     let username = channelName.replace(/\s+/g, "").toLowerCase();
     let list = "";
     for (const [key, value] of sortedChatters.entries()) {
       list += `
     <li class="list-group-item ${username == value.username ? "bg-primary" : ""}">
       <span id="${value.username}_dot" style="visibility: hidden">🔵</span>
-      <span style="color:${value.color || "#FFFFFF"};">${value.badges} ${value.username}:</span> ${value.score.toLocaleString()}
+      <span style="color:${value.color || "#FFFFFF"};">${value.badges} ${value.username}:</span> ${value.totalScore.toLocaleString()}
     </li>`;
     }
     elements.leaderboardList.innerHTML = list;
 
     //update round leaderboard for viewers mode
     if (gameMode == "viewers") {
-      const roundSortedChatters = new Map([...chatters.entries()].sort((a, b) => b[1].round - a[1].round));
+      const roundSortedChatters = new Map([...chatters.entries()].sort((a, b) => b[1].currentRound - a[1].currentRound));
       let list = "";
       for (const [key, value] of roundSortedChatters.entries()) {
-        if (!value?.answer) {
+        if (value?.currentAnswer === null || value?.currentAnswer === undefined) {
           //skip chatters that didn't play this round
           continue;
         }
         list += `
       <li class="list-group-item ${username == value.username ? "bg-primary" : ""}">
-        <span style="color:${value.color || "#FFFFFF"};">${value.badges} ${value.username}:</span> ${value.round.toLocaleString()}
+        <span style="color:${value.color || "#FFFFFF"};">${value.badges} ${value.username}:</span> ${value.currentRound.toLocaleString()}
       </li>`;
       }
       elements.leaderboardListRound.innerHTML = list;
@@ -1399,7 +1302,8 @@
 
     //reset answers for everyone for next round
     for (const [key, value] of chatters.entries()) {
-      value.answer = null;
+      value.currentRound = null;
+      value.currentAnswer = null;
       chatters.set(key, value);
     }
   } //updateLeaderboard
@@ -1564,8 +1468,6 @@
       progress: document.getElementById("progress"),
       progressBar: document.getElementById("progressBar"),
 
-      correction: document.getElementById("correction"),
-
       round: document.getElementById("round"),
       score: document.getElementById("score"),
       timerDiv: document.getElementById("timerDiv"),
@@ -1632,13 +1534,13 @@
     //   localforage.setItem("seenChannels", JSON.stringify([]));
     //   seenChannels = [];
     //   elements.seenChannels.innerHTML = 0;
-    //   showToast("Seen channels reset", "success", 2000);
+    //   showToast("Seen channels reset", "alert-success", 2000);
 
     // elements.resetSeenClips.onclick = function () {
     //   localforage.setItem("seenClips", JSON.stringify([]));
     //   seenClips = [];
     //   elements.seenClips.innerHTML = 0;
-    //   showToast("Seen clips reset", "success", 2000);
+    //   showToast("Seen clips reset", "alert-success", 2000);
     // };
 
     const queryString = window.location.search;
@@ -2222,7 +2124,7 @@
 
               <div class="divider divider-horizontal"></div>
 
-              <div id="correction">asd</div>
+              <Correction {gameMode} {correctAnswer} {userAnswer} {videoType} {higherlowerPreviousNumber} {roundPoints} />
             </div>
           {:else if gameState == "gameEnded"}
             <div class="flex grow">
@@ -2240,7 +2142,7 @@
               </div>
               <div class="divider divider-horizontal"></div>
 
-              <div id="correction">asd</div>
+              <Correction {gameMode} {correctAnswer} {userAnswer} {videoType} {higherlowerPreviousNumber} {roundPoints} />
             </div>
           {/if}
         </div>

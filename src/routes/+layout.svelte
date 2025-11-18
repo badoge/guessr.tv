@@ -5,7 +5,6 @@
    * @param {any} timeout
    */
   export function showToast(msg, type, timeout) {
-    type = `alert-${type}`;
     let id = Date.now().toString();
     let toast = `
     <div id="${id}" class="alert ${type} text-lg font-bold">

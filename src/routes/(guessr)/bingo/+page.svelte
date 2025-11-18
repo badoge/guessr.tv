@@ -102,7 +102,7 @@
     //   localforage.setItem("seenChannels", JSON.stringify([]));
     //   elements.seenChannels.innerHTML = 0;
     //   seenChannels = [];
-    //   showToast("Seen channels reset", "success", 3000);
+    //   showToast("Seen channels reset", "alert-success", 3000);
     // };
 
     TWITCH = JSON.parse(localStorage.getItem("TWITCH"));
@@ -292,7 +292,7 @@
       elements.infoTime.innerHTML = `Channel list updated on ${new Date(result.time)}`;
     } catch (error) {
       console.log(error);
-      showToast("Could not load channel list :(", "error", 5000);
+      showToast("Could not load channel list :(", "alert-error", 5000);
     }
   } //getMainList
 
@@ -319,16 +319,14 @@
       channel = mainList.pop();
     }
     if (mainList.length == 0 || !channel) {
-      showToast("No more channels left on the list ...getting new list", "error", 5000);
-
+      showToast("No more channels left on the list ...getting new list", "alert-error", 5000);
       await getMainList();
       shuffleArray(mainList);
       nextStream();
       return;
     }
     if (retryLimit > 5) {
-      showToast("Too many retries, something might be wrong :(", "error", 4000);
-
+      showToast("Too many retries, something might be wrong :(", "alert-error", 4000);
       return;
     }
 
@@ -385,8 +383,7 @@
     let currentChannel = player.getChannel();
     let currentIndex = previousChannels.findIndex((x) => x == currentChannel);
     if (currentIndex == 0) {
-      showToast("Can't go further back", "error", 3000);
-
+      showToast("Can't go further back", "alert-error", 3000);
       return;
     }
     showPreviousStream(currentIndex, false);
@@ -410,8 +407,7 @@
     const taken = [...bingoItems].map((x) => x.value).filter(Boolean);
     let random = currentItems[Math.floor(Math.random() * currentItems.length)];
     if (taken.length >= currentItems.length) {
-      showToast("No more presets left", "error", 3000);
-
+      showToast("No more presets left", "alert-error", 3000);
       return;
     }
     while (taken.includes(random)) {
@@ -427,8 +423,7 @@
     const bingoItems = document.querySelectorAll(".bingo-item");
 
     if (![...bingoItems].map((e) => e.value).includes("")) {
-      showToast("Board is full", "warning", 3000);
-
+      showToast("Board is full", "alert-warning", 3000);
       return;
     }
 
@@ -436,8 +431,7 @@
     for (let index = 0; index < bingoItems.length; index++) {
       let option = options.pop();
       if (!option) {
-        showToast("No more presets left", "error", 3000);
-
+        showToast("No more presets left", "alert-error", 3000);
         break;
       }
       if (!bingoItems[index].value) {
@@ -654,15 +648,13 @@
     }
 
     if (itemValues.includes("")) {
-      showToast("Board must be full", "warning", 3000);
-
+      showToast("Board must be full", "alert-warning", 3000);
       return;
     }
     const values = board.map((item) => item.value.toLowerCase());
     const duplicates = new Set(values.filter((v) => values.indexOf(v) !== values.lastIndexOf(v)));
     if (duplicates.size > 0) {
-      showToast("Board must not have duplicates", "warning", 3000);
-
+      showToast("Board must not have duplicates", "alert-warning", 3000);
       return;
     }
 
@@ -703,10 +695,9 @@
         if (response.status == 200) {
           boardCreated = true;
         }
-        showToast(result.message, "info", 3000);
+        showToast(result.message, "alert-info", 3000);
       } catch (error) {
-        showToast("Could not upload board", "error", 3000);
-
+        showToast("Could not upload board", "alert-error", 3000);
         console.log("save error", error);
       }
     } else {
@@ -878,8 +869,7 @@
         );
       }
     } catch (error) {
-      showToast("Could not refresh leaderboard", "error", 3000);
-
+      showToast("Could not refresh leaderboard", "alert-error", 3000);
       console.log("updateLeaderboard error", error);
     }
   } //updateLeaderboard
@@ -1035,11 +1025,11 @@
     itemPacks[id].items = packItems;
 
     if (itemPacks.filter((e) => e.name === packName).length > 1) {
-      showToast("Pack name already exists", "warning", 3000);
+      showToast("Pack name already exists", "alert-warning", 3000);
     }
 
     if (new Set(packItems.map((/** @type {string} */ x) => x.toLowerCase())).size !== packItems.length) {
-      showToast("Pack has duplicates", "warning", 3000);
+      showToast("Pack has duplicates", "alert-warning", 3000);
     }
 
     loadPacks(id);
