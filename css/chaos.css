@@ -1,0 +1,128 @@
+.chaos-container {
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 300px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 500;
+  padding: 1rem;
+  border-radius: 0.25rem;
+}
+
+.chaos-wrapper {
+  position: relative;
+  width: 100%;
+  height: 1.5rem;
+  color: white;
+  margin: 0.25rem;
+  padding: 0.25rem;
+  font-weight: bold;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.25rem;
+}
+
+.chaos-background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #050;
+  z-index: -1;
+}
+
+.chaos-triggerbar {
+  color: yellow;
+}
+.chaos-triggerbar .chaos-background {
+  background-color: #930;
+}
+
+/* EFFECTS */
+.mirror-ui {
+  transform: scaleX(-1);
+}
+.mirror-ui .chaos-wrapper {
+  transform: scaleX(-1); /* return to normal */
+}
+.transparent {
+  opacity: 0;
+}
+.inverted {
+  filter: invert(1);
+}
+.fadeout-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 499;
+}
+.forsenparty-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 498;
+  background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet, indigo, blue, green, yellow, orange, red);
+  background-size: 200% 100%;
+  animation: rainbow 2s linear infinite;
+}
+@keyframes rainbow {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 0%;
+  }
+}
+.earthquake {
+  animation: shake 0.3s infinite;
+}
+.earthquake2 {
+  animation: shake2 0.25s infinite;
+}
+.earthquake3 {
+  animation: shake3 0.35s infinite;
+}
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-3px, 2px) rotate(-1deg); }
+  20% { transform: translate(3px, -2px) rotate(1deg); }
+  30% { transform: translate(-2px, 3px) rotate(-0.5deg); }
+  40% { transform: translate(2px, -3px) rotate(0.5deg); }
+  50% { transform: translate(-3px, -2px) rotate(-1deg); }
+  60% { transform: translate(3px, 2px) rotate(1deg); }
+  70% { transform: translate(-2px, -3px) rotate(-0.5deg); }
+  80% { transform: translate(2px, 3px) rotate(0.5deg); }
+  90% { transform: translate(-3px, 2px) rotate(-1deg); }
+}
+@keyframes shake2 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(4px, -3px) rotate(1.5deg); }
+  30% { transform: translate(-4px, 3px) rotate(-1.5deg); }
+  45% { transform: translate(3px, 4px) rotate(1deg); }
+  60% { transform: translate(-3px, -4px) rotate(-1deg); }
+  75% { transform: translate(4px, 2px) rotate(1.5deg); }
+}
+@keyframes shake3 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  12% { transform: translate(-2px, -3px) rotate(-0.8deg); }
+  25% { transform: translate(3px, 2px) rotate(0.8deg); }
+  37% { transform: translate(-3px, 3px) rotate(-1.2deg); }
+  50% { transform: translate(2px, -2px) rotate(1.2deg); }
+  62% { transform: translate(-3px, 2px) rotate(-0.8deg); }
+  75% { transform: translate(3px, -3px) rotate(0.8deg); }
+  87% { transform: translate(-2px, 3px) rotate(-1.2deg); }
+}

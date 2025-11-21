@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="/css/icons.css" />
     <link rel="stylesheet" href="/css/common.min.css" />
     <link rel="stylesheet" href="/css/bingo.min.css" />
+    <link rel="stylesheet" href="/css/chaos.css" />
   </head>
 
   <body>
@@ -340,6 +341,14 @@
                         </div>
 
                         <div class="form-check form-switch mt-3">
+                          <input class="form-check-input" type="checkbox" role="switch" id="runChaosMod" />
+                          <label class="form-check-label" for="runChaosMod"
+                            ><i class="material-icons notranslate">outdoor_grill</i> <span class="text-muted">(experimental)</span> 😈 Chaos mode</label
+                          >
+                          <br /><small class="text-body-secondary">Applies random effects to your game</small>
+                        </div>
+
+                        <div class="form-check form-switch mt-3">
                           <input class="form-check-input" type="checkbox" role="switch" id="allowDiagonals" />
                           <label class="form-check-label" for="allowDiagonals"><i class="material-icons notranslate">north_east</i>Allow diagonals</label>
                           <br /><small class="text-body-secondary">Count diagonals when checking for winning patterns</small>
@@ -573,6 +582,7 @@
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script src="/js/confetti.min.js"></script>
     <script src="/js/functions.js"></script>
+    <script type="module" src="/js/chaos/index.js"></script>
     <script src="/js/bingo.js"></script>
     <script src="https://embed.twitch.tv/embed/v1.js" async></script>
   </body>
