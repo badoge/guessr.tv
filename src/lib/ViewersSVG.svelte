@@ -1,4 +1,8 @@
-<svg class="inline" width="1.2em" height="1.2em" viewBox="0 0 24 24">
+<script>
+  let { size = "1.2em" } = $props();
+</script>
+
+<svg class="inline" width={size} height={size} viewBox="0 0 24 24">
   <g>
     <path
       fill="currentColor"

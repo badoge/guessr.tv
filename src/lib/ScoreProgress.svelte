@@ -59,12 +59,12 @@
 </script>
 
 {#if gameMode == "viewers"}
-  <div class="flex-1 flex flex-col place-content-evenly" {@attach scoreAnimation}>
+  <div class="flex flex-1 flex-col place-content-evenly" {@attach scoreAnimation}>
     <div id="scoreProgressText" class="text-2xl text-center">0 Points</div>
     <progress id="scoreProgress" class="progress progress-accent h-6 w-full" value="0" max="100"></progress>
   </div>
 {:else}
-  <div class="flex-1 flex flex-col place-content-evenly" {@attach streakAnimation}>
+  <div class="flex flex-1 flex-col place-content-evenly" {@attach streakAnimation}>
     <div class="text-2xl text-center">
       {#if totalScore >= highScores[gameMode]}
         New highscore! ({totalScore})
@@ -72,7 +72,7 @@
         {highScores[gameMode] - totalScore + 1} more {highScores[gameMode] - totalScore + 1 == 1 ? "round" : "rounds"} till you beat your highscore ({highScores[gameMode]})
       {/if}
     </div>
-    <div class="overflow-x-hidden w-250" id="streakDiv">
+    <div class="overflow-x-hidden max-w-[40vw]" id="streakDiv">
       <ul class="steps">
         {#each { length: Math.max(highScores[gameMode] + 5, 10) }, step}
           {#if totalScore > step}

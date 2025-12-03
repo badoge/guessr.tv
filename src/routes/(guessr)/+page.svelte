@@ -40,6 +40,7 @@
   import TwitchEmbed from "$lib/TwitchEmbed.svelte";
   import ScoreProgress from "$lib/ScoreProgress.svelte";
   import Correction from "$lib/Correction.svelte";
+  import RoundAndScore from "$lib/RoundAndScore.svelte";
 
   let elements;
 
@@ -1900,17 +1901,7 @@
       <div id="controls" class="card grow rounded-xl bg-base-300">
         <div class="card-body flex-row">
           {#if gameState == "active"}
-            {#if gameMode == "viewers"}
-              <div class="content-evenly">
-                <div><strong>Round</strong> <br />{round}/5</div>
-                <div><strong>Score</strong> <br />{totalScore.toLocaleString()}</div>
-              </div>
-            {:else}
-              <div class="content-evenly">
-                <div><strong>Round</strong> <br />{round}</div>
-                <div><strong>Score</strong> <br />{totalScore.toLocaleString()}</div>
-              </div>
-            {/if}
+            <RoundAndScore {round} {totalScore} {gameMode} />
 
             <div id="timerDiv" style="display: none">
               <span>Round ends in</span>
@@ -1967,7 +1958,7 @@
                 </div>
                 <div class="divider divider-horizontal"></div>
 
-                <div class="flex-1 flex flex-row gap-3 justify-evenly">
+                <div class="flex-1 flex flex-row justify-evenly">
                   <div class="text-2xl text-start my-auto">
                     {#if round == 1}
                       Does this {videoType} have a higher or lower view count than <span class="font-bold">{higherlowerPreviousNumber?.toLocaleString()}?</span>
@@ -2104,20 +2095,12 @@
             {/if}
           {:else if gameState == "roundEnded"}
             <div class="flex grow">
-              {#if gameMode == "viewers"}
-                <div class="content-evenly">
-                  <div><strong>Round</strong> <br />{round}/5</div>
-                  <div><strong>Score</strong> <br />{totalScore.toLocaleString()}</div>
-                </div>
-              {:else}
-                <div class="content-evenly">
-                  <div><strong>Round</strong> <br />{round}</div>
-                  <div><strong>Score</strong> <br />{totalScore.toLocaleString()}</div>
-                </div>
-              {/if}
+              <RoundAndScore {round} {totalScore} {gameMode} />
+
               <div class="divider divider-horizontal"></div>
 
-              <button onclick={nextRoundOnClick} class="btn btn-xl btn-info h-full w-50 rounded-xl text-4xl">Next Round</button>
+              <button onclick={nextRoundOnClick} class="btn btn-xl btn-info h-full w-[10vw] rounded-xl text-4xl">Next Round</button>
+
               <div class="divider divider-horizontal"></div>
 
               <ScoreProgress {gameMode} {roundPoints} {totalScore} {highScores} />

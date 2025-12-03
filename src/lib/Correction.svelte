@@ -37,62 +37,68 @@
   });
 </script>
 
-{#if gameMode == "viewers"}
-  <p>
-    The {videoType} has <ViewersSVG /><strong>{viewCountString(correctAnswer)}</strong><br />
-
-    {#if difference == 0}
-      You nailed the view count perfectly ✌
-    {:else if userAnswer == -1}
-      You did not submit an answer
-    {:else}
-      Your guess was off by {difference?.toLocaleString()} {difference == 1 ? "view" : "views"}
-    {/if}
-  </p>
-{/if}
-
-{#if gameMode == "emote"}
-  <p>
-    The streamer's emote is <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${userAnswer}/default/dark/3.0" alt="emote" /><br />
-
-    {#if roundPoints > -1}
-      {userAnswer == -1 ? "You skipped this round 🤷" : "You guessed the emote correctly ✌"}
-    {:else}
-      {userAnswer == -1
-        ? "You did not select an emote"
-        : `You guessed <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${userAnswer}/default/dark/3.0" alt="emote">`}
-    {/if}
-  </p>
-{/if}
-
-{#if gameMode == "game"}
-  <p>
-    The streamer is playing <strong class="text-success">{correctAnswer}</strong><br />
-
-    {#if roundPoints == 1}
-      You guessed the game correctly ✌
-    {:else if userAnswer == -1}
-      You did not select an answer
-    {:else}
-      You guessed <strong class="text-error">{userAnswer}</strong>
-    {/if}
-  </p>
-{/if}
-
-{#if gameMode == "higherlower"}
-  <p>
-    The {videoType} has <ViewersSVG /><strong>{viewCountString(correctAnswer)}</strong>{correctAnswer == higherlowerPreviousNumber ? ` (same as previous ${videoType}!)` : ""}<br />
-
-    {#if roundPoints > -1}
-      {#if userAnswer == -1}
-        You skipped this round 🤷
+<div class="flex flex-col place-content-evenly">
+  {#if gameMode == "viewers"}
+    <div class="text-lg">
+      The {videoType} has <ViewersSVG size="1.7rem" /><strong>{viewCountString(correctAnswer)}</strong><br />
+    </div>
+    <div class="text-lg">
+      {#if difference == 0}
+        You nailed the view count perfectly ✌
+      {:else if userAnswer == -1}
+        You did not submit an answer
       {:else}
-        This {videoType} has a <i>{userAnswer}</i> view count than the previous {videoType}
+        Your guess was off by {difference?.toLocaleString()} {difference == 1 ? "view" : "views"}
       {/if}
-    {:else if userAnswer == -1}
-      You did not select an answer
-    {:else}
-      The previous {videoType} had {viewCountString(higherlowerPreviousNumber)}
-    {/if}
-  </p>
-{/if}
+    </div>
+  {/if}
+
+  {#if gameMode == "emote"}
+    <div class="text-lg">
+      The streamer's emote is <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${userAnswer}/default/dark/3.0" alt="emote" /><br />
+    </div>
+    <div class="text-lg">
+      {#if roundPoints > -1}
+        {userAnswer == -1 ? "You skipped this round 🤷" : "You guessed the emote correctly ✌"}
+      {:else}
+        {userAnswer == -1
+          ? "You did not select an emote"
+          : `You guessed <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${userAnswer}/default/dark/3.0" alt="emote">`}
+      {/if}
+    </div>
+  {/if}
+
+  {#if gameMode == "game"}
+    <div class="text-lg">
+      The streamer is playing <strong class="text-success">{correctAnswer}</strong><br />
+    </div>
+    <div class="text-lg">
+      {#if roundPoints == 1}
+        You guessed the game correctly ✌
+      {:else if userAnswer == -1}
+        You did not select an answer
+      {:else}
+        You guessed <strong class="text-error">{userAnswer}</strong>
+      {/if}
+    </div>
+  {/if}
+
+  {#if gameMode == "higherlower"}
+    <div class="text-lg">
+      The {videoType} has <ViewersSVG /><strong>{viewCountString(correctAnswer)}</strong>{correctAnswer == higherlowerPreviousNumber ? ` (same as previous ${videoType}!)` : ""}<br />
+    </div>
+    <div class="text-lg">
+      {#if roundPoints > -1}
+        {#if userAnswer == -1}
+          You skipped this round 🤷
+        {:else}
+          This {videoType} has a <i>{userAnswer}</i> view count than the previous {videoType}
+        {/if}
+      {:else if userAnswer == -1}
+        You did not select an answer
+      {:else}
+        The previous {videoType} had {viewCountString(higherlowerPreviousNumber)}
+      {/if}
+    </div>
+  {/if}
+</div>
