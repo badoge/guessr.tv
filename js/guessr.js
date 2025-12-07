@@ -185,8 +185,7 @@ async function getClipSet() {
 async function getEmoteList() {
   try {
     let response = await fetch(`https://api.okayeg.com/guess/emotes?time=${Date.now()}`);
-    let json = await response.json();
-    emoteList = json.random;
+    emoteList = await response.json();
   } catch (error) {
     console.log(error);
   }
@@ -1199,8 +1198,8 @@ function showCorrection(correct, answer, diff, points, color) {
           ? "You skipped this round 🤷"
           : "You guessed the emote correctly ✌"
         : answer == -1
-        ? "You did not select an emote"
-        : `You guessed <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${answer}/default/dark/3.0" alt="emote">`
+          ? "You did not select an emote"
+          : `You guessed <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${answer}/default/dark/3.0" alt="emote">`
     }`;
   }
 
@@ -1220,10 +1219,10 @@ function showCorrection(correct, answer, diff, points, color) {
           ? "<br>You skipped this round 🤷"
           : `This ${gameSettings.clips ? "clip" : "stream"} has a <i>${answer}</i> view count than the previous ${gameSettings.clips ? "clip" : "stream"}`
         : answer == -1
-        ? "You did not select an answer"
-        : `The previous ${gameSettings.clips ? "clip" : "channel"} had ${previousNumber.toLocaleString()} ${
-            previousNumber == 1 ? `${gameSettings.clips ? "view" : "viewer"}` : `${gameSettings.clips ? "views" : "viewers"}`
-          }`
+          ? "You did not select an answer"
+          : `The previous ${gameSettings.clips ? "clip" : "channel"} had ${previousNumber.toLocaleString()} ${
+              previousNumber == 1 ? `${gameSettings.clips ? "view" : "viewer"}` : `${gameSettings.clips ? "views" : "viewers"}`
+            }`
     }`;
   }
 } //showCorrection
