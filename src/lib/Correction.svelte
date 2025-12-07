@@ -55,15 +55,16 @@
 
   {#if gameMode == "emote"}
     <div class="text-lg">
-      The streamer's emote is <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${userAnswer}/default/dark/3.0" alt="emote" /><br />
+      The streamer's emote is <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/{correctAnswer}/default/dark/3.0" alt="emote" />
     </div>
+
     <div class="text-lg">
       {#if roundPoints > -1}
         {userAnswer == -1 ? "You skipped this round 🤷" : "You guessed the emote correctly ✌"}
+      {:else if userAnswer == -1}
+        You did not select an emote
       {:else}
-        {userAnswer == -1
-          ? "You did not select an emote"
-          : `You guessed <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/${userAnswer}/default/dark/3.0" alt="emote">`}
+        You guessed <img style="height: 56px;" src="https://static-cdn.jtvnw.net/emoticons/v2/{userAnswer}/default/dark/3.0" alt="emote" />
       {/if}
     </div>
   {/if}

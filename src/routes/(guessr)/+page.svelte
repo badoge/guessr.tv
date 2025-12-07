@@ -5,6 +5,7 @@
   import { ToggleGroup } from "bits-ui";
   import { slide } from "svelte/transition";
   import { animate, utils } from "animejs";
+  import tmi from "@tmi.js/chat";
   import {
     addBadges,
     checkSimilarity,
@@ -18,6 +19,7 @@
     sendUsername,
     showConfetti,
     shuffleArray,
+    checkEmote,
   } from "$lib/functions";
 
   import IcBaselineTheaterComedy from "~icons/ic/baseline-theater-comedy";
@@ -139,6 +141,14 @@
   let correctAnswer = $state();
   let userAnswer = $state();
 
+  /**
+   * @type { any[]}
+   */
+  let emoteChoices = $state([]);
+  let emotesReady = $state(false);
+
+  let emoteChatChoices = { a: 1, b: 2, c: 3, d: 4, e: 5 };
+
   let max = 0;
   /**
    * @type {number | null}
@@ -148,7 +158,6 @@
    * @type {{ addEventListener: (arg0: string, arg1: { (e: any): void; (e: any): void; }) => void; getTimeValues: () => { (): any; new (): any; toString: { (arg0: string[]): string; new (): any; }; }; reset: () => void; stop: () => void; start: (arg0: { countdown: boolean; precision: string; startValues: { seconds: number; }; }) => void; isRunning: () => any; }}
    */
   let timer;
-  let emoteChoices = { a: 1, b: 2, c: 3, d: 4, e: 5 };
 
   let powerups = {
     p5050: 0,
@@ -168,10 +177,7 @@
     higherlower: 0,
   });
 
-  /**
-   * @type {{ disconnect: () => void; on: (arg0: string, arg1: { (target: any, context: any, msg: any, self: any): Promise<void>; (address: any, port: any): void; (reason: any): void; (channel: any, msgid: any, message: any): void; }) => void; connect: () => Promise<any>; } | null}
-   */
-  let client;
+  let tmiClient;
   let chatters = new Map();
   let usernameSent = false;
 
@@ -213,8 +219,7 @@
   async function getEmoteList() {
     try {
       let response = await fetch(`https://api.okayeg.com/guess/emotes?time=${Date.now()}`);
-      let json = await response.json();
-      emoteList = json.random;
+      emoteList = await response.json();
     } catch (error) {
       console.log(error);
     }
@@ -528,54 +533,35 @@
    * @param {any} userid
    */
   async function generateEmoteChoices(userid) {
-    /**
-     * @type {any[]}
-     */
-    let picked = [];
-    let random = [];
+    emoteChoices = [];
+    emotesReady = false;
+    //add the correct emote to the array
+    emoteChoices.push({ emoteId: guessList[round - 1].emote, channelId: userid });
+
+    //add 4 random emotes to the array
     for (let index = 0; index < 4; index++) {
       const randomChannel = emoteList[Math.floor(Math.random() * emoteList.length)];
-      const randomChannelEmotes = [...randomChannel.bitstier, ...randomChannel.follower, ...randomChannel.subscriptions];
-      if (picked.includes(randomChannel._id) || randomChannelEmotes.length < 1) {
+      const randomChannelEmotes = [...randomChannel?.bitstier, ...randomChannel?.follower, ...randomChannel?.subscriptions];
+
+      //check if channel has no emotes or if we already picked this channel
+      if (randomChannelEmotes.length < 1 || emoteChoices.some((e) => e.channelId === randomChannel._id)) {
         index--;
         continue;
       }
+
       let emote = randomChannelEmotes[Math.floor(Math.random() * randomChannelEmotes.length)].id;
+      //check if emote url loads
       if (!(await checkEmote(emote))) {
         index--;
         continue;
       }
-      picked.push(randomChannel._id);
-      random.push({ emote: emote, id: randomChannel._id });
+
+      emoteChoices.push({ emoteId: emote, channelId: randomChannel._id });
     }
 
-    random.push({ emote: guessList[round - 1].emote, id: userid });
-    shuffleArray(random);
-    for (let index = 0; index < random.length; index++) {
-      const mcIndex = `multiChoice${index + 1}`;
-      elements[mcIndex].disabled = false;
-      elements[mcIndex].classList.add("btn-outline-success");
-      elements[mcIndex].classList.remove("btn-outline-secondary");
-      elements[mcIndex].dataset.answer = random[index].id;
-      elements[mcIndex].dataset.emote = random[index].emote;
-      elements[mcIndex].innerHTML = `
-    ${chatEnabled ? Object.keys(emoteChoices).find((e) => emoteChoices[e] === index + 1) : ""} 
-    <img src="https://static-cdn.jtvnw.net/emoticons/v2/${random[index].emote}/default/dark/3.0" alt="emote #${index + 1}">`;
-    }
+    shuffleArray(emoteChoices);
+    emotesReady = true;
   } //generateEmoteChoices
-
-  /**
-   * @param {any} id
-   */
-  async function checkEmote(id) {
-    try {
-      const res = await fetch(`https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/3.0`);
-      const buff = await res.blob();
-      return buff.type.startsWith("image/");
-    } catch (error) {
-      return false;
-    }
-  } //checkEmote
 
   /**
    * @param {number} lat1
@@ -635,7 +621,7 @@
       case 3:
       case 4:
       case 5:
-        userAnswer = parseInt(elements[`multiChoice${choice}`].dataset.answer, 10);
+        userAnswer = emoteChoices[choice - 1].channelId;
         break;
 
       case "higher":
@@ -711,7 +697,7 @@
     //show progress bar and correction for emote mode - multi choice controls - streams or clips
     if (gameMode == "emote") {
       correctAnswer = guessList[round - 1].emote;
-      let emote = choice === null ? null : elements[`multiChoice${choice}`].dataset.emote;
+      let emote = choice === null ? null : emoteChoices[choice - 1].emoteId;
       userAnswer = userAnswer == -1 ? userAnswer : emote;
 
       if (totalScore > highScores.emote) {
@@ -981,9 +967,9 @@
     round = 0;
     totalScore = 0;
 
-    if (client) {
-      client.disconnect();
-      client = null;
+    if (tmiClient) {
+      tmiClient.disconnect();
+      tmiClient = null;
     }
     embeddedChannel = "";
     embeddedClip = "";
@@ -1050,10 +1036,10 @@
       globalBadges = await getGlobalBadges();
       customBadges = await getCustomBadges();
       if (!channelId) {
-        channelId = await getChannelId();
+        channelId = await getChannelId(channelName);
       }
       if (!streamerColor) {
-        streamerColor = await getStreamerColor();
+        streamerColor = await getStreamerColor(channelId);
       }
     } else {
       localStorage.setItem("channelName", "");
@@ -1072,15 +1058,18 @@
 
   async function connectChat() {
     let options = {
-      connection: {
-        secure: true,
-        reconnect: true,
-      },
       channels: [channelName],
     };
-    client = new tmi.client(options);
+    tmiClient = new tmi.Client(options);
 
-    client.on("message", async (target, context, msg, self) => {
+    tmiClient.on("message", (event) => {
+      const { channel, user, message } = event;
+      console.log(channel);
+      console.log(user);
+      console.log(message);
+    });
+
+    tmiClient.on("asd", async (target, context, msg, self) => {
       if (!chatEnabled || gameState !== "active" || context.username == channelName) {
         return;
       }
@@ -1114,10 +1103,10 @@
       }
 
       if (gameMode == "emote") {
-        if (!emoteChoices.hasOwnProperty(input[0]?.toLowerCase())) {
+        if (!emoteChatChoices.hasOwnProperty(input[0]?.toLowerCase())) {
           return;
         }
-        chatterAnswer = parseInt(elements[`multiChoice${emoteChoices[input[0].toLowerCase()]}`].dataset.answer, 10);
+        chatterAnswer = parseInt(elements[`multiChoice${emoteChatChoices[input[0].toLowerCase()]}`].dataset.answer, 10);
         points = calculateScore(chatterAnswer);
       }
 
@@ -1163,22 +1152,22 @@
       }
     }); //message
 
-    client.on("connected", (/** @type {any} */ address, /** @type {any} */ port) => {
-      if (!usernameSent && channelName) {
-        sendUsername();
-      }
-      showToast(`Connected to ${channelName}`, "alert-success", 2000);
-    }); //connected
+    // tmiClient.on("connected", (address, port) => {
+    //   if (!usernameSent && channelName) {
+    //     sendUsername();
+    //   }
+    //   showToast(`Connected to ${channelName}`, "alert-success", 2000);
+    // }); //connected
 
-    client.on("disconnected", (/** @type {any} */ reason) => {
-      showToast(`Disconnected: ${reason}`, "alert-error", 2000);
-    }); //disconnected
+    // tmiClient.on("disconnected", (reason) => {
+    //   showToast(`Disconnected: ${reason}`, "alert-error", 2000);
+    // }); //disconnected
 
-    client.on("notice", (/** @type {any} */ channel, /** @type {any} */ msgid, /** @type {any} */ message) => {
-      showToast(`Disconnected: ${message}`, "alert-error", 2000);
-    }); //notice
+    // tmiClient.on("notice", (channel, msgid, message) => {
+    //   showToast(`Disconnected: ${message}`, "alert-error", 2000);
+    // }); //notice
 
-    client.connect().catch(console.error);
+    tmiClient.connect();
   } //connectChat
 
   /**
@@ -1455,12 +1444,6 @@
 
       guessLabel: document.getElementById("guessLabel"),
 
-      multiChoice1: document.getElementById("multiChoice1"),
-      multiChoice2: document.getElementById("multiChoice2"),
-      multiChoice3: document.getElementById("multiChoice3"),
-      multiChoice4: document.getElementById("multiChoice4"),
-      multiChoice5: document.getElementById("multiChoice5"),
-
       higher: document.getElementById("higher"),
       lower: document.getElementById("lower"),
 
@@ -1674,7 +1657,7 @@
 
       <div class="card card-border border-warning bg-base-100 my-2">
         <div class="card-body p-3">
-          <h2 class="card-title"><IcBaselineTimer />Timer</h2>
+          <h2 class="card-title"><IcBaselineTimer />Timer - not working yet :)</h2>
           <div class="join mx-auto">
             <button class="btn btn-outline btn-warning join-item pointer-events-none"><IcBaselineTimer />Round timer</button>
             <input class="join-item input input-warning text-center" type="number" id="timerValue" value="0" min="0" max="60" />
@@ -1686,7 +1669,7 @@
 
       <div class="card card-border border-primary bg-base-100 my-2">
         <div class="card-body p-3">
-          <h2 class="card-title"><MdiTwitch />Play with chat</h2>
+          <h2 class="card-title"><MdiTwitch />Play with chat - not working yet :)</h2>
           <div class="join mx-auto">
             <button class="btn btn-outline btn-primary join-item pointer-events-none">twitch.tv/</button>
             <input class="join-item input input-primary" type="text" bind:value={channelName} placeholder="Username" />
@@ -1862,12 +1845,12 @@
         <div class="flex flex-col w-70">
           <div class="card bg-base-300 mb-2">
             <div class="card-body p-2">
-              <p class="font-bold text-center text-pretty">
-                <MdiTwitch class="inline text-lg" />
+              <p class="font-bold text-lg text-center text-pretty">
+                <MdiTwitch class="inline " />
                 {#if gameMode == "viewers"}
                   Type a number in chat to guess
                 {:else if gameMode == "emote"}
-                  Type an emote's letter <kbd class="notranslate kbd">a/b/c/d/e</kbd> in chat to guess
+                  Type an emote's letter in chat to guess <kbd class="notranslate kbd">(a/b/c/d/e)</kbd>
                 {:else if gameMode == "game"}
                   Type <kbd class="notranslate kbd">!guess [game name]</kbd> in chat to guess
                 {:else if gameMode == "higherlower"}
@@ -2062,21 +2045,16 @@
                   <div class="text-2xl text-start my-auto">Which emote belongs to this channel?</div>
 
                   <div class="flex gap-3 my-auto">
-                    <button onclick={() => guess(1, false)} class="btn btn-xl btn-outline btn-success multiChoice-btn w-fit h-fit p-0 m-0" id="multiChoice1">
-                      <div class="skeleton w-30 h-30">asd</div>
-                    </button>
-                    <button onclick={() => guess(2, false)} class="btn btn-xl btn-outline btn-success multiChoice-btn w-fit h-fit p-0 m-0" id="multiChoice2">
-                      <div class="skeleton w-30 h-30">asd</div>
-                    </button>
-                    <button onclick={() => guess(3, false)} class="btn btn-xl btn-outline btn-success multiChoice-btn w-fit h-fit p-0 m-0" id="multiChoice3">
-                      <div class="skeleton w-30 h-30">asd</div>
-                    </button>
-                    <button onclick={() => guess(4, false)} class="btn btn-xl btn-outline btn-success multiChoice-btn w-fit h-fit p-0 m-0" id="multiChoice4">
-                      <div class="skeleton w-30 h-30">asd</div>
-                    </button>
-                    <button onclick={() => guess(5, false)} class="btn btn-xl btn-outline btn-success multiChoice-btn w-fit h-fit p-0 m-0" id="multiChoice5">
-                      <div class="skeleton w-30 h-30">asd</div>
-                    </button>
+                    {#each emoteChoices as emote, index}
+                      <button onclick={() => guess(index + 1, false)} class="btn btn-xl btn-outline btn-success multiChoice-btn overflow-hidden w-fit h-fit p-0 m-0">
+                        {#if emotesReady}
+                          <img alt="Emote choice #{index + 1}" src="https://static-cdn.jtvnw.net/emoticons/v2/{emote.emoteId}/default/dark/3.0" />
+                          {chatEnabled ? Object.keys(emoteChatChoices).find((e) => emoteChatChoices[e] === index + 1) : ""}
+                        {:else}
+                          <div class="skeleton size-[112px]"></div>
+                        {/if}
+                      </button>
+                    {/each}
                   </div>
                 </div>
               </div>

@@ -248,7 +248,7 @@ export function createRandomGenerator(seed) {
 export function stringTo32BitHash(str) {
   let v = 0;
   for (let i = 0; i < str.length; i += 1) {
-    v += str.charCodeAt(i) << i % 24;
+    v += str.charCodeAt(i) << (i % 24);
   }
   return v % 0xffffffff;
 }
@@ -363,7 +363,10 @@ export async function getCustomBadges() {
   }
 } //getCustomBadges
 
-export async function getChannelId() {
+/**
+ * @param {string} [channelName]
+ */
+export async function getChannelId(channelName) {
   try {
     let response = await fetch(`https://helper.guessr.tv/twitch/users?login=${channelName}`);
     let result = await response.json();
@@ -374,7 +377,10 @@ export async function getChannelId() {
   }
 } //getChannelId
 
-export async function getStreamerColor() {
+/**
+ * @param {string} [channelId]
+ */
+export async function getStreamerColor(channelId) {
   try {
     let response = await fetch(`https://helper.guessr.tv/twitch/chat/color?user_id=${channelId}`);
     let result = await response.json();
@@ -384,6 +390,22 @@ export async function getStreamerColor() {
     return "#FFFFFF";
   }
 } //getStreamerColor
+
+/**
+ * @description checks if a twitch emote exists
+ * @param {string} emoteId
+ * @returns {Promise<boolean>}
+ */
+export async function checkEmote(emoteId) {
+  try {
+    const res = await fetch(`https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/3.0`);
+    const buff = await res.blob();
+    return buff.type.startsWith("image/");
+  } catch (error) {
+    console.log("checkEmote error ", error);
+    return false;
+  }
+} //checkEmote
 
 /**
  * @param {number} level
