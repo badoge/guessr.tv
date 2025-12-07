@@ -1533,6 +1533,10 @@
     if (urlParams.get("irl") === "true") {
       document.getElementById("irl").style.display = "";
     }
+
+    if (window.location.hash == "#hello") {
+      helloModal.show();
+    }
   }); //onMount
 
   function higherlowerAnimation() {
@@ -1729,6 +1733,25 @@
     <div class="modal-action">
       <form method="dialog">
         <button type="submit" class="btn btn-warning" onclick={() => reset()}>Reset</button>
+      </form>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
+<dialog id="helloModal" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"><IcBaselineClose /></button>
+    </form>
+    <h3 class="text-lg font-bold">Welcome to the Guessr.tv beta!</h3>
+    <p class="py-4">This page is about half way done. Things that are not done include: the "play with chat" feature, the round timer, the settings modal</p>
+    <p class="py-4">If you have any feedback use any contact method in the About modal bottom left :)</p>
+    <div class="modal-action">
+      <form method="dialog">
+        <button type="submit" class="btn btn-success">OK</button>
       </form>
     </div>
   </div>

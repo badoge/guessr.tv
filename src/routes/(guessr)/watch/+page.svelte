@@ -13,6 +13,8 @@
   import IcBaselineLabel from "~icons/ic/baseline-label";
   import IcBaselineSportsEsports from "~icons/ic/baseline-sports-esports";
   import IcBaselineArrowRightAlt from "~icons/ic/baseline-arrow-right-alt";
+  import IcBaselineClose from "~icons/ic/baseline-close";
+
   import ViewersSVG from "$lib/ViewersSVG.svelte";
 
   import pkg from "validator";
@@ -108,6 +110,10 @@
     await getMainList();
     loadFilters();
     nextStream();
+
+    if (window.location.hash == "#hello") {
+      helloModal.show();
+    }
   });
 
   async function getMainList() {
@@ -428,6 +434,25 @@
 <dialog id="avatarModal" class="modal">
   <div class="modal-box">
     <img class="w-full aspect-square" src={currentChannel.avatar} alt="avatar" />
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
+<dialog id="helloModal" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"><IcBaselineClose /></button>
+    </form>
+    <h3 class="text-lg font-bold">Welcome to the Guessr.tv Watch beta!</h3>
+    <p class="py-4">This page is pretty much done, but you might encounter some bugs</p>
+    <p class="py-4">If you have any feedback use any contact method in the About modal bottom left :)</p>
+    <div class="modal-action">
+      <form method="dialog">
+        <button type="submit" class="btn btn-success">OK</button>
+      </form>
+    </div>
   </div>
   <form method="dialog" class="modal-backdrop">
     <button>close</button>

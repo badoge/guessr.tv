@@ -147,6 +147,10 @@
 
     //loadPacks();
     customBadges = await getCustomBadges();
+
+    if (window.location.hash == "#hello") {
+      helloModal.show();
+    }
   });
 
   let itemPacks = [
@@ -1132,6 +1136,25 @@
         Viewers only need to sign in with Twitch to join the game, they don't interact with the board. The site will automatically fill the board for viewers on their uniquely shuffled boards
       </small>
     </article>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
+<dialog id="helloModal" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"><IcBaselineClose /></button>
+    </form>
+    <h3 class="text-lg font-bold">Welcome to the Guessr.tv Bingo beta!</h3>
+    <p class="py-4">This page does not work at all for now, come back later :)</p>
+    <p class="py-4">If you have any feedback use any contact method in the About modal bottom left :)</p>
+    <div class="modal-action">
+      <form method="dialog">
+        <button type="submit" class="btn btn-success">OK</button>
+      </form>
+    </div>
   </div>
   <form method="dialog" class="modal-backdrop">
     <button>close</button>
