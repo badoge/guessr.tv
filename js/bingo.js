@@ -94,6 +94,7 @@ const elements = {
   packSwitchesDiv: document.getElementById("packSwitchesDiv"),
   packDropdownButton: document.getElementById("packDropdownButton"),
   allowDiagonals: document.getElementById("allowDiagonals"),
+  runChaosMod: document.getElementById("runChaosMod"),
   twitchBingo: document.getElementById("twitchBingo"),
   customBingo: document.getElementById("customBingo"),
   bingoTypeDescription: document.getElementById("bingoTypeDescription"),
@@ -367,6 +368,13 @@ async function start() {
     shuffleArray(mainList);
     nextStream();
     elements.twitchEmbedDiv.style.display = "";
+    if (elements.runChaosMod?.checked) {
+      try {
+        initChaosMod();
+      } catch (e) {
+        console.error("Failed to init chaos mod:", e);
+      }
+    }
   }
 
   elements.settingsCard.style.display = "none";
@@ -887,7 +895,7 @@ function hidePreview() {
 
 function loadInputs(bingoItems = []) {
   elements.boardInputs.innerHTML = "";
-  board = [];
+  board.length = 0;
   let size = bingoSize * bingoSize || 25;
   for (let index = 0; index < size; index++) {
     board.push({ filled: false, value: "" });
@@ -1261,3 +1269,35 @@ window.onbeforeunload = function () {
   }
   return null;
 }; //onbeforeunload
+
+// Expose functions to global scope for inline onclick handlers
+// (it's necessary because of type=module)
+window.TWITCH = TWITCH;
+window.board = board;
+window.checkWin = checkWin;
+window.start = start;
+window.nextStream = nextStream;
+window.previousStream = previousStream;
+window.fillCell = fillCell;
+window.randomize = randomize;
+window.randomizeAll = randomizeAll;
+window.clearAll = clearAll;
+window.activateCellById = activateCellById;
+window.deactivateCellById = deactivateCellById;
+window.updateSingleItem = updateSingleItem;
+window.move = move;
+window.logout = logout;
+window.copyLink = copyLink;
+window.showPreview = showPreview;
+window.hidePreview = hidePreview;
+window.updateSelectedPacks = updateSelectedPacks;
+window.changePack = changePack;
+window.savePacks = savePacks;
+window.deletePack = deletePack;
+window.createPack = createPack;
+window.editPacks = editPacks;
+window.login = login;
+window.toggleSearchBar = toggleSearchBar;
+window.doBoardSearch = doBoardSearch;
+window.updateLeaderboard = updateLeaderboard;
+window.updateStatsTooltip = updateStatsTooltip;
