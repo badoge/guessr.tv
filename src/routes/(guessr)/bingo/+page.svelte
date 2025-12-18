@@ -1,6 +1,5 @@
 <script>
   import { onMount } from "svelte";
-  import localforage from "localforage";
   import { ToggleGroup } from "bits-ui";
 
   import { addBadges, getCustomBadges, sendUsername, showConfetti, shuffleArray, shuffleArraySeed } from "$lib/functions";
@@ -94,7 +93,15 @@
     }
   });
 
+  /**
+   * @type {LocalForage}
+   */
+  let localforage;
+
   onMount(async () => {
+    const dank = await import("localforage");
+    localforage = dank.default;
+
     elements = {
       leaderboardCount: document.getElementById("leaderboardCount"),
       leaderboard: document.getElementById("leaderboard"),
