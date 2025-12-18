@@ -4,11 +4,22 @@
   import IcBaselineSearch from "~icons/ic/baseline-search";
   import IcOutlineInfo from "~icons/ic/outline-info";
   import IcBaselineClear from "~icons/ic/baseline-clear";
+  import { animate, createDraggable, stagger } from "animejs";
 
-  let { size } = $props();
+  let { bingoSize, bingoBoard, gameState, embedHover = $bindable() } = $props();
   let searchBarExpanded = $state(false);
 
   onMount(async () => {
+    const draggable = createDraggable("#board", {
+      container: "body",
+      onGrab: () => {
+        embedHover.disabled = true;
+      },
+      onRelease: () => {
+        embedHover.disabled = false;
+      },
+    });
+
     window.addEventListener("keydown", (event) => {
       if (event.code === "F3" || ((event.ctrlKey || event.metaKey) && event.code === "KeyF")) {
         event.preventDefault();
@@ -20,7 +31,73 @@
         hidePreview();
       }
     });
+    setTimeout(() => {
+      animate(".bingo-cell", {
+        opacity: [1, 0.5, 1, 0],
+        delay: stagger(100, {
+          grid: [bingoSize, bingoSize],
+          from: "center",
+        }),
+        onComplete: (self) => {
+          animate(".bingo-cell", {
+            opacity: [0, 1],
+            delay: stagger(100, {
+              grid: [bingoSize, bingoSize],
+              from: "center",
+            }),
+            duration: 200,
+          });
+
+          self.targets.forEach((el) => {
+            el.classList.remove("filled");
+          });
+        },
+        duration: 1000,
+      });
+    }, 300);
   }); //onMount
+
+  export function animateBoard() {
+    setTimeout(() => {
+      animate(".bingo-cell", {
+        opacity: [1, 0.5, 0],
+        delay: stagger(50, {
+          grid: [bingoSize, bingoSize],
+          from: "last",
+        }),
+        onComplete: (self) => {
+          animate(".bingo-cell", {
+            opacity: [0, 1],
+            delay: stagger(50, {
+              grid: [bingoSize, bingoSize],
+              from: "first",
+            }),
+            duration: 200,
+          });
+
+          self.targets.forEach((el) => {
+            el.classList.remove("filled");
+          });
+        },
+        duration: 200,
+      });
+    }, 300);
+  } //animateBoard
+
+  function checkDuplicatesOnBoard() {
+    const values = bingoBoard.map((item) => item.value.toLowerCase());
+    const duplicates = new Set(values.filter((v) => values.indexOf(v) !== values.lastIndexOf(v)));
+
+    if (duplicates.size > 0) {
+      const cells = document.querySelectorAll(".bingo-cell");
+      for (let i = 0; i < bingoBoard.length; i++) {
+        const value = bingoBoard[i].value.toLowerCase();
+        cells[i].classList.toggle("duplicate", value && duplicates.has(value));
+      }
+    } else {
+      document.querySelectorAll(".bingo-cell").forEach((c) => c.classList.remove("duplicate"));
+    }
+  } //checkDuplicatesOnBoard
 
   function toggleSearchBar() {
     document.getElementById("boardSearchBar").value = "";
@@ -38,8 +115,8 @@
     const cells = document.querySelectorAll(".bingo-cell");
 
     if (value) {
-      for (let i = 0; i < board.length; i++) {
-        const isMatching = board[i].value && board[i].value.toLowerCase().includes(value);
+      for (let i = 0; i < bingoBoard.length; i++) {
+        const isMatching = bingoBoard[i].value && bingoBoard[i].value.toLowerCase().includes(value);
         cells[i].classList.toggle("matching", isMatching);
       }
     }
@@ -56,28 +133,37 @@
   } //hideSearchBar
 
   /**
-   * @param {{ target: { dataset: { id: string; }; classList: { toggle: (arg0: string) => void; }; }; }} event
+   * @type {number | undefined}
    */
-  function fillCell(event) {
-    if (!boardCreated) {
-      let textInput = document.querySelector(`input[data-item-id="${event.target.dataset.id}"]`);
+  let refreshCooldown;
+
+  /**
+   * @param {number} id
+   */
+  function fillCell(id) {
+    if (gameState == "inactive") {
+      let textInput = document.querySelector(`input[data-item-id="${id + 1}"]`);
+      if (!textInput) {
+        return;
+      }
       textInput.scrollIntoView({ behavior: "smooth" });
       textInput.select();
       textInput.focus();
       return;
     }
+    const cell = document.querySelector(`div[data-id="${id}"]`);
+
     clearTimeout(refreshCooldown);
-    event.target.classList.toggle("filled");
+    cell.classList.toggle("filled");
+    console.log(cell.classList);
     hideSearchBar();
-    let cellNumber = parseInt(event.target.dataset.id, 10) - 1;
-    board[cellNumber].filled = !board[cellNumber].filled;
-    checkWin(board, true);
-    if (TWITCH?.channel) {
-      refreshCooldown = setTimeout(() => {
-        updateLeaderboard();
-      }, 3000);
-    }
-    updateStatsTooltip();
+
+    //checkWin(board, true);
+    // if (TWITCH?.channel) {
+    //   refreshCooldown = setTimeout(() => {
+    //     updateLeaderboard();
+    //   }, 3000);
+    // }
   } //fillCell
 
   /**
@@ -85,33 +171,55 @@
    * @param {number} column
    */
   function getExtraStyle(row, column) {
+    if (bingoSize == 1) {
+      return `border-radius: 0.75rem`;
+    }
     if (row == 0 && column == 0) {
       return `border-top-left-radius: 0.75rem`;
     }
-    if (row == 0 && column == size - 1) {
+    if (row == 0 && column == bingoSize - 1) {
       return `border-top-right-radius: 0.75rem`;
     }
-    if (row == size - 1 && column == 0) {
+    if (row == bingoSize - 1 && column == 0) {
       return `border-bottom-left-radius: 0.75rem`;
     }
-    if (row == size - 1 && column == size - 1) {
+    if (row == bingoSize - 1 && column == bingoSize - 1) {
       return `border-bottom-right-radius: 0.75rem`;
     }
-    if (size == 1) {
-      return `border-radius: 0.75rem`;
-    }
   }
+
+  /**
+   * @param {{ dataset: { itemId: any; }; }} element
+   */
+  export function activateCellById(element) {
+    const itemId = element.dataset.itemId;
+    const itemCell = document.querySelector(`.bingo-cell[data-id="${itemId}"]`);
+    itemCell.classList.add("selected");
+  } //activateCellById
+
+  /**
+   * @param {{ dataset: { itemId: any; }; }} element
+   */
+  export function deactivateCellById(element) {
+    const itemId = element.dataset.itemId;
+    const itemCell = document.querySelector(`.bingo-cell[data-id="${itemId}"]`);
+    itemCell.classList.remove("selected");
+  } //deactivateCellById
 </script>
 
 <div class="container-fluid" id="board" style="top: 6%; left: 6%">
   <div class="container-fluid p-0">
-    {#each { length: size || 5 }, row}
+    {#each { length: bingoSize }, row}
       <div class="flex flex-row m-0">
-        {#each { length: size || 5 }, column}
+        {#each { length: bingoSize }, column}
           <!-- svelte-ignore a11y_click_events_have_key_events -->
           <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <div onclick={fillCell} data-id={row + column} class="col bingo-cell" style={getExtraStyle(row, column)}>
-            {row * size + column + 1}
+          <div onclick={() => fillCell(row * bingoSize + column)} data-id={row * bingoSize + column} class="col bingo-cell filled" style={getExtraStyle(row, column)}>
+            {#if bingoBoard[row * bingoSize + column]?.value}
+              {bingoBoard[row * bingoSize + column].value}
+            {:else}
+              <span class="opacity-30">{row * bingoSize + column + 1}</span>
+            {/if}
           </div>
         {/each}
       </div>
@@ -185,17 +293,17 @@
     padding: 5px;
   }
 
-  .bingo-cell.duplicate {
+  :global(.bingo-cell.duplicate) {
     box-shadow: 0px 0px 2rem var(--color-error);
     z-index: 2;
   }
 
-  .bingo-cell.matching {
+  :global(.bingo-cell.matching) {
     box-shadow: 0px 0px 2rem var(--color-warning);
     z-index: 3;
   }
 
-  .bingo-cell.selected {
+  :global(.bingo-cell.selected) {
     box-shadow: 0px 0px 2rem var(--color-info);
     z-index: 4;
   }
@@ -250,5 +358,6 @@
 
   .filled {
     background-color: var(--color-success);
+    color: var(--color-success-content);
   }
 </style>
