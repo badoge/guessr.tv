@@ -46,7 +46,7 @@
   //inactive - uploading - active
   let gameState = $state("inactive");
 
-  let BingoBoardComponent;
+  let BingoBoardComponent = $state();
   /**
    * @type {any[]}
    */
@@ -111,9 +111,6 @@
       twitchBingo: document.getElementById("twitchBingo"),
       customBingo: document.getElementById("customBingo"),
       customBingoName: document.getElementById("customBingoName"),
-      previewDiv: document.getElementById("previewDiv"),
-      previewBoard: document.getElementById("previewBoard"),
-      previewUsername: document.getElementById("previewUsername"),
       boardSize: document.getElementById("boardSize"),
       boardOpacity: document.getElementById("boardOpacity"),
       loginButton: document.getElementById("loginButton"),
@@ -815,45 +812,6 @@
     }
   } //updateLeaderboard
 
-  /**
-   * @param {any} username
-   * @param {string} userid
-   * @param {number} score
-   * @param {number} bingos
-   */
-  function showPreview(username, userid, score, bingos) {
-    elements.previewUsername.innerHTML = `
-  ${encodeHTML(username)}'s bingo board<br>Score: ${score.toLocaleString()} ${score == 1 ? "point" : "points"} ${bingos > 0 ? `(${bingos} ${bingos == 1 ? "BINGO" : "BINGOs"})` : ""}`;
-    let preview = [];
-
-    if (userid == TWITCH.userID) {
-      //dont shuffle board for streamer
-      preview = structuredClone(board);
-    } else {
-      preview = shuffleArraySeed(structuredClone(board), userid);
-    }
-
-    const previewCells = document.querySelectorAll(".bingo-cell-preview");
-
-    for (let j = 0; j < board.length; j++) {
-      previewCells[j].classList.remove("filled");
-    }
-
-    for (let index = 0; index < previewCells.length; index++) {
-      previewCells[index].innerText = preview[index].value;
-      previewCells[index].title = preview[index].value;
-      if (preview[index].filled) {
-        previewCells[index].classList.add("filled");
-      }
-    }
-
-    elements.previewDiv.style.display = "";
-  } //showPreview
-
-  function hidePreview() {
-    elements.previewDiv.style.display = "none";
-  } //hidePreview
-
   function loadItemPacks(selectedIndex = 0) {
     elements.packEditorSelect.selectedIndex = selectedIndex;
     elements.packEditorName.value = itemPacks[selectedIndex].name;
@@ -1062,17 +1020,6 @@
 </dialog>
 
 <BingoBoard {bingoSize} {bingoBoard} {gameState} bind:embedHover bind:this={BingoBoardComponent} />
-
-<div id="previewDiv" style="display: none">
-  <div class="card">
-    <div class="card-header">
-      <h4 id="previewUsername" class="text-center"></h4>
-    </div>
-    <div class="card-body p-0">
-      <div id="previewBoard"></div>
-    </div>
-  </div>
-</div>
 
 {#if gameState !== "active"}
   <div class="flex justify-end h-screen">
@@ -1343,35 +1290,3 @@
     </div>
   </div>
 {/if}
-
-<style>
-  #previewDiv {
-    position: fixed;
-    top: 2%;
-    left: 50%;
-    transform: translate(-800px);
-    z-index: 4000;
-    pointer-events: none;
-    box-shadow: 3px 3px 10px #000000;
-    border-radius: 6px;
-    transform-origin: top left;
-  }
-
-  #previewDiv > .card > .card-body {
-    background-color: var(--bs-secondary-border-subtle);
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-    align-self: center;
-  }
-
-  #previewBoard {
-    width: max-content;
-    background-color: var(--bs-secondary-border-subtle);
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    padding: 20px;
-    z-index: 4000;
-    scale: 1;
-    pointer-events: none;
-  }
-</style>

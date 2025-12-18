@@ -155,7 +155,6 @@
 
     clearTimeout(refreshCooldown);
     cell.classList.toggle("filled");
-    console.log(cell.classList);
     hideSearchBar();
 
     //checkWin(board, true);
@@ -165,6 +164,41 @@
     //   }, 3000);
     // }
   } //fillCell
+
+  // /**
+  //  * @param {any} username
+  //  * @param {string} userid
+  //  * @param {number} score
+  //  * @param {number} bingos
+  //  */
+  // function showPreview(username, userid, score, bingos) {
+  //   elements.previewUsername.innerHTML = `
+  // ${encodeHTML(username)}'s bingo board<br>Score: ${score.toLocaleString()} ${score == 1 ? "point" : "points"} ${bingos > 0 ? `(${bingos} ${bingos == 1 ? "BINGO" : "BINGOs"})` : ""}`;
+  //   let preview = [];
+
+  //   if (userid == TWITCH.userID) {
+  //     //dont shuffle board for streamer
+  //     preview = structuredClone(board);
+  //   } else {
+  //     preview = shuffleArraySeed(structuredClone(board), userid);
+  //   }
+
+  //   const previewCells = document.querySelectorAll(".bingo-cell-preview");
+
+  //   for (let j = 0; j < board.length; j++) {
+  //     previewCells[j].classList.remove("filled");
+  //   }
+
+  //   for (let index = 0; index < previewCells.length; index++) {
+  //     previewCells[index].innerText = preview[index].value;
+  //     previewCells[index].title = preview[index].value;
+  //     if (preview[index].filled) {
+  //       previewCells[index].classList.add("filled");
+  //     }
+  //   }
+
+  //   elements.previewDiv.style.display = "";
+  // } //showPreview
 
   /**
    * @param {number} row
