@@ -1,4 +1,5 @@
 <script>
+  import localforage from "localforage";
   import { onMount } from "svelte";
   import { ToggleGroup } from "bits-ui";
 
@@ -93,15 +94,7 @@
     }
   });
 
-  /**
-   * @type {LocalForage}
-   */
-  let localforage;
-
   onMount(async () => {
-    const dank = await import("localforage");
-    localforage = dank.default;
-
     elements = {
       leaderboardCount: document.getElementById("leaderboardCount"),
       leaderboard: document.getElementById("leaderboard"),
