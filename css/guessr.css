@@ -1,7 +1,7 @@
 #scoreDiv {
   font-size: 1.8rem;
   position: fixed;
-  top: 320px;
+  top: 420px;
   left: 0;
   padding-left: 10px;
   border-top-right-radius: 50px;
@@ -12,7 +12,7 @@
 #timerDiv {
   font-size: 1.8rem;
   position: fixed;
-  top: 420px;
+  top: 520px;
   left: 0;
   padding-left: 10px;
   border-top-right-radius: 50px;
